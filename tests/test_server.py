@@ -54,6 +54,15 @@ class _ConstantScorer:
         logits[0] = 10.0
         return logits
 
+    def score_batch(
+        self,
+        prompts: list[str],
+        allowed_token_ids_list: list[list[int]],
+        *,
+        images_list: list[list[str] | None] | None = None,
+    ) -> list[np.ndarray]:
+        return [self.score(p, a) for p, a in zip(prompts, allowed_token_ids_list, strict=True)]
+
 
 @pytest.fixture
 def client() -> TestClient:

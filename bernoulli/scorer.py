@@ -25,6 +25,11 @@ class Scorer(Protocol):
     One forward pass per `score` call. Debiasing (reversed/cyclic option order)
     and calibration (temperature scaling) sit above this interface. Scorer is
     intentionally dumb.
+
+    `score_batch` is the batched variant — call this when scoring multiple
+    prompts for the same decision (e.g., all reverse/cyclic permutations). On
+    VLLMScorer this is one engine call with continuous batching; HFScorer
+    falls back to a sequential loop (padding + attention masks are deferred).
     """
 
     model_id: str
@@ -38,6 +43,16 @@ class Scorer(Protocol):
         images: list[str] | None = None,
     ) -> NDArray[np.float32]:
         """One forward pass. Return logits (float32) in the order of allowed_token_ids."""
+        ...
+
+    def score_batch(
+        self,
+        prompts: list[str],
+        allowed_token_ids_list: list[list[int]],
+        *,
+        images_list: list[list[str] | None] | None = None,
+    ) -> list[NDArray[np.float32]]:
+        """Batched score. Same semantics as `score`, N prompts in, N arrays out."""
         ...
 
 
@@ -98,6 +113,25 @@ class HFScorer:
         last_logits = outputs.logits[0, -1, :]
         selected = last_logits[allowed_token_ids].float().cpu().numpy()
         return np.asarray(selected, dtype=np.float32)
+
+    def score_batch(
+        self,
+        prompts: list[str],
+        allowed_token_ids_list: list[list[int]],
+        *,
+        images_list: list[list[str] | None] | None = None,
+    ) -> list[NDArray[np.float32]]:
+        """Sequential loop over `score`. HF-level padding + attention-mask
+        batching is deferred — the real batching win is on the vLLM path."""
+        if len(prompts) != len(allowed_token_ids_list):
+            raise ValueError(
+                f"prompts len {len(prompts)} != allowed_token_ids len {len(allowed_token_ids_list)}"
+            )
+        imgs = images_list if images_list is not None else [None] * len(prompts)
+        return [
+            self.score(p, a, images=i)
+            for p, a, i in zip(prompts, allowed_token_ids_list, imgs, strict=True)
+        ]
 
     def generate(self, prompt: str, *, max_new_tokens: int = 10) -> str:
         """Greedy text generation. Baseline-only path — not part of the Scorer protocol.

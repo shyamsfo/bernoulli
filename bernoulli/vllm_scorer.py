@@ -89,30 +89,51 @@ class VLLMScorer:
         *,
         images: list[str] | None = None,
     ) -> NDArray[np.float32]:
-        if images:
+        return self.score_batch([prompt], [allowed_token_ids], images_list=[images])[0]
+
+    def score_batch(
+        self,
+        prompts: list[str],
+        allowed_token_ids_list: list[list[int]],
+        *,
+        images_list: list[list[str] | None] | None = None,
+    ) -> list[NDArray[np.float32]]:
+        if len(prompts) != len(allowed_token_ids_list):
+            raise ValueError(
+                f"prompts len {len(prompts)} != allowed_token_ids len {len(allowed_token_ids_list)}"
+            )
+        if images_list is not None and any(images_list):
             raise NotImplementedError("image scoring lands in M6")
+        if not prompts:
+            return []
 
         from vllm import SamplingParams
 
-        params = SamplingParams(
-            max_tokens=1,
-            temperature=0.0,
-            logprobs=_LOGPROBS_TOPK,
-            allowed_token_ids=allowed_token_ids,
-        )
-        outputs = self._llm.generate([prompt], params, use_tqdm=False)
-        logprobs_list = outputs[0].outputs[0].logprobs
-        if logprobs_list is None:
-            raise RuntimeError("vLLM returned no logprobs; check SamplingParams.logprobs")
-        logprobs_dict = logprobs_list[0]
-        # logprobs_dict: {token_id: Logprob(logprob=..., rank=..., decoded_token=...)}
-        selected = np.array(
-            [
-                getattr(logprobs_dict.get(tid), "logprob", _MISSING_LOGPROB)
-                if tid in logprobs_dict
-                else _MISSING_LOGPROB
-                for tid in allowed_token_ids
-            ],
-            dtype=np.float32,
-        )
-        return selected
+        params_list = [
+            SamplingParams(
+                max_tokens=1,
+                temperature=0.0,
+                logprobs=_LOGPROBS_TOPK,
+                allowed_token_ids=aids,
+            )
+            for aids in allowed_token_ids_list
+        ]
+        outputs = self._llm.generate(prompts, params_list, use_tqdm=False)
+
+        results: list[NDArray[np.float32]] = []
+        for out, aids in zip(outputs, allowed_token_ids_list, strict=True):
+            logprobs_list = out.outputs[0].logprobs
+            if logprobs_list is None:
+                raise RuntimeError("vLLM returned no logprobs; check SamplingParams.logprobs")
+            logprobs_dict = logprobs_list[0]
+            selected = np.array(
+                [
+                    getattr(logprobs_dict.get(tid), "logprob", _MISSING_LOGPROB)
+                    if tid in logprobs_dict
+                    else _MISSING_LOGPROB
+                    for tid in aids
+                ],
+                dtype=np.float32,
+            )
+            results.append(selected)
+        return results

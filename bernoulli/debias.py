@@ -85,10 +85,16 @@ def debias(
     n = len(allowed)
     perms = _permutations_for(mode, n)
 
+    # Build all permutation prompts up front, send as a single batch — one
+    # engine call on vLLM's continuous-batching path, loop on HFScorer.
+    prompts = [
+        build_prompt(tok, state_text=state_text, question=question, option_order=perm)
+        for perm in perms
+    ]
+    all_logits = scorer.score_batch(prompts, [allowed] * len(perms))
+
     totals = np.zeros(n, dtype=np.float32)
-    for perm in perms:
-        prompt = build_prompt(tok, state_text=state_text, question=question, option_order=perm)
-        logits = scorer.score(prompt, allowed)
+    for perm, logits in zip(perms, all_logits, strict=True):
         probs = _softmax(logits)
         # probs[i] is the model's probability for the option at label position i,
         # which corresponds to canonical option `perm[i]`. Map back.

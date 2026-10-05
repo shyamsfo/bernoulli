@@ -86,6 +86,15 @@ class _ScriptedScorer:
             raise AssertionError(f"no scripted logits for first option {first_opt!r}")
         return np.asarray(self._logits_by_first_option[first_opt], dtype=np.float32)
 
+    def score_batch(
+        self,
+        prompts: list[str],
+        allowed_token_ids_list: list[list[int]],
+        *,
+        images_list: list[list[str] | None] | None = None,
+    ) -> list[np.ndarray]:
+        return [self.score(p, a) for p, a in zip(prompts, allowed_token_ids_list, strict=True)]
+
 
 class TestDebiasReverse:
     def test_reverse_averages_canonical_and_reversed(self) -> None:

@@ -50,14 +50,22 @@ def chunked_choice(
     n = len(options)
     letter_ids = letter_token_ids(tok)
 
-    all_logits = np.zeros(n, dtype=np.float32)
+    # Build one prompt per chunk, batch them into a single scorer call.
+    prompts: list[str] = []
+    allowed_per_chunk: list[list[int]] = []
+    starts: list[int] = []
     for start in range(0, n, chunk_size):
         chunk_opts = options[start : start + chunk_size]
         sub_question = ChoiceQuestion(id=question.id, prompt=question.prompt, options=chunk_opts)
-        prompt = build_prompt(tok, state_text=state_text, question=sub_question)
-        allowed = [letter_ids[letter] for letter in LETTERS[: len(chunk_opts)]]
-        chunk_logits = scorer.score(prompt, allowed)
-        all_logits[start : start + len(chunk_opts)] = chunk_logits
+        prompts.append(build_prompt(tok, state_text=state_text, question=sub_question))
+        allowed_per_chunk.append([letter_ids[letter] for letter in LETTERS[: len(chunk_opts)]])
+        starts.append(start)
+
+    chunk_logits_list = scorer.score_batch(prompts, allowed_per_chunk)
+
+    all_logits = np.zeros(n, dtype=np.float32)
+    for start, chunk_logits in zip(starts, chunk_logits_list, strict=True):
+        all_logits[start : start + len(chunk_logits)] = chunk_logits
 
     shifted = all_logits - all_logits.max()
     exp = np.exp(shifted)
