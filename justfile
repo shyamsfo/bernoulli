@@ -66,6 +66,20 @@ fmt:
 serve host="127.0.0.1" port="8000":
     uv run uvicorn bernoulli.server:app --host {{host}} --port {{port}}
 
+# build the serving docker image
+docker-build tag="bernoulli:latest":
+    docker build -t {{tag}} .
+
+# run the serving image; mounts the host's HF cache so the container doesn't re-pull the model
+docker-run tag="bernoulli:latest" port="8000":
+    docker run --rm --gpus all -p {{port}}:8000 \
+        -v $HOME/.cache/huggingface:/data/hf-cache \
+        -e BERNOULLI_SCORER \
+        -e BERNOULLI_MODEL_ID \
+        -e BERNOULLI_MODEL_REVISION \
+        -e BERNOULLI_MAX_MODEL_LEN \
+        {{tag}}
+
 # clear caches + build artifacts
 clean:
     rm -rf .pytest_cache .ruff_cache .mypy_cache dist build *.egg-info

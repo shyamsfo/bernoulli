@@ -1,0 +1,27 @@
+# Trim the build context to what the image actually needs.
+# (The Dockerfile only COPYs pyproject.toml, uv.lock, README.md,
+# bernoulli/, evals/ — but a small context is also faster to upload.)
+
+.git
+.github
+.venv
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.claude
+.idea
+.vscode
+
+**/__pycache__
+**/*.pyc
+
+# Terraform state + plans
+deploy/.terraform
+deploy/*.tfstate*
+deploy/*.tfplan
+.terraform.lock.hcl
+
+# Session-generated artifacts (committed but not needed in the serving image)
+evals/reports
+calibration
+product
