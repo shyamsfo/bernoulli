@@ -20,6 +20,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 
+from bernoulli.calibrate import Calibration, load_calibration
 from bernoulli.config import load_settings
 from bernoulli.decide import decide
 from bernoulli.scorer import HFScorer, Scorer
@@ -78,6 +79,7 @@ def run(
     *,
     method: Method = "bernoulli",
     debias: str = "reverse",
+    calibration: Calibration | None = None,
     dataset_name: str = "",
 ) -> EvalResult:
     """Score every example and return an EvalResult with metrics + latency.
@@ -90,21 +92,31 @@ def run(
     question_types: list[str] = []
     latencies: list[int] = []
 
+    use_calibration = calibration is not None and method != "generative"
     for ex in examples:
         req = DecideRequest(
             state=State(text=ex.state_text),
             questions=[ex.question],
-            options=DecideOptions(debias=debias, calibrated=False),  # type: ignore[arg-type]
+            options=DecideOptions(debias=debias, calibrated=use_calibration),  # type: ignore[arg-type]
         )
         t0 = time.perf_counter()
-        resp = generative_decide(req, scorer) if method == "generative" else decide(req, scorer)  # type: ignore[arg-type]
+        if method == "generative":
+            resp = generative_decide(req, scorer)  # type: ignore[arg-type]
+        else:
+            resp = decide(req, scorer, calibration=calibration)
         latencies.append(int((time.perf_counter() - t0) * 1000))
         decision = resp.decisions[ex.question.id]
         gold.append(ex.gold)
         preds.append(_to_distribution(decision))
         question_types.append(decision.type)
 
-    config = f"method={method}" if method == "generative" else f"method={method}; debias={debias}"
+    if method == "generative":
+        config = f"method={method}"
+    else:
+        parts = [f"method={method}", f"debias={debias}"]
+        if calibration is not None:
+            parts.append(f"calibrated={calibration.version}")
+        config = "; ".join(parts)
     predictions: list[dict[str, object]] = [
         {"gold": g, "dist": d, "question_type": qt}
         for g, d, qt in zip(gold, preds, question_types, strict=True)
@@ -171,6 +183,12 @@ def main(argv: list[str] | None = None) -> int:
         help="scoring method: 'bernoulli' (logit path, default) or 'generative' (baseline)",
     )
     parser.add_argument("--debias", default="reverse", choices=["none", "reverse", "cyclic"])
+    parser.add_argument(
+        "--calibrate",
+        type=Path,
+        default=None,
+        help="path to a Calibration JSON (fit via `python -m evals.fit_calibration`)",
+    )
     parser.add_argument("--limit", type=int, default=None, help="cap number of examples")
     parser.add_argument("--out", type=Path, default=None, help="output markdown path")
     args = parser.parse_args(argv)
@@ -183,6 +201,13 @@ def main(argv: list[str] | None = None) -> int:
         device=settings.device,
     )
 
+    calibration = load_calibration(args.calibrate) if args.calibrate else None
+    if calibration is not None and args.method == "generative":
+        print(
+            "warning: --calibrate is ignored for method=generative (baseline has no probabilities to scale)",
+            file=sys.stderr,
+        )
+
     loader = _get_loader(args.dataset)
     examples = loader.load(limit=args.limit)  # type: ignore[attr-defined]
     result = run(
@@ -190,6 +215,7 @@ def main(argv: list[str] | None = None) -> int:
         examples,
         method=args.method,
         debias=args.debias,
+        calibration=calibration,
         dataset_name=args.dataset,
     )
 

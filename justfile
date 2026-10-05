@@ -77,6 +77,14 @@ model-pull:
 eval dataset debias="reverse":
     uv run python -m evals.run_eval --dataset {{dataset}} --debias {{debias}} --out evals/reports/{{dataset}}.md
 
+# fit calibration from one or more eval sidecars; usage: just fit-cal evals/reports/sst2.json
+fit-cal +sidecars:
+    uv run python -m evals.fit_calibration --from {{sidecars}} --out calibration/qwen2.5-vl-7b.json
+
+# run one dataset with calibration applied; usage: just eval-calibrated sst2
+eval-calibrated dataset debias="reverse" cal="calibration/qwen2.5-vl-7b.json":
+    uv run python -m evals.run_eval --dataset {{dataset}} --debias {{debias}} --calibrate {{cal}} --out evals/reports/{{dataset}}.calibrated.md
+
 # pull eval reports from the dev box back into the repo
 reports-pull:
     scp '{{host}}:~/bernoulli/evals/reports/*.md' '{{host}}:~/bernoulli/evals/reports/*.json' evals/reports/
