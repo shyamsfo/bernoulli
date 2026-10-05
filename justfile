@@ -110,3 +110,7 @@ eval-calibrated dataset debias="reverse" cal="calibration/qwen2.5-vl-7b.json":
 # pull eval reports from the dev box back into the repo
 reports-pull:
     scp '{{host}}:~/bernoulli/evals/reports/*.md' '{{host}}:~/bernoulli/evals/reports/*.json' evals/reports/
+
+# load test the serving HTTP API; usage: just loadtest  (needs the server up)
+loadtest url="http://127.0.0.1:8000":
+    uv run python -m evals.loadtest --url {{url}} --out evals/reports/loadtest.md
