@@ -1,8 +1,8 @@
 # Eval report — sst2
 
-- **Timestamp**: 2026-10-05T12:47:54.675728+00:00
+- **Timestamp**: 2026-10-05T12:55:20.265740+00:00
 - **Model**: `Qwen/Qwen2.5-VL-7B-Instruct` @ `cc594898137f460bfe9f0759e9844b3ce807cfb5`
-- **Config**: method=bernoulli; debias=reverse
+- **Config**: method=generative
 - **Examples**: 872
 
 ## Metrics
@@ -10,15 +10,15 @@
 | metric | value |
 |---|---|
 | accuracy  | 0.9174 |
-| macro_f1  | 0.9174 |
-| ece (15)  | 0.0280 |
-| brier     | 0.1332 |
-| nll       | 0.2458 |
+| macro_f1  | 0.9173 |
+| ece (15)  | 0.0826 |
+| brier     | 0.1651 |
+| nll       | 2.2815 |
 
 ## Latency
 
 | percentile | ms |
 |---|---|
-| p50  | 144.0 |
-| p95  | 148.0 |
-| mean | 144.6 |
+| p50  | 136.0 |
+| p95  | 138.0 |
+| mean | 136.2 |
