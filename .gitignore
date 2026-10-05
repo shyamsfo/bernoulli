@@ -1,0 +1,37 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# terraform (deploy/.gitignore handles the deploy subdir in detail)
+*.tfstate
+*.tfstate.*
+*.tfplan
+.terraform/
+.terraform.lock.hcl
+
+# eval reports / artifacts (keep source scripts, not outputs)
+evals/reports/*.html
+evals/reports/*.png
+
+# local overrides
+.env
+.env.local
+*.local
+
+# OS
+.DS_Store
+
+# IDE + harness state (user-local)
+.idea/
+.claude/
+.vscode/
