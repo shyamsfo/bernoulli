@@ -12,6 +12,7 @@ import time
 
 import numpy as np
 
+from bernoulli.chunked import CHUNK_SIZE, chunked_choice
 from bernoulli.debias import debias
 from bernoulli.prompt import option_strings_for
 from bernoulli.scorer import Scorer
@@ -30,7 +31,11 @@ from bernoulli.types import (
 
 
 def _decide_one(scorer: Scorer, state_text: str, question: Question, debias_mode: str) -> Decision:
-    probs = debias(scorer, state_text=state_text, question=question, mode=debias_mode)  # type: ignore[arg-type]
+    if isinstance(question, ChoiceQuestion) and len(question.options) > CHUNK_SIZE:
+        # Many-option choice: debias is deferred (see chunked.py). Mode is ignored.
+        probs = chunked_choice(scorer, state_text=state_text, question=question)
+    else:
+        probs = debias(scorer, state_text=state_text, question=question, mode=debias_mode)  # type: ignore[arg-type]
 
     options = option_strings_for(question)
 

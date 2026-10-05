@@ -44,7 +44,10 @@ class _QuestionBase(BaseModel):
 
 class ChoiceQuestion(_QuestionBase):
     type: Literal["choice"] = "choice"
-    options: list[str] = Field(min_length=2, max_length=26)
+    # Options above 26 (letter alphabet) are handled by chunked scoring in
+    # bernoulli.chunked. Hard cap at 128 to keep context + compute bounded;
+    # raise if a real need appears.
+    options: list[str] = Field(min_length=2, max_length=128)
 
 
 class BinaryQuestion(_QuestionBase):

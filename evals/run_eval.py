@@ -35,6 +35,7 @@ LOADERS = {
     "sst2": "evals.datasets.sst2",
     "ag_news": "evals.datasets.ag_news",
     "boolq": "evals.datasets.boolq",
+    "banking77": "evals.datasets.banking77",
 }
 
 
