@@ -50,6 +50,7 @@ class EvalResult:
     debias: str
     metrics: dict[str, float] = field(default_factory=dict)
     latency: dict[str, float] = field(default_factory=dict)
+    predictions: list[dict[str, object]] = field(default_factory=list)
     timestamp: str = ""
 
 
@@ -86,6 +87,7 @@ def run(
     """
     gold: list[str] = []
     preds: list[dict[str, float]] = []
+    question_types: list[str] = []
     latencies: list[int] = []
 
     for ex in examples:
@@ -100,8 +102,13 @@ def run(
         decision = resp.decisions[ex.question.id]
         gold.append(ex.gold)
         preds.append(_to_distribution(decision))
+        question_types.append(decision.type)
 
     config = f"method={method}" if method == "generative" else f"method={method}; debias={debias}"
+    predictions: list[dict[str, object]] = [
+        {"gold": g, "dist": d, "question_type": qt}
+        for g, d, qt in zip(gold, preds, question_types, strict=True)
+    ]
     return EvalResult(
         dataset=dataset_name,
         config=config,
@@ -118,6 +125,7 @@ def run(
             "nll": metrics_mod.nll(gold, preds),
         },
         latency=metrics_mod.latency_summary(latencies),
+        predictions=predictions,
         timestamp=datetime.now(UTC).isoformat(),
     )
 
