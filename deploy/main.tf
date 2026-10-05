@@ -57,6 +57,24 @@ data "aws_subnets" "default" {
   }
 }
 
+# Pin a specific AZ to avoid retrying forever on InsufficientInstanceCapacity.
+# g6e.xlarge capacity moves around; us-east-1a is the current default. If AWS
+# throws capacity for 1a, override with `terraform apply -var 'availability_zone=us-east-1b'`.
+data "aws_subnet" "primary" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+  filter {
+    name   = "default-for-az"
+    values = ["true"]
+  }
+  filter {
+    name   = "availability-zone"
+    values = [var.availability_zone]
+  }
+}
+
 # id_nuwire keypair — imported once by the nuw team, exists in us-east-1.
 data "aws_key_pair" "ssh" {
   key_name = var.key_pair_name
@@ -115,9 +133,14 @@ resource "aws_security_group" "dev" {
 resource "aws_instance" "dev" {
   ami                    = data.aws_ami.nvidia_gpu_base.id
   instance_type          = var.instance_type
-  subnet_id              = data.aws_subnets.default.ids[0]
+  subnet_id              = data.aws_subnet.primary.id
   key_name               = data.aws_key_pair.ssh.key_name
   vpc_security_group_ids = [aws_security_group.dev.id]
+
+  # Fail fast on capacity errors instead of terraform's default retry-forever.
+  timeouts {
+    create = "4m"
+  }
 
   # Instance-store NVMe is ephemeral (232GB on g6.xlarge) — mounted in cloud-init
   # for the HF cache. Root EBS is for OS + code.

@@ -11,9 +11,9 @@ variable "aws_profile" {
 }
 
 variable "instance_type" {
-  description = "EC2 instance type. g6e.xlarge = L40S 48GB, ~$1.86/hr on-demand. Was g6.xlarge (L4 24GB) through M3; stepped up for M4 production backbone."
+  description = "EC2 instance type. g5.xlarge = A10G 24GB, ~$1.01/hr. Equivalent memory to g6.xlarge's L4; chosen because g6 capacity in us-east-1 is exhausted today. Step up when g6e capacity frees up for the production backbone work in M4e."
   type        = string
-  default     = "g6e.xlarge"
+  default     = "g5.xlarge"
 }
 
 variable "instance_name" {
@@ -38,4 +38,10 @@ variable "ssh_cidr" {
   description = "CIDR allowed to SSH to the box. Empty = auto-detect caller's /32."
   type        = string
   default     = ""
+}
+
+variable "availability_zone" {
+  description = "AZ to launch in. Override if the default hits InsufficientInstanceCapacity. g6e.xlarge is offered in us-east-1{a,b,c,d}; not in 1e/1f."
+  type        = string
+  default     = "us-east-1a"
 }

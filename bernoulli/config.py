@@ -27,15 +27,17 @@ class Settings(BaseSettings):
     )
 
     # ---- backbone ---------------------------------------------------------
-    # Production default (M4+): Qwen2.5-VL-32B-Instruct AWQ int4 (~20 GB, fits
-    # L40S 48GB). Set BERNOULLI_MODEL_ID=Qwen/Qwen2.5-VL-7B-Instruct to drop
-    # back to the dev-tier backbone for fast iteration.
+    # Dev-tier default: Qwen2.5-VL-7B-Instruct (~15 GB, fits L4 24GB on g6.xlarge).
+    # The production step-up (32B AWQ on g6e.xlarge L40S 48GB) is parked until
+    # the M4e work actually benefits from it — g6e capacity in us-east-1 is
+    # tight and the earlier M4 chunks (vLLM path, FastAPI, batching, Dockerfile,
+    # load test, HTTP eval) are agnostic to backbone size.
     model_id: str = Field(
-        default="Qwen/Qwen2.5-VL-32B-Instruct-AWQ",
+        default="Qwen/Qwen2.5-VL-7B-Instruct",
         description="HF hub id of the backbone VLM. See milestones.md for the dev vs production pick.",
     )
     model_revision: str | None = Field(
-        default="66c370b74a18e7b1e871c97918f032ed3578dfef",
+        default="cc594898137f460bfe9f0759e9844b3ce807cfb5",
         description="Pinned HF revision SHA. None = latest at load time (not recommended).",
     )
     dtype: Dtype = "bfloat16"

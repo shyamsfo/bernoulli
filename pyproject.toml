@@ -20,7 +20,6 @@ scorer-hf = [
     "transformers>=4.46",
     "accelerate>=1.0",
     "pillow>=10.4",
-    "autoawq>=0.2",  # AWQ weights (M4 production backbone)
 ]
 # M3+: eval + calibration
 eval = [
@@ -56,7 +55,6 @@ dev = [
     "transformers>=4.46",
     "accelerate>=1.0",
     "pillow>=10.4",
-    "autoawq>=0.2",
     # eval deps (M3+)
     "datasets>=3.0",
     "scipy>=1.13",

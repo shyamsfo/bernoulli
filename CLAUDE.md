@@ -24,7 +24,7 @@ just shell
 
 ## Dev box
 
-- `bernoulli` → **g6e.xlarge** in us-east-1, **L40S 48GB**, NVIDIA GPU Base CUDA on Ubuntu 24.04 (stepped up from g6.xlarge/L4 24GB in M4 for the production backbone)
+- `bernoulli` → **g6.xlarge** in us-east-1, **L4 24GB**, NVIDIA GPU Base CUDA on Ubuntu 24.04. Pinned to **us-east-1a** (set in `deploy/variables.tf`); override with `-var 'availability_zone=us-east-1b'` if that AZ hits InsufficientInstanceCapacity. Instance has a 4-min create timeout so capacity failures surface fast instead of terraform retrying forever.
 - SSH key: `~/.ssh/id_nuwire` (via the `Host bernoulli` stanza in `~/.ssh/config`)
 - Instance-store NVMe (232GB, ephemeral): `/opt/dlami/nvme`, pre-mounted by the AMI via LVM
 - HF cache: `/opt/dlami/nvme/hf-cache` (`HF_HOME` set in `~/.bashrc`)
@@ -39,8 +39,8 @@ Env-driven via pydantic-settings, prefix `BERNOULLI_`. Defaults in `bernoulli/co
 
 | var | default |
 |---|---|
-| `BERNOULLI_MODEL_ID` | `Qwen/Qwen2.5-VL-32B-Instruct-AWQ` (M4+ production; dev iteration uses the 7B override) |
-| `BERNOULLI_MODEL_REVISION` | `66c370b74a18e7b1e871c97918f032ed3578dfef` |
+| `BERNOULLI_MODEL_ID` | `Qwen/Qwen2.5-VL-7B-Instruct` (dev + early M4; step up to 32B AWQ later when capacity frees up) |
+| `BERNOULLI_MODEL_REVISION` | `cc594898137f460bfe9f0759e9844b3ce807cfb5` |
 | `BERNOULLI_DTYPE` | `bfloat16` |
 | `BERNOULLI_DEVICE` | `cuda` |
 | `BERNOULLI_MAX_MODEL_LEN` | `32768` |
@@ -60,6 +60,7 @@ Env-driven via pydantic-settings, prefix `BERNOULLI_`. Defaults in `bernoulli/co
 | 2026-10-05 | `AutoProcessor` deferred to M4 | For Qwen2.5-VL the processor pulls `Qwen2VLVideoProcessor`, which hard-requires `torchvision`. M2 is text-only so we use `AutoTokenizer` directly. Images (and the processor + torchvision dep) land in M4. |
 | 2026-10-05 | Milestones re-ordered: text-only shippable product before multimodal | User direction. New order: M4 production serving (text-only) → M5 hardening (v1.0) → M6 multimodal → M7 LoRA (optional). Audio parked. |
 | 2026-10-05 | Production backbone: `Qwen/Qwen2.5-VL-32B-Instruct-AWQ` @ `66c370b7`, instance `g6e.xlarge` (L40S 48GB) | AWQ int4 is ~20 GB — fits L40S 48GB with ~25 GB headroom for KV cache + batching at 32k context. L40S has native int8/int4 math. Single-GPU keeps vLLM config simple. Instance cost ~$1.86/hr on-demand. Dev-tier 7B is still runnable on the same box via `BERNOULLI_MODEL_ID` override. |
+| 2026-10-05 | Deferred the step-up to M4e — stay on g6.xlarge + 7B through M4a-d | g6e.xlarge capacity in us-east-1 is tight today (us-east-1c and 1a both reported InsufficientInstanceCapacity when the plan was fresh). The vLLM scorer, FastAPI server, request batching, Dockerfile, load test, and HTTP eval harness are all backbone-agnostic and run fine on 7B / L4 24GB. Revisit the g6e capacity + 32B pull when the production step-up actually matters. Added `availability_zone` variable (default us-east-1a) + 4-min create timeout so capacity issues surface fast. |
 
 ## Gotchas
 
