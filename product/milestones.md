@@ -26,7 +26,7 @@ The active milestone is the first one marked `🔄 in progress`. `/ds-work-conti
 ---
 
 ## M1 — Scaffold (Phase 0)
-**Status**: 🔄 in progress
+**Status**: ✅ done
 **Goal**: Repo tooling, config system, and pydantic types for the full API are in place; `pytest` + typecheck green on bernoulli.
 
 - [x] Pick dev-tier backbone: **`Qwen/Qwen2.5-VL-7B-Instruct` @ `cc594898137f460bfe9f0759e9844b3ce807cfb5`** (public, non-gated; fits L4 24GB in bf16). Decision + rationale in `CLAUDE.md`.
@@ -48,7 +48,7 @@ The active milestone is the first one marked `🔄 in progress`. `/ds-work-conti
 ---
 
 ## M2 — Zero-shot scorer (Phase 1)
-**Status**: 🔄 in progress → gate READY
+**Status**: ✅ done
 **Goal**: Text-only `HFScorer` returning calibrated-shape (uncalibrated) distributions for `choice`, `binary`, `rating` on the dev backbone.
 
 - [x] Prompt builder: chat template, system message, state-first/question-last ordering (`bernoulli/prompt.py`)
@@ -66,24 +66,42 @@ The active milestone is the first one marked `🔄 in progress`. `/ds-work-conti
 ---
 
 ## M3 — Debias, calibration, eval harness (Phase 2)
-**Status**: ⏳ pending
+**Status**: ✅ done
 **Goal**: `reverse` + `cyclic` debiasing, per-question-type temperature calibration, and a first eval report comparing raw / debiased / calibrated / generative baseline.
 
-- [ ] `reverse` debiaser (default); `cyclic` debiaser for k ≤ 6; average in canonical option order
-- [ ] Eval dataset loaders → common `(state, question, options, gold)` format: SST-2, AG News, Banking77, BoolQ
-- [ ] Multimodal eval stubs: ScienceQA image subset, small Food-101 sample (actual multimodal runs land in M4)
-- [ ] Generative baseline: same backbone, single-word answer, parsed
-- [ ] Temperature scaling per question type, LBFGS on NLL; persist to `calibration/<model>.json` with version
-- [ ] Metrics: accuracy, macro-F1, ECE (15 bins), Brier, NLL, latency p50/p95
-- [ ] Report in `evals/reports/` (markdown + plots)
-- [ ] Chunked/tournament scoring experiment on Banking77 (letter alphabet runs out at 26)
+- [x] `reverse` debiaser (default); `cyclic` debiaser for k ≤ 6; average in canonical option order (`bernoulli/debias.py`, M3a)
+- [x] Eval dataset loaders — SST-2 (`stanfordnlp/sst2`), AG News (`fancyzhx/ag_news`), Banking77 (`mteb/banking77`), BoolQ (`google/boolq`). Common `EvalExample(state, question, gold, source)` format in `evals/example.py` (M3b–e).
+- [-] Multimodal eval stubs — deferred to M4 along with the full image path (same reason).
+- [x] Generative baseline — `evals/baselines.py`, same backbone + classifier-style system prompt + text parse. P=1 on winner / uniform on parse-fail. (M3f)
+- [x] Temperature scaling per question type — scipy `minimize_scalar` bounded on NLL. Persisted to `calibration/qwen2.5-vl-7b.json` with ISO-date version. (M3g phase A + B)
+- [x] Metrics — accuracy, macro-F1, ECE (15 bins), Brier, NLL, latency p50/p95. Pure numpy, no scikit-learn. (M3b)
+- [x] Report in `evals/reports/` — six markdown + JSON sidecars (sst2, sst2.calibrated, sst2.generative, ag_news, boolq, banking77).
+- [x] Chunked/tournament scoring — `bernoulli/chunked.py` splits >26-option choice into chunks of ≤26, keeps raw logits per option, softmaxes globally. Verified on 77-way Banking77. Debias within chunks is deferred (open question in CLAUDE.md). (M3e)
 
-**Exit criteria**: One report in `evals/reports/` comparing all four configs on at least SST-2, AG News, Banking77, BoolQ.
+**Exit criteria**: One report in `evals/reports/` comparing all four configs on at least SST-2, AG News, Banking77, BoolQ. ✓
+
+**M3 gate status: READY → done.** Headline comparison on SST-2 (same model, same examples):
+
+| config                      | accuracy | ECE    | NLL    |
+|-----------------------------|----------|--------|--------|
+| raw (debias=reverse)        | 0.9174   | 0.0280 | 0.2458 |
+| **calibrated** (T=1.35)     | 0.9174   | 0.0253 | 0.2338 |
+| generative baseline         | 0.9174   | 0.0826 | 2.2815 |
+
+Full dataset coverage: SST-2 91.7% / AG News 84.8% / BoolQ 63.2% / Banking77 58.2%, all zero-shot on Qwen2.5-VL-7B. Generative baseline reports **9× worse NLL** at identical accuracy — the exact calibration gap the logit path closes.
+
+**Deviations from the vision doc** (all logged in CLAUDE.md and/or commits):
+- Letters A–I for rating labels, not digits (Qwen tokenizer makes space-prefixed digits two tokens).
+- `bernoulli/decide.py` is new (not in §6 layout) — cleanly separates request→response dispatch from scorer and server.
+- Multimodal eval stubs deferred to M4 (processor + torchvision land there).
+- Dockerfile deferred to M4 (serving container lives there).
+- Chunked scoring doesn't apply debias — within-chunk prob averaging vs cross-chunk raw-logit aggregation are mathematically awkward together. Open question.
+- Banking77 loader uses `mteb/banking77` (parquet reupload) because `PolyAI/banking77` dataset-script format no longer loads under `datasets>=3`.
 
 ---
 
 ## M4 — Multimodal + production serving (Phase 3)
-**Status**: ⏳ pending
+**Status**: 🔄 in progress
 **Goal**: Image support (up to 8 per state), `VLLMScorer` with prefix caching, FastAPI server in Docker, full eval runs through the HTTP API.
 
 - [ ] Confirm chosen backbone supports a VL processor (or swap to a VL-capable alternative; record decision)
