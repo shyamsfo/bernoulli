@@ -1,0 +1,21 @@
+{
+  "dataset": "ag_news",
+  "config": "debias=reverse",
+  "model": "Qwen/Qwen2.5-VL-7B-Instruct",
+  "revision": "cc594898137f460bfe9f0759e9844b3ce807cfb5",
+  "n_examples": 7600,
+  "debias": "reverse",
+  "metrics": {
+    "accuracy": 0.8478947368421053,
+    "macro_f1": 0.8453789265183062,
+    "ece": 0.09945752659126329,
+    "brier": 0.2520570197134243,
+    "nll": 0.6065406455149023
+  },
+  "latency": {
+    "p50_ms": 155.0,
+    "p95_ms": 174.0,
+    "mean_ms": 156.4482894736842
+  },
+  "timestamp": "2026-10-05T12:25:04.407524+00:00"
+}
