@@ -48,16 +48,15 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.cmd == "decide":
-        from bernoulli.scorer import HFScorer
+        from bernoulli.scorer import load_scorer
 
         settings = load_settings()
-        model_id = args.model or settings.model_id
-        scorer = HFScorer(
-            model_id,
-            revision=settings.model_revision,
-            dtype=settings.dtype,
-            device=settings.device,
-        )
+        if args.model:
+            # Simple override: swap just the model_id. Revision stays pinned so
+            # someone passing a different checkpoint has to also set
+            # BERNOULLI_MODEL_REVISION explicitly.
+            settings = settings.model_copy(update={"model_id": args.model})
+        scorer = load_scorer(settings)
         request = _build_request(args)
         response = decide(request, scorer)
         print(response.model_dump_json(indent=2))

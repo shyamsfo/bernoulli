@@ -17,6 +17,7 @@ dependencies = [
 # M2+: HF scorer path
 scorer-hf = [
     "torch>=2.4",
+    "torchvision",
     "transformers>=4.46",
     "accelerate>=1.0",
     "pillow>=10.4",
@@ -30,7 +31,7 @@ eval = [
 ]
 # M4+: vLLM serving
 serve = [
-    "vllm>=0.6.3",
+    "vllm>=0.9",
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
 ]
@@ -52,23 +53,33 @@ dev = [
     # scorer-hf deps: duplicated here so `uv sync` on the dev box gets a
     # ready-to-run environment. Library consumers install via `bernoulli[scorer-hf]`.
     "torch>=2.4",
+    "torchvision",
     "transformers>=4.46",
     "accelerate>=1.0",
     "pillow>=10.4",
     # eval deps (M3+)
     "datasets>=3.0",
     "scipy>=1.13",
+    # serve deps (M4+)
+    "vllm>=0.9",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
 ]
 
 # Pull CUDA-enabled torch wheels on linux. CPU torch everywhere else.
+# torchvision is pinned too because transformers imports it at import time, and
+# a mismatched CUDA version between torch and torchvision bombs the whole stack.
 [tool.uv.sources]
 torch = [
-    { index = "pytorch-cu124", marker = "sys_platform == 'linux' and platform_machine == 'x86_64'" },
+    { index = "pytorch-cu130", marker = "sys_platform == 'linux' and platform_machine == 'x86_64'" },
+]
+torchvision = [
+    { index = "pytorch-cu130", marker = "sys_platform == 'linux' and platform_machine == 'x86_64'" },
 ]
 
 [[tool.uv.index]]
-name = "pytorch-cu124"
-url = "https://download.pytorch.org/whl/cu124"
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
 explicit = true
 
 [build-system]

@@ -117,3 +117,30 @@ class HFScorer:
             )
         new_tokens = output_ids[0][inputs.input_ids.shape[1] :]
         return cast(str, self.tokenizer.decode(new_tokens, skip_special_tokens=True))
+
+
+def load_scorer(settings: object | None = None) -> Scorer:
+    """Factory: return an HFScorer or VLLMScorer based on config.scorer.
+
+    `settings` defaults to `bernoulli.config.load_settings()`; pass an
+    override for tests. Imports the vLLM backend lazily so the hf-only path
+    doesn't pay for the vllm module (and its CUDA assertions) at import time.
+    """
+    from bernoulli.config import load_settings
+
+    s = settings if settings is not None else load_settings()
+    if getattr(s, "scorer", "hf") == "vllm":
+        from bernoulli.vllm_scorer import VLLMScorer
+
+        return VLLMScorer(
+            s.model_id,  # type: ignore[attr-defined]
+            revision=s.model_revision,  # type: ignore[attr-defined]
+            dtype=s.dtype,  # type: ignore[attr-defined]
+            max_model_len=s.max_model_len,  # type: ignore[attr-defined]
+        )
+    return HFScorer(
+        s.model_id,  # type: ignore[attr-defined]
+        revision=s.model_revision,  # type: ignore[attr-defined]
+        dtype=s.dtype,  # type: ignore[attr-defined]
+        device=s.device,  # type: ignore[attr-defined]
+    )

@@ -23,7 +23,7 @@ from pathlib import Path
 from bernoulli.calibrate import Calibration, load_calibration
 from bernoulli.config import load_settings
 from bernoulli.decide import decide
-from bernoulli.scorer import HFScorer, Scorer
+from bernoulli.scorer import Scorer, load_scorer
 from bernoulli.types import DecideOptions, DecideRequest, Decision, State
 from evals import metrics as metrics_mod
 from evals.baselines import generative_decide
@@ -194,12 +194,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     settings = load_settings()
-    scorer = HFScorer(
-        settings.model_id,
-        revision=settings.model_revision,
-        dtype=settings.dtype,
-        device=settings.device,
-    )
+    scorer = load_scorer(settings)
 
     calibration = load_calibration(args.calibrate) if args.calibrate else None
     if calibration is not None and args.method == "generative":
