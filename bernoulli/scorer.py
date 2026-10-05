@@ -12,7 +12,7 @@ model today.
 
 from __future__ import annotations
 
-from typing import Protocol, runtime_checkable
+from typing import Protocol, cast, runtime_checkable
 
 import numpy as np
 from numpy.typing import NDArray
@@ -98,3 +98,22 @@ class HFScorer:
         last_logits = outputs.logits[0, -1, :]
         selected = last_logits[allowed_token_ids].float().cpu().numpy()
         return np.asarray(selected, dtype=np.float32)
+
+    def generate(self, prompt: str, *, max_new_tokens: int = 10) -> str:
+        """Greedy text generation. Baseline-only path — not part of the Scorer protocol.
+
+        Lives on HFScorer so the generative-baseline comparison in evals/baselines.py
+        can share the model + tokenizer that were loaded at construction. vLLM has
+        its own generate path (lands in M4).
+        """
+        torch = self._torch
+        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+        with torch.no_grad():
+            output_ids = self._model.generate(  # type: ignore[misc]
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                do_sample=False,
+                pad_token_id=self.tokenizer.eos_token_id,
+            )
+        new_tokens = output_ids[0][inputs.input_ids.shape[1] :]
+        return cast(str, self.tokenizer.decode(new_tokens, skip_special_tokens=True))
