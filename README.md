@@ -53,6 +53,12 @@ CI (lint + typecheck + pytest) runs on the dev box, not GHA — the interesting 
 
 ## Developer notes
 
-Python 3.11+ managed with [uv](https://docs.astral.sh/uv/); pydantic v2 for the request/response surface; [transformers](https://huggingface.co/docs/transformers/) with the Qwen2.5-VL family for the dev backbone (vLLM for production, lands in M4). Infrastructure is a single AWS g6.xlarge (NVIDIA L4 24GB) provisioned via Terraform in [`deploy/`](deploy/). Tests use pytest with GPU-marked suites that auto-skip when CUDA isn't visible; linting via ruff; typechecking via mypy strict. Datasets flow through [`datasets`](https://huggingface.co/docs/datasets/) in the eval harness. Task runner is [`just`](https://just.systems/).
-
-Project management (milestones, backlog, parking-lot, session reports under [`product/`](product/)) is driven by the [ds-work plugin](https://github.com/shyamsfo/ds-work-plugin).
+- **Language + env**: Python 3.11+ managed with [uv](https://docs.astral.sh/uv/).
+- **API surface**: pydantic v2 (discriminated-union Question + Decision, strict `extra='forbid'`).
+- **Model stack**: [transformers](https://huggingface.co/docs/transformers/) with the Qwen2.5-VL family for the dev backbone; vLLM for production (lands in M4).
+- **Infra**: single AWS g6.xlarge (NVIDIA L4 24GB) provisioned via Terraform in [`deploy/`](deploy/).
+- **Tests**: pytest with GPU-marked suites that auto-skip when CUDA isn't visible.
+- **Lint + types**: ruff + mypy strict.
+- **Eval datasets**: HF [`datasets`](https://huggingface.co/docs/datasets/) in the eval harness.
+- **Task runner**: [`just`](https://just.systems/).
+- **Project management**: the [ds-work plugin](https://github.com/shyamsfo/ds-work-plugin) — milestones, backlog, parking-lot, and session reports all live under [`product/`](product/).
