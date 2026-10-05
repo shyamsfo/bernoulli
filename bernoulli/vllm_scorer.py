@@ -69,7 +69,7 @@ class VLLMScorer:
         self._llm = LLM(
             model=model_id,
             revision=revision,
-            dtype=dtype,
+            dtype=dtype,  # type: ignore[arg-type]
             max_model_len=max_model_len,
             gpu_memory_utilization=gpu_memory_utilization,
             enable_prefix_caching=True,

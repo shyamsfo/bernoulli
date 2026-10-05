@@ -4,7 +4,31 @@ How to actually run decisions once the dev box is up and the model is cached. Fo
 
 ## Interfaces
 
-Today Bernoulli ships a single interface — the **`bernoulli` CLI** (entry point `bernoulli.cli:main`, invoked via `uv run bernoulli …`). An **HTTP API** (`POST /v1/decide` plus `/healthz` and `/v1/models`, matching the shape in [`vision_and_roadmap.md`](vision_and_roadmap.md) §3) is coming in M4, served by FastAPI over the vLLM production backend. The engine is the same either way — the HTTP surface is a thin wrapper around the same `decide()` the CLI uses today.
+Two interfaces, same engine (`bernoulli.decide.decide`):
+
+- **`bernoulli` CLI** — `uv run bernoulli decide --state X --question Y` (entry point `bernoulli.cli:main`). Good for scripts and ad-hoc runs.
+- **HTTP API** — FastAPI server exposing `POST /v1/decide`, `GET /healthz`, `GET /v1/models`. Start with `just serve` (or `uv run uvicorn bernoulli.server:app`). Request/response shape matches [`vision_and_roadmap.md`](vision_and_roadmap.md) §3 exactly.
+
+Switch the backend via `BERNOULLI_SCORER=hf` (default) or `BERNOULLI_SCORER=vllm` (production). Image state currently returns HTTP 501 — image path lands in M6.
+
+### HTTP example
+
+```bash
+# start the server (loads the model at startup; takes ~2 min on cold boot)
+just serve
+
+# in another shell
+curl -sS -X POST http://127.0.0.1:8000/v1/decide \
+  -H "Content-Type: application/json" \
+  -d '{
+    "state": {"text": "I want my money back now."},
+    "questions": [
+      {"id": "intent", "type": "choice",
+       "prompt": "What does the customer want?",
+       "options": ["refund", "exchange", "tracking", "other"]}
+    ]
+  }'
+```
 
 ## The decision model
 

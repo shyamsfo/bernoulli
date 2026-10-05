@@ -64,6 +64,9 @@ Env-driven via pydantic-settings, prefix `BERNOULLI_`. Defaults in `bernoulli/co
 
 ## Gotchas
 
+- **vLLM max_model_len on 24GB GPUs**: default `BERNOULLI_MAX_MODEL_LEN=32768` won't fit on A10G/L4 24GB after loading 7B weights. Set `BERNOULLI_MAX_MODEL_LEN=8192` for vLLM on these cards; HFScorer doesn't care.
+- **Zombie `VLLM::EngineCore`**: if the vLLM engine init crashes partway (e.g., config error), the engine subprocess can survive the Python exit holding ~18 GB on the GPU. Check `nvidia-smi --query-compute-apps=pid --format=csv,noheader` and `sudo kill -9 <pid>`.
+- **CUDA alignment on torch/vision/audio**: when bumping the pytorch index version (`[tool.uv.sources]` → `pytorch-cu130` etc.), bump all three. `transformers>=5.x` imports torchaudio at import time, so a mismatched CUDA version silently breaks every scorer load with a cryptic error from inside torchaudio.
 - **NVMe mount**: the NVIDIA GPU Base AMI already LVM-mounts the instance-store at `/opt/dlami/nvme` on g6/g6e. Don't try to `mkfs` it — see `deploy/user_data.sh` for the correct detection pattern.
 - **Qwen VL thinking mode**: Qwen hybrid-reasoning models (3+) can emit `<think>` before the answer. The scorer must disable thinking in the chat template and assert next token is a label. Verify at `HFScorer` construction (M2 task).
 - **Label alphabet runs out at 26**: Banking77 (77-way intent) needs chunked / tournament scoring. See parking-lot.

@@ -62,6 +62,10 @@ fmt:
     uv run ruff format .
     uv run ruff check --fix .
 
+# start the FastAPI server (uvicorn); listens on 127.0.0.1:8000 by default
+serve host="127.0.0.1" port="8000":
+    uv run uvicorn bernoulli.server:app --host {{host}} --port {{port}}
+
 # clear caches + build artifacts
 clean:
     rm -rf .pytest_cache .ruff_cache .mypy_cache dist build *.egg-info
