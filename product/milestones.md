@@ -100,25 +100,54 @@ Full dataset coverage: SST-2 91.7% / AG News 84.8% / BoolQ 63.2% / Banking77 58.
 
 ---
 
-## M4 — Multimodal + production serving (Phase 3)
+## M4 — Production serving (text-only)
 **Status**: 🔄 in progress
-**Goal**: Image support (up to 8 per state), `VLLMScorer` with prefix caching, FastAPI server in Docker, full eval runs through the HTTP API.
+**Goal**: A shippable text-only service: `VLLMScorer` with prefix caching + a FastAPI server + the production backbone + Docker + load numbers. Image path explicitly deferred to M6.
 
-- [ ] Confirm chosen backbone supports a VL processor (or swap to a VL-capable alternative; record decision)
-- [ ] Image path in prompt builder; cap at 8 images per state
-- [ ] `VLLMScorer`: `max_tokens=1`, `logprobs=20`, `allowed_token_ids=label_ids`, prefix caching on
-- [ ] Verify `allowed_token_ids` + prefix caching work on the chosen backbone + pinned vLLM version
-- [ ] Promote to production backbone (candidate: Qwen3.6-35B-A3B MoE; alternates: Qwen3.6-27B dense, or another open VLM in the 20–40B range). Decision + rationale recorded in `CLAUDE.md`
-- [ ] FastAPI: `/v1/decide`, `/healthz`, `/v1/models`
-- [ ] Batch all questions × permutations for one request into a single engine call
-- [ ] Dockerfile for serving; full eval harness runs over HTTP
-- [ ] Load test: p50/p95 for 1, 5, 20 questions per state
+- [ ] Pick + load the production backbone (step up from the 7B dev model). Candidates: Qwen3.6-27B dense (~54 GB bf16), Qwen3.6-35B-A3B MoE (~70 GB bf16, ~3B active), or another open ~20–40B model. Instance resize decision alongside — probably `g6e.xlarge` (L40S 48GB) or an 80GB-class box. Decision + rationale in `CLAUDE.md`.
+- [ ] `VLLMScorer` on the chosen backbone: `max_tokens=1`, `logprobs=20`, `allowed_token_ids=label_ids`, prefix caching on. Verify all three features work together on the pinned vLLM version.
+- [ ] FastAPI server exposing `/v1/decide`, `/healthz`, `/v1/models`. Thin wrapper around `decide()` and `generative_decide()`; honors `BERNOULLI_*` env config.
+- [ ] Batch all `questions × permutations` for a request into a single engine call (shared state prefix).
+- [ ] Dockerfile for serving — multi-stage, slim runtime, vLLM + the chosen backbone cached at `/opt/models/`.
+- [ ] Load test: p50 / p95 latency for 1, 5, 20 questions per state at steady state. Report in `evals/reports/`.
+- [ ] Flip the eval harness to score via HTTP against the running server (replaces direct scorer wiring with an HTTP client).
 
-**Exit criteria**: Server runs in Docker, full eval suite passes against HTTP API, latency table reported.
+**Exit criteria**: Server runs in Docker, the full M3 eval suite passes end-to-end against the HTTP API, p50/p95 latency table reported.
 
 ---
 
-## M5 — LoRA fine-tune (Phase 4, optional)
+## M5 — Hardening (v1.0)
+**Status**: ⏳ pending
+**Goal**: v1.0-shippable text-only product. Auth, metrics, offline mode, CI regression gate, release tag.
+
+- [ ] API-key auth
+- [ ] Structured logging; state content never logged by default
+- [ ] Prometheus `/metrics`
+- [ ] Explicit offline mode: `HF_HUB_OFFLINE=1`, models from local path
+- [ ] CI eval regression gate: fail if accuracy drops >1pt or ECE rises >0.01 vs stored baseline
+- [ ] (Optional) React + Vite playground: paste state, add images (M6+), define questions, see bars
+- [ ] v1.0 git tag + release notes
+
+**Exit criteria**: v1.0 tagged with all gates passing (auth works, metrics scrape, offline run succeeds, regression gate green).
+
+---
+
+## M6 — Multimodal (image path)
+**Status**: ⏳ pending
+**Goal**: Add image support (up to 8 per state) to a service that's already in production.
+
+- [ ] Confirm the production backbone supports a VL processor (or swap to a VL-capable sibling)
+- [ ] Add `torchvision` to deps; wire `AutoProcessor` into both `HFScorer` and `VLLMScorer`
+- [ ] Image path in `prompt.py`; cap at 8 images per state (`State.images` already validates this)
+- [ ] Add two multimodal eval datasets: ScienceQA image subset, small Food-101 sample
+- [ ] Multimodal eval reports in `evals/reports/`
+- [ ] Load test the image path: p50 / p95 vs text-only at 1, 5, 20 questions
+
+**Exit criteria**: Image-based decisions work end-to-end over HTTP; at least one multimodal eval report in `evals/reports/`; latency numbers include image-path cost.
+
+---
+
+## M7 — LoRA fine-tune (optional)
 **Status**: ⏳ pending
 **Goal**: LoRA on attention/FFN that beats zero-shot on held-out tasks not in the training mix.
 
@@ -130,22 +159,6 @@ Full dataset coverage: SST-2 91.7% / AG News 84.8% / BoolQ 63.2% / Banking77 58.
 - [ ] Expose `bernoulli calibrate --data my_labeled.jsonl` for domain calibration
 
 **Exit criteria**: LoRA checkpoint beats zero-shot on held-out tasks (OOD). If it only wins in-distribution, do not ship.
-
----
-
-## M6 — Hardening (Phase 5)
-**Status**: ⏳ pending
-**Goal**: v1.0 — auth, metrics, offline mode, CI regression gate, optional playground.
-
-- [ ] API-key auth
-- [ ] Structured logging; state content never logged by default
-- [ ] Prometheus `/metrics`
-- [ ] Explicit offline mode: `HF_HUB_OFFLINE=1`, models from local path
-- [ ] CI eval regression gate: fail if accuracy drops >1pt or ECE rises >0.01 vs stored baseline
-- [ ] (Optional) React + Vite playground: paste state, add images, define questions, see bars
-- [ ] v1.0 git tag + release notes
-
-**Exit criteria**: v1.0 tagged with all gates passing.
 
 ---
 
