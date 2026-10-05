@@ -24,7 +24,7 @@ just shell
 
 ## Dev box
 
-- `bernoulli` → g6.xlarge in us-east-1, L4 24GB, NVIDIA GPU Base CUDA on Ubuntu 24.04
+- `bernoulli` → **g6e.xlarge** in us-east-1, **L40S 48GB**, NVIDIA GPU Base CUDA on Ubuntu 24.04 (stepped up from g6.xlarge/L4 24GB in M4 for the production backbone)
 - SSH key: `~/.ssh/id_nuwire` (via the `Host bernoulli` stanza in `~/.ssh/config`)
 - Instance-store NVMe (232GB, ephemeral): `/opt/dlami/nvme`, pre-mounted by the AMI via LVM
 - HF cache: `/opt/dlami/nvme/hf-cache` (`HF_HOME` set in `~/.bashrc`)
@@ -39,8 +39,8 @@ Env-driven via pydantic-settings, prefix `BERNOULLI_`. Defaults in `bernoulli/co
 
 | var | default |
 |---|---|
-| `BERNOULLI_MODEL_ID` | `Qwen/Qwen2.5-VL-7B-Instruct` |
-| `BERNOULLI_MODEL_REVISION` | `cc594898137f460bfe9f0759e9844b3ce807cfb5` |
+| `BERNOULLI_MODEL_ID` | `Qwen/Qwen2.5-VL-32B-Instruct-AWQ` (M4+ production; dev iteration uses the 7B override) |
+| `BERNOULLI_MODEL_REVISION` | `66c370b74a18e7b1e871c97918f032ed3578dfef` |
 | `BERNOULLI_DTYPE` | `bfloat16` |
 | `BERNOULLI_DEVICE` | `cuda` |
 | `BERNOULLI_MAX_MODEL_LEN` | `32768` |
@@ -58,10 +58,12 @@ Env-driven via pydantic-settings, prefix `BERNOULLI_`. Defaults in `bernoulli/co
 | 2026-10-05 | Letters A–I for rating labels (not digits) | **Deviation from vision doc §4.** Qwen's tokenizer makes `" 1"`…`" 9"` TWO tokens (space + digit), which breaks the single-token-answer invariant. Letters A–I are single-token (one per rating value, up to scale width 9). Ratings map A→low, B→low+1, … and the response distribution keys are integer strings per the API spec. |
 | 2026-10-05 | Model class is hard-coded to `Qwen2_5_VLForConditionalGeneration` | Only one backbone in the picture for M2–M3. When M4 introduces the production backbone, generalize via a small registry (dispatch on `AutoConfig(name_or_path).model_type`). Not worth building the registry for one model. |
 | 2026-10-05 | `AutoProcessor` deferred to M4 | For Qwen2.5-VL the processor pulls `Qwen2VLVideoProcessor`, which hard-requires `torchvision`. M2 is text-only so we use `AutoTokenizer` directly. Images (and the processor + torchvision dep) land in M4. |
+| 2026-10-05 | Milestones re-ordered: text-only shippable product before multimodal | User direction. New order: M4 production serving (text-only) → M5 hardening (v1.0) → M6 multimodal → M7 LoRA (optional). Audio parked. |
+| 2026-10-05 | Production backbone: `Qwen/Qwen2.5-VL-32B-Instruct-AWQ` @ `66c370b7`, instance `g6e.xlarge` (L40S 48GB) | AWQ int4 is ~20 GB — fits L40S 48GB with ~25 GB headroom for KV cache + batching at 32k context. L40S has native int8/int4 math. Single-GPU keeps vLLM config simple. Instance cost ~$1.86/hr on-demand. Dev-tier 7B is still runnable on the same box via `BERNOULLI_MODEL_ID` override. |
 
 ## Gotchas
 
-- **NVMe mount**: the NVIDIA GPU Base AMI already LVM-mounts the g6.xlarge instance-store at `/opt/dlami/nvme`. Don't try to `mkfs` it — see `deploy/user_data.sh` for the correct detection pattern.
+- **NVMe mount**: the NVIDIA GPU Base AMI already LVM-mounts the instance-store at `/opt/dlami/nvme` on g6/g6e. Don't try to `mkfs` it — see `deploy/user_data.sh` for the correct detection pattern.
 - **Qwen VL thinking mode**: Qwen hybrid-reasoning models (3+) can emit `<think>` before the answer. The scorer must disable thinking in the chat template and assert next token is a label. Verify at `HFScorer` construction (M2 task).
 - **Label alphabet runs out at 26**: Banking77 (77-way intent) needs chunked / tournament scoring. See parking-lot.
 

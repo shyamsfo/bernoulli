@@ -11,9 +11,9 @@ variable "aws_profile" {
 }
 
 variable "instance_type" {
-  description = "EC2 instance type. g6.xlarge = L4 24GB, ~$0.80/hr on-demand."
+  description = "EC2 instance type. g6e.xlarge = L40S 48GB, ~$1.86/hr on-demand. Was g6.xlarge (L4 24GB) through M3; stepped up for M4 production backbone."
   type        = string
-  default     = "g6.xlarge"
+  default     = "g6e.xlarge"
 }
 
 variable "instance_name" {

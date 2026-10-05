@@ -68,8 +68,12 @@ clean:
     find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 
 # download the dev-tier backbone to the NVMe cache (~15 GB, ~90 s via hf_transfer)
-model-pull:
+model-pull-dev:
     hf download Qwen/Qwen2.5-VL-7B-Instruct --revision cc594898137f460bfe9f0759e9844b3ce807cfb5
+
+# download the production backbone — AWQ int4 of the 32B VL model (~20 GB)
+model-pull:
+    hf download Qwen/Qwen2.5-VL-32B-Instruct-AWQ --revision 66c370b74a18e7b1e871c97918f032ed3578dfef
 
 # ---------- eval shortcuts ----------
 

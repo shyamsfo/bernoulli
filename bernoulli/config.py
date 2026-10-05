@@ -27,12 +27,15 @@ class Settings(BaseSettings):
     )
 
     # ---- backbone ---------------------------------------------------------
+    # Production default (M4+): Qwen2.5-VL-32B-Instruct AWQ int4 (~20 GB, fits
+    # L40S 48GB). Set BERNOULLI_MODEL_ID=Qwen/Qwen2.5-VL-7B-Instruct to drop
+    # back to the dev-tier backbone for fast iteration.
     model_id: str = Field(
-        default="Qwen/Qwen2.5-VL-7B-Instruct",
+        default="Qwen/Qwen2.5-VL-32B-Instruct-AWQ",
         description="HF hub id of the backbone VLM. See milestones.md for the dev vs production pick.",
     )
     model_revision: str | None = Field(
-        default="cc594898137f460bfe9f0759e9844b3ce807cfb5",
+        default="66c370b74a18e7b1e871c97918f032ed3578dfef",
         description="Pinned HF revision SHA. None = latest at load time (not recommended).",
     )
     dtype: Dtype = "bfloat16"

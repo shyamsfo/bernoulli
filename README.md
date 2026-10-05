@@ -17,14 +17,14 @@ Jev takes unstructured state (text or JSON) plus typed questions and returns cal
 
 ### One-time setup
 
-Provision the AWS g6.xlarge dev box and wire your local SSH config:
+Provision the AWS g6e.xlarge dev box (L40S 48GB) and wire your local SSH config:
 
 ```bash
 just up                                                        # terraform apply (deploy/) — launches g6.xlarge
 terraform -chdir=deploy output -raw ssh_config_stanza >> ~/.ssh/config
 ssh bernoulli 'sudo cloud-init status --wait && nvidia-smi'    # ~2 min cloud-init; verifies GPU
 just sync-mirror                                               # push repo to the box
-ssh bernoulli 'cd ~/bernoulli && uv sync && just model-pull'   # install deps + pull Qwen2.5-VL-7B (~90s via hf_transfer)
+ssh bernoulli 'cd ~/bernoulli && uv sync && just model-pull'   # install deps + pull Qwen2.5-VL-32B-Instruct-AWQ (~20 GB, ~3 min via hf_transfer)
 ```
 
 Prereqs:
