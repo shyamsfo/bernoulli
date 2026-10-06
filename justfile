@@ -117,5 +117,7 @@ loadtest url="http://127.0.0.1:8000":
 
 # deploy the bernoulli.live landing page from web/ to ssd2 (sudo rsync; needs passwordless sudo on ssd2)
 deploy-web:
-    rsync -av --delete --rsync-path="sudo rsync" web/ ssd2:/var/www/bernoulli.live/html/
+    rsync -av --delete --rsync-path="sudo rsync" \
+        --exclude='README.md' \
+        web/ ssd2:/var/www/bernoulli.live/html/
     @echo "deployed → https://www.bernoulli.live/"
