@@ -103,18 +103,18 @@ Full dataset coverage: SST-2 91.7% / AG News 84.8% / BoolQ 63.2% / Banking77 58.
 ---
 
 ## M4 — Production serving (text-only)
-**Status**: 🔄 in progress
+**Status**: ✅ done (M4e parked, M4g superseded by M8)
 **Goal**: A shippable text-only service: `VLLMScorer` with prefix caching + a FastAPI server + the production backbone + Docker + load numbers. Image path explicitly deferred to M6.
 
-- [ ] Pick + load the production backbone (step up from the 7B dev model). Candidates: Qwen3.6-27B dense (~54 GB bf16), Qwen3.6-35B-A3B MoE (~70 GB bf16, ~3B active), or another open ~20–40B model. Instance resize decision alongside — probably `g6e.xlarge` (L40S 48GB) or an 80GB-class box. Decision + rationale in `CLAUDE.md`.
-- [ ] `VLLMScorer` on the chosen backbone: `max_tokens=1`, `logprobs=20`, `allowed_token_ids=label_ids`, prefix caching on. Verify all three features work together on the pinned vLLM version.
-- [ ] FastAPI server exposing `/v1/decide`, `/healthz`, `/v1/models`. Thin wrapper around `decide()` and `generative_decide()`; honors `BERNOULLI_*` env config.
-- [ ] Batch all `questions × permutations` for a request into a single engine call (shared state prefix).
-- [ ] Dockerfile for serving — multi-stage, slim runtime, vLLM + the chosen backbone cached at `/opt/models/`.
-- [ ] Load test: p50 / p95 latency for 1, 5, 20 questions per state at steady state. Report in `evals/reports/`.
-- [ ] Flip the eval harness to score via HTTP against the running server (replaces direct scorer wiring with an HTTP client).
+- [ ] 🚫 **M4e — parked:** Pick + load the production backbone (step up from the 7B dev model). Target was `Qwen2.5-VL-32B-Instruct-AWQ` on `g6e.xlarge` (L40S 48GB). **External blocker:** `g6e.xlarge` capacity in `us-east-1` has been intermittent across every AZ since M4 began — see decisions log in `CLAUDE.md`. Fell back to `g5.xlarge` + 7B for all of M4a–d/f, which run fine there. Revisit when capacity frees up or when the production step-up actually matters.
+- [x] `VLLMScorer` on the dev backbone: `max_tokens=1`, `logprobs=128`, `allowed_token_ids=label_ids`, `enable_prefix_caching=True`. Verified parity with HFScorer (3-decimal match).
+- [x] FastAPI server exposing `/v1/decide`, `/healthz`, `/v1/models`. Thin wrapper around `decide()` and `generative_decide()`; honors `BERNOULLI_*` env config.
+- [x] Batch all `questions × permutations` for a request into a single engine call via `score_batch` on the `Scorer` protocol — shared state prefix hits prefix cache.
+- [x] Dockerfile for serving — `vllm/vllm-openai:v0.31.0-cu129-ubuntu2404` base, bernoulli layered on top, Docker data-root on NVMe. Dockerized server runs within <1% of bare-metal latency.
+- [x] Load test: p50 / p95 / p99 at 1 / 5 / 20 questions per state — report in [`evals/reports/loadtest.md`](../evals/reports/loadtest.md).
+- [-] ~~Flip the eval harness to score via HTTP against the running server~~ — **superseded by M8**: `benchmarks/common/baselines.py` will treat Bernoulli-over-HTTP as the first-class baseline, which replaces this refactor cleanly. Parity between the HTTP path and the direct scorer was already validated via spot checks (loadtest + VLLMScorer vs HFScorer, both in CLAUDE.md decisions log).
 
-**Exit criteria**: Server runs in Docker, the full M3 eval suite passes end-to-end against the HTTP API, p50/p95 latency table reported.
+**Exit criteria**: Server runs in Docker, p50/p95 latency table reported. ✓ (M4e production-backbone step-up is explicitly parked; M4g rolled into M8.)
 
 ---
 
@@ -165,7 +165,7 @@ Full dataset coverage: SST-2 91.7% / AG News 84.8% / BoolQ 63.2% / Banking77 58.
 ---
 
 ## M8 — Benchmarks: foundation + academic suite
-**Status**: ⏳ pending
+**Status**: 🔄 in progress
 **Goal**: Stand up a top-level `benchmarks/` tree with a shared harness, migrate the existing `evals/` datasets, and extend to the 6-task academic suite from the Jev paper so our numbers are directly comparable.
 
 Design decisions (locked here; revisit only with cause):
@@ -177,7 +177,7 @@ Design decisions (locked here; revisit only with cause):
 - **Dropping BoolQ**: it's a reading-comprehension task, not a decision task, and the 63% hurts the story without testing what the product claims. Keep the `evals/reports/boolq.md` historical report in place; just don't carry BoolQ into `benchmarks/`.
 
 Tasks:
-- [ ] Create `benchmarks/README.md` with the empty summary leaderboard, the "how to run" one-liner, and the methodology section (metric definitions, baseline conventions, stability protocol).
+- [~] Create `benchmarks/README.md` with the empty summary leaderboard, the "how to run" one-liner, and the methodology section (metric definitions, baseline conventions, stability protocol).
 - [ ] `benchmarks/common/dataset.py` — standardized `BenchmarkExample(state, question, gold, source, meta)` loader interface. Allow subclasses to add dataset-specific fields.
 - [ ] `benchmarks/common/metrics.py` — accuracy, macro-F1, ECE (10 + 15 bin), Brier, NLL, coverage curves at [0.95, 0.90, 0.80, 0.50], stability score. Pure numpy, no sklearn.
 - [ ] `benchmarks/common/baselines.py` — Bernoulli-via-HTTP, same-model generative baseline (lift from `evals/baselines.py`), DeBERTa-v3-zeroshot (`MoritzLaurer/deberta-v3-large-zeroshot-v2.0`), BGE-m3 + logistic regression per task, one fine-tuned encoder per benchmark as the ceiling.
