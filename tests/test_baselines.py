@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from bernoulli.types import BinaryQuestion, ChoiceQuestion, DecideRequest, RatingQuestion, State
-from evals.baselines import (
+from benchmarks.common.baselines import (
     _build_generative_prompt,
     _decide_one_generative,
     generative_decide,
     parse_response,
 )
+from bernoulli.types import BinaryQuestion, ChoiceQuestion, DecideRequest, RatingQuestion, State
 
 
 class TestParseResponse:

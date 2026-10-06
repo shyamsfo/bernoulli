@@ -180,7 +180,11 @@ Tasks:
 - [x] Create `benchmarks/README.md` with the empty summary leaderboard, the "how to run" one-liner, and the methodology section (metric definitions, baseline conventions, stability protocol).
 - [x] `benchmarks/common/dataset.py` — standardized `BenchmarkExample(state, question, gold, source, meta)` loader interface. Allow subclasses to add dataset-specific fields.
 - [x] `benchmarks/common/metrics.py` — accuracy, macro-F1, ECE (10 + 15 bin), Brier, NLL, coverage curves at [0.95, 0.90, 0.80, 0.50], stability score. Pure numpy, no sklearn.
-- [~] `benchmarks/common/baselines.py` — Bernoulli-via-HTTP, same-model generative baseline (lift from `evals/baselines.py`), DeBERTa-v3-zeroshot (`MoritzLaurer/deberta-v3-large-zeroshot-v2.0`), BGE-m3 + logistic regression per task, one fine-tuned encoder per benchmark as the ceiling.
+- [~] `benchmarks/common/baselines.py` — Bernoulli-via-HTTP + same-model generative baseline (lift from `evals/baselines.py`). **Split into 4a/4b/4c because each heavier baseline adds a new HF model + dependency and is cleaner to isolate per commit:**
+  - [x] 4a. `Baseline` Protocol + `BernoulliHTTP` + `Generative` wrapper. No new deps beyond `httpx`.
+  - [ ] 4b. `DeBERTa` baseline — `MoritzLaurer/deberta-v3-large-zeroshot-v2.0`. Adds a ~800 MB model pull on first use; no new pip deps (transformers already in).
+  - [ ] 4c. `BGEm3LR` baseline — `BAAI/bge-m3` + per-task logistic regression. Adds a ~2 GB model pull; scikit-learn is already in the `eval` extra.
+  - [ ] Per-benchmark fine-tuned-encoder ceilings — belong in each benchmark's subfolder, not here. Done case-by-case where a public fine-tune exists.
 - [ ] Migrate SST-2 → `benchmarks/academic/sst2/`.
 - [ ] Migrate AG News → `benchmarks/academic/ag_news/`.
 - [ ] Migrate Banking77 → `benchmarks/academic/banking77/` (also fits "triage"; keep in academic for the Jev comparability table).

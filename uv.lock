@@ -434,6 +434,7 @@ dependencies = [
 [package.optional-dependencies]
 eval = [
     { name = "datasets" },
+    { name = "httpx" },
     { name = "matplotlib" },
     { name = "scikit-learn" },
     { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple/" }, marker = "python_full_version < '3.12'" },
@@ -464,6 +465,7 @@ dev = [
     { name = "accelerate" },
     { name = "datasets" },
     { name = "fastapi" },
+    { name = "httpx" },
     { name = "mypy" },
     { name = "pillow" },
     { name = "pytest" },
@@ -486,6 +488,7 @@ requires-dist = [
     { name = "accelerate", marker = "extra == 'scorer-hf'", specifier = ">=1.0" },
     { name = "datasets", marker = "extra == 'eval'", specifier = ">=3.0" },
     { name = "fastapi", marker = "extra == 'serve'", specifier = ">=0.115" },
+    { name = "httpx", marker = "extra == 'eval'", specifier = ">=0.27" },
     { name = "matplotlib", marker = "extra == 'eval'", specifier = ">=3.9" },
     { name = "numpy", specifier = ">=1.26" },
     { name = "peft", marker = "extra == 'train'", specifier = ">=0.13" },
@@ -510,6 +513,7 @@ dev = [
     { name = "accelerate", specifier = ">=1.0" },
     { name = "datasets", specifier = ">=3.0" },
     { name = "fastapi", specifier = ">=0.115" },
+    { name = "httpx", specifier = ">=0.27" },
     { name = "mypy", specifier = ">=1.11" },
     { name = "pillow", specifier = ">=10.4" },
     { name = "pytest", specifier = ">=8.3" },
