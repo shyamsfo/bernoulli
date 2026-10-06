@@ -322,6 +322,7 @@ svg.curve text.lab-b{fill:var(--accent)}
 .final .clone button{font:500 12px "JetBrains Mono",monospace;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:5px;padding:5px 9px;cursor:pointer}
 footer{border-top:1px solid var(--line);padding:28px 0 40px;font-size:13px;color:var(--ink-3)}
 footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
 </style>
 <script>
   // Apply a saved theme before first paint (no flash). No saved choice = follow the system.
@@ -713,7 +714,8 @@ curl -s localhost:8000/v1/decide \
 <footer>
   <div class="wrap">
     <span>Bernoulli · an open-weight decision model · <a href="mailto:contact@deepstore.ai">contact@deepstore.ai</a></span>
-    <span>Inspired by TypeSafe AI's Jev. Independent project, not affiliated.</span>
+    <span>© 2026 DeepStore · <a href="https://github.com/shyamsfo/bernoulli/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0 License</a></span>
+    <span class="foot-disclaimer">Inspired by TypeSafe AI's Jev. Independent project, not affiliated.</span>
   </div>
 </footer>
 

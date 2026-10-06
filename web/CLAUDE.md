@@ -41,7 +41,7 @@ Single HTML file, section-per-section. In reading order:
 | `#trust`     | Confidence story — waffle chart + interactive coverage slider. |
 | `.final`     | CTAs (GitHub / Book a demo / Contact us) + git clone one-liner. |
 | `#demo-dialog` | "Book a demo" popup (native `<dialog>`), opened by any `[data-open-demo]` button. See *Book a demo form* below. |
-| `footer`     | Tagline + `contact@deepstore.ai` mailto + Jev attribution. |
+| `footer`     | Tagline + `contact@deepstore.ai` mailto (left), `© 2026 DeepStore · Apache 2.0 License` linking to the repo LICENSE (right), Jev disclaimer on its own line. Keep the copyright holder in sync with `LICENSE`. |
 
 Nav links reference these ids. Keep ids stable if restructuring.
 
