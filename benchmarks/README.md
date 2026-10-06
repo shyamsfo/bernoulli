@@ -75,8 +75,8 @@ Headline metric per benchmark is **accuracy** unless noted. ECE is 10-bin (JevBe
 | Benchmark           | Headline metric      | Bernoulli | External baseline(s)              | ECE (10-bin) | Stability |
 |---------------------|----------------------|-----------|-----------------------------------|--------------|-----------|
 | [WildGuardTest](guardrails/wildguard_test/) | accuracy / F1 | TBD | Llama Guard 3 / ShieldGemma / WG | TBD | TBD |
-| ToxicChat           | accuracy / F1        | TBD       | Llama Guard 3 / ShieldGemma       | TBD          | TBD       |
-| XSTest              | accuracy + refusal % | TBD       | Llama Guard 3 / ShieldGemma       | TBD          | TBD       |
+| [ToxicChat](guardrails/toxicchat/) | accuracy / F1 | TBD | Llama Guard 3 / ShieldGemma / OpenAI Mod | TBD | TBD |
+| [XSTest](guardrails/xstest/) | accuracy + false-refusal % | TBD | Llama Guard 3 / ShieldGemma / WG | TBD | TBD |
 | CLINC150 (with OOS) | accuracy / OOS AUROC | TBD       | DeBERTa-zeroshot                  | TBD          | TBD       |
 | Yelp 1-5 stars      | MAE / off-by-one acc | TBD       | DeBERTa-zeroshot                  | TBD          | TBD       |
 
