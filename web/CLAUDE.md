@@ -83,19 +83,20 @@ CSS variables live at the top of the `<style>` block. Light + dark themes auto-s
 - The hero facts (`~145 ms p50`, `0.025 ECE`, `0 outbound calls`) and the Benchmarks table come from real eval runs. When upstream numbers change, update these.
 - The ~70 ms "per added question" number in the Why 4-wins strip comes from the M4f load test ([`evals/reports/loadtest.md`](https://github.com/shyamsfo/bernoulli/blob/main/evals/reports/loadtest.md)). Current steady-state on A10G 24GB with reverse debias.
 
-## Deploy
+## Recipes
 
 ```bash
-just deploy
+just preview        # open index.html in the default browser (file://)
+just serve-local    # python http.server on :8000 — closer to prod behavior
+just deploy         # rsync to ssd2:/var/www/bernoulli.live/html/
+just check          # curl the live site, assert HTTP 200, echo <title>
+just diff-live      # unified diff: what's live vs local index.html
 ```
 
-The recipe rsyncs the current directory to `ssd2:/var/www/bernoulli.live/html/`, using `--rsync-path="sudo rsync"` because the destination is root-owned. Needs passwordless `sudo` for your SSH user on `ssd2`. Repo-only files (`README.md`, `CLAUDE.md`, `justfile`) are excluded from the live site.
+**`deploy`** uses `--rsync-path="sudo rsync"` because `/var/www/bernoulli.live/html/` is root-owned. Needs passwordless `sudo` for your SSH user on `ssd2`. Repo-only files (`README.md`, `CLAUDE.md`, `justfile`) are excluded from the live site.
 
-For a local preview before deploying:
+**`check`** fails with exit 1 if the status isn't 200 — safe to chain in CI or in a post-deploy script.
 
-```bash
-just preview       # opens index.html in the default browser (macOS)
-# or just open the file manually
-```
+**`diff-live`** compares your working copy of `index.html` against what's served from the live URL. Expect a trailing-newline difference (nginx strips the final newline from static files); any other diff means either an unshipped local edit or someone edited the server directly.
 
-No staging environment — the site is small enough that eyeballing a diff + previewing locally covers it. If deploys get risky, add a staging host step here.
+No staging environment — the site is small enough that eyeballing a diff + a local preview covers it. If deploys get risky later, add a staging host step here.

@@ -2,12 +2,19 @@
 # Standalone from the parent project; useful when iterating on the page
 # in Claude Desktop or similar tools that have only this folder in context.
 
+url := "https://www.bernoulli.live/"
+
 default:
     @just --list
 
-# Preview locally — opens index.html in the default browser (macOS).
+# Preview locally by opening index.html directly in the default browser.
 preview:
     open index.html
+
+# Serve the folder over HTTP so fonts + same-origin behavior match production.
+# Visit http://127.0.0.1:8000/ after this starts. Ctrl-C to stop.
+serve-local port="8000":
+    python3 -m http.server {{port}}
 
 # Deploy to ssd2:/var/www/bernoulli.live/html/.
 # Needs passwordless sudo for your SSH user on ssd2 (the html dir is root-owned).
@@ -18,4 +25,31 @@ deploy:
         --exclude='CLAUDE.md' \
         --exclude='justfile' \
         ./ ssd2:/var/www/bernoulli.live/html/
-    @echo "deployed → https://www.bernoulli.live/"
+    @echo "deployed → {{url}}"
+
+# Verify the live site is up: HTTP 200 + spot-check the <title>.
+# Fails loud (exit 1) if the status isn't 200.
+check:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    status=$(curl -sS -o /dev/null -w "%{http_code}" "{{url}}")
+    if [ "$status" != "200" ]; then
+        echo "FAIL  {{url}} → HTTP $status"
+        exit 1
+    fi
+    echo "OK    {{url}} → HTTP $status"
+    curl -sS "{{url}}" | grep -oE '<title>[^<]+</title>' | head -1 | sed 's/^/      /'
+
+# Show the unified diff between local index.html and what's actually deployed.
+# Empty output = no drift; non-empty output = either an unshipped local edit
+# or someone bypassed the recipe and edited the server directly.
+diff-live:
+    #!/usr/bin/env bash
+    tmp=$(mktemp)
+    trap "rm -f $tmp" EXIT
+    curl -sS "{{url}}" > "$tmp"
+    if diff -u "$tmp" index.html > /dev/null; then
+        echo "clean — local and live match"
+    else
+        diff -u "$tmp" index.html || true
+    fi
