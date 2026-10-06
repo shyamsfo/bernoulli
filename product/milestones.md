@@ -23,6 +23,8 @@ The active milestone is the first one marked `🔄 in progress`. `/ds-work-conti
 
 **Backbone flexibility (project-wide):** the backbone LLM/VLM is **not pinned**. The vision doc proposes Qwen3.6 family but we may choose a different open-weights model (another Qwen variant, a Llama/Gemma/InternVL VLM, or a smaller dev model) based on availability, licensing, calibration behavior, or hardware. Every milestone that touches the model must preserve `Scorer` as a swappable interface — never hard-code a model id outside `config.py`.
 
+**Dependency ordering vs the written sequence.** Milestones are numbered by the order they were added, not by execution order. The real dependency chain today is: finish **M4** (M4e step-up is parked on capacity) → **M8 → M9 → M10** (benchmarks: foundation, use-case coverage, JevBench) → **M5** (v1.0 hardening, which depends on benchmark baselines being in place for the regression gate) → **M6** (multimodal) → **M7** (LoRA, optional). Do not tag v1.0 before the benchmark suite exists and has a baseline run on record.
+
 ---
 
 ## M1 — Scaffold (Phase 0)
@@ -159,6 +161,70 @@ Full dataset coverage: SST-2 91.7% / AG News 84.8% / BoolQ 63.2% / Banking77 58.
 - [ ] Expose `bernoulli calibrate --data my_labeled.jsonl` for domain calibration
 
 **Exit criteria**: LoRA checkpoint beats zero-shot on held-out tasks (OOD). If it only wins in-distribution, do not ship.
+
+---
+
+## M8 — Benchmarks: foundation + academic suite
+**Status**: ⏳ pending
+**Goal**: Stand up a top-level `benchmarks/` tree with a shared harness, migrate the existing `evals/` datasets, and extend to the 6-task academic suite from the Jev paper so our numbers are directly comparable.
+
+Design decisions (locked here; revisit only with cause):
+- **Layout**: `benchmarks/<category>/<name>/` with `README.md`, `run.py` (or shared runner), and `results/` co-located. No separate top-level `results/` folder — maintenance tax of two places to update is not worth it.
+- **Common harness**: `benchmarks/common/{metrics,baselines,dataset}.py`. The leaderboard-style summary lives in `benchmarks/README.md` and links into each benchmark's `results/latest.md`.
+- **Metrics**: accuracy, macro-F1, Brier, NLL, latency p50/p95 at 1 / 5 / 20 questions, cost per 1k decisions. ECE is reported in **both 10-bin (JevBench convention) and 15-bin (our existing reports)**; 10-bin becomes the headline so comparisons stay fair.
+- **Stability**: for every benchmark report the Jev-style stability score — the fraction of examples whose top-class answer is unchanged under (a) option reorder and (b) a paraphrased question stem. This is our debiasing story in a number.
+- **Coverage curves**: accuracy @ 95% / 90% / 80% / 50% autodecision rate (the curve behind the landing-page slider). Report as a 4-row sub-table under each benchmark.
+- **Dropping BoolQ**: it's a reading-comprehension task, not a decision task, and the 63% hurts the story without testing what the product claims. Keep the `evals/reports/boolq.md` historical report in place; just don't carry BoolQ into `benchmarks/`.
+
+Tasks:
+- [ ] Create `benchmarks/README.md` with the empty summary leaderboard, the "how to run" one-liner, and the methodology section (metric definitions, baseline conventions, stability protocol).
+- [ ] `benchmarks/common/dataset.py` — standardized `BenchmarkExample(state, question, gold, source, meta)` loader interface. Allow subclasses to add dataset-specific fields.
+- [ ] `benchmarks/common/metrics.py` — accuracy, macro-F1, ECE (10 + 15 bin), Brier, NLL, coverage curves at [0.95, 0.90, 0.80, 0.50], stability score. Pure numpy, no sklearn.
+- [ ] `benchmarks/common/baselines.py` — Bernoulli-via-HTTP, same-model generative baseline (lift from `evals/baselines.py`), DeBERTa-v3-zeroshot (`MoritzLaurer/deberta-v3-large-zeroshot-v2.0`), BGE-m3 + logistic regression per task, one fine-tuned encoder per benchmark as the ceiling.
+- [ ] Migrate SST-2 → `benchmarks/academic/sst2/`.
+- [ ] Migrate AG News → `benchmarks/academic/ag_news/`.
+- [ ] Migrate Banking77 → `benchmarks/academic/banking77/` (also fits "triage"; keep in academic for the Jev comparability table).
+- [ ] Add TweetEval-emotion → `benchmarks/academic/tweeteval_emotion/`.
+- [ ] Add PAWS → `benchmarks/academic/paws/`.
+- [ ] Add post-cutoff arXiv classification → `benchmarks/academic/arxiv_post_cutoff/`. Must include a `make_dataset.py` that pins the cutoff rule explicitly (dataset dates strictly later than the backbone's training cutoff) so the "couldn't have seen it" claim is defensible when we swap backbones.
+- [ ] Reword + reorder stability runner — reuse `bernoulli/debias.py` for reorder; add a lightweight paraphrase set per benchmark (3 reworded stems is enough).
+- [ ] Build each baseline for the 6 tasks (same-model generative, DeBERTa-zeroshot, BGE-m3 + LR). Fine-tuned-encoder ceiling is optional per task — do it where a public fine-tune exists; skip if we'd need to train one.
+- [ ] First results run: fill `benchmarks/README.md` summary table with Bernoulli vs baselines across the 6 academic tasks + coverage sub-tables + stability column.
+
+Exit criteria: `benchmarks/README.md` renders a comparison table with ≥ 5 of the 6 academic tasks × ≥ 3 baselines (us, same-model generative, DeBERTa-zeroshot). Each task's `results/latest.md` has coverage sub-table and stability score. Historical `evals/reports/*.md` left in place as a snapshot of pre-migration numbers.
+
+---
+
+## M9 — Benchmarks: use-case coverage
+**Status**: ⏳ pending
+**Goal**: Match the landing-page use-case cards (guardrails, support triage, content moderation / rating) with benchmarks whose results we can cite in the pitch. Each use case gets a baseline comparison against the model category that actually competes.
+
+Tasks:
+- [ ] `benchmarks/guardrails/wildguard_test/` — WildGuardTest. Baselines: Llama Guard 3, ShieldGemma, WildGuard-7B (these also read token probabilities, so the comparison is apples-to-apples).
+- [ ] `benchmarks/guardrails/toxicchat/` — ToxicChat. Same baselines as above where applicable.
+- [ ] `benchmarks/guardrails/xstest/` — XSTest for over-refusal. Report refusal-rate and accuracy separately; a good guardrail is accurate *without* over-refusing.
+- [ ] `benchmarks/triage/clinc150_oos/` — CLINC150 with the out-of-scope split. Report OOS detection AUROC alongside in-domain accuracy — this is the "none of these" probability story in a number.
+- [ ] `benchmarks/ratings/yelp_stars/` — Yelp 1-5 star reviews. Tests the rating question type end-to-end. Report MAE and off-by-one accuracy in addition to the standard metrics.
+- [ ] Three use-case domain tables appended to `benchmarks/README.md` (guardrails / triage / ratings).
+- [ ] Cross-reference: each use-case card on `web/index.html` gets a link to the matching `benchmarks/<domain>/<name>/results/latest.md` so the pitch is backed by numbers at a click.
+
+Exit criteria: Each use-case card on the landing page has at least one benchmark result backing it. Guardrails has ≥ 2 of the 3 datasets with ≥ 1 external baseline each. CLINC150 OOS AUROC reported. Yelp stars MAE + off-by-one reported.
+
+---
+
+## M10 — JevBench adapter + leaderboard submission
+**Status**: ⏳ pending
+**Goal**: Run Bernoulli through the official JevBench harness and submit to its public leaderboard. Getting listed is distribution; being measured on their rules is credibility.
+
+Tasks:
+- [ ] Vendor or clone JevBench into `benchmarks/jevbench/upstream/` (git submodule or pinned clone — decide based on their license and how often they update).
+- [ ] Write the adapter in `benchmarks/jevbench/adapter.py` so JevBench's harness can call Bernoulli's `/v1/decide`. Honor whatever contract they define for probability output and metric reporting.
+- [ ] Match JevBench conventions exactly: ECE with 10 bins (we already compute this from M8), cost per 1k decisions, their stability protocol (align with M8's where they agree; document any gaps).
+- [ ] Full-suite run on the production backbone (M4e once it lands, or on 7B with a clear note that this is the dev-tier number).
+- [ ] Submit results. Record submission commit + run date + model revision in `benchmarks/jevbench/results/`.
+- [ ] Link the leaderboard entry from `README.md` and the landing page.
+
+Exit criteria: Bernoulli listed on the JevBench leaderboard with a reproducible run captured in `benchmarks/jevbench/results/`. The submission references a pinned model revision and a pinned Bernoulli commit.
 
 ---
 
