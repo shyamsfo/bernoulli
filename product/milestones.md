@@ -183,7 +183,7 @@ Tasks:
 - [~] `benchmarks/common/baselines.py` — Bernoulli-via-HTTP + same-model generative baseline (lift from `evals/baselines.py`). **Split into 4a/4b/4c because each heavier baseline adds a new HF model + dependency and is cleaner to isolate per commit:**
   - [x] 4a. `Baseline` Protocol + `BernoulliHTTP` + `Generative` wrapper. No new deps beyond `httpx`.
   - [x] 4b. `DeBERTa` baseline — `MoritzLaurer/deberta-v3-large-zeroshot-v2.0`. Adds a ~800 MB model pull on first use; no new pip deps (transformers already in).
-  - [ ] 4c. `BGEm3LR` baseline — `BAAI/bge-m3` + per-task logistic regression. Adds a ~2 GB model pull; scikit-learn is already in the `eval` extra.
+  - [x] 4c. `BGEm3LR` baseline — `BAAI/bge-m3` + per-task logistic regression. Adds a ~2 GB model pull; scikit-learn added to dev group too (was only in the `eval` extra).
   - [ ] Per-benchmark fine-tuned-encoder ceilings — belong in each benchmark's subfolder, not here. Done case-by-case where a public fine-tune exists.
 - [ ] Migrate SST-2 → `benchmarks/academic/sst2/`.
 - [ ] Migrate AG News → `benchmarks/academic/ag_news/`.

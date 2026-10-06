@@ -13,10 +13,13 @@ from __future__ import annotations
 
 from typing import Any
 
+import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from benchmarks.common.baselines import (
     BernoulliHTTP,
+    BGEm3LR,
     DeBERTaZeroshot,
     Distribution,
     Generative,
@@ -201,3 +204,98 @@ class TestDeBERTaZeroshot:
         baseline = DeBERTaZeroshot(fake)
         with pytest.raises(NotImplementedError, match="ChoiceQuestion"):
             baseline.predict(example)
+
+
+class _TextIndicatorEmbedder:
+    """Deterministic embedder for tests.
+
+    Maps each text to a 2-D vector that encodes a crude token-presence signal
+    so the LR head has a learnable gradient. Keeps unit tests dependency-free
+    on an actual BGE-m3 pull.
+    """
+
+    def __init__(self, token_a: str, token_b: str) -> None:
+        self._a = token_a
+        self._b = token_b
+
+    def __call__(self, texts: list[str]) -> NDArray[np.float32]:
+        rows: list[list[float]] = []
+        for t in texts:
+            lo = t.lower()
+            rows.append([float(self._a in lo), float(self._b in lo)])
+        return np.asarray(rows, dtype=np.float32)
+
+
+class TestBGEm3LR:
+    def test_name(self) -> None:
+        assert BGEm3LR.name == "bge-m3-lr"
+
+    def test_fit_then_predict_choice(self) -> None:
+        q = ChoiceQuestion(id="sentiment", prompt="?", options=["negative", "positive"])
+        train = [
+            BenchmarkExample(state_text="great movie", question=q, gold="positive"),
+            BenchmarkExample(state_text="loved it great", question=q, gold="positive"),
+            BenchmarkExample(state_text="terrible film", question=q, gold="negative"),
+            BenchmarkExample(state_text="awful terrible", question=q, gold="negative"),
+        ]
+        baseline = BGEm3LR(_TextIndicatorEmbedder("great", "terrible"))
+        baseline.fit(train)
+
+        # Prediction on a test example containing "great" should favor positive.
+        test = BenchmarkExample(state_text="great story", question=q, gold="positive")
+        dist = baseline.predict(test)
+        assert set(dist.keys()) == {"negative", "positive"}
+        assert sum(dist.values()) == pytest.approx(1.0)
+        assert dist["positive"] > dist["negative"]
+
+    def test_fit_then_predict_rating_labels_preserved(self) -> None:
+        q = RatingQuestion(id="stars", prompt="?", scale=(1, 3))
+        train = [
+            BenchmarkExample(state_text="great", question=q, gold="3"),
+            BenchmarkExample(state_text="great great", question=q, gold="3"),
+            BenchmarkExample(state_text="meh", question=q, gold="2"),
+            BenchmarkExample(state_text="meh meh", question=q, gold="2"),
+            BenchmarkExample(state_text="terrible", question=q, gold="1"),
+            BenchmarkExample(state_text="terrible terrible", question=q, gold="1"),
+        ]
+        baseline = BGEm3LR(_TextIndicatorEmbedder("great", "terrible"))
+        baseline.fit(train)
+
+        dist = baseline.predict(BenchmarkExample(state_text="terrible", question=q, gold="1"))
+        assert set(dist.keys()) == {"1", "2", "3"}
+        assert sum(dist.values()) == pytest.approx(1.0)
+
+    def test_predict_before_fit_raises(self) -> None:
+        q = ChoiceQuestion(id="x", prompt="?", options=["a", "b"])
+        baseline = BGEm3LR(_TextIndicatorEmbedder("a", "b"))
+        with pytest.raises(RuntimeError, match=r"before \.fit"):
+            baseline.predict(BenchmarkExample(state_text="hi", question=q, gold="a"))
+
+    def test_fit_rejects_empty_training_set(self) -> None:
+        baseline = BGEm3LR(_TextIndicatorEmbedder("a", "b"))
+        with pytest.raises(ValueError, match="at least one"):
+            baseline.fit([])
+
+    def test_second_fit_replaces_the_head(self) -> None:
+        q = ChoiceQuestion(id="x", prompt="?", options=["a", "b"])
+        baseline = BGEm3LR(_TextIndicatorEmbedder("a", "b"))
+
+        first = [
+            BenchmarkExample(state_text="a thing", question=q, gold="a"),
+            BenchmarkExample(state_text="a a", question=q, gold="a"),
+            BenchmarkExample(state_text="b thing", question=q, gold="b"),
+            BenchmarkExample(state_text="b b", question=q, gold="b"),
+        ]
+        baseline.fit(first)
+
+        # Second fit on different gold distribution — must not error.
+        second = [
+            BenchmarkExample(state_text="only a", question=q, gold="a"),
+            BenchmarkExample(state_text="only b", question=q, gold="b"),
+            BenchmarkExample(state_text="also b", question=q, gold="b"),
+            BenchmarkExample(state_text="still b", question=q, gold="b"),
+        ]
+        baseline.fit(second)
+
+        dist = baseline.predict(BenchmarkExample(state_text="b something", question=q, gold="b"))
+        assert dist["b"] > dist["a"]

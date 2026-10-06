@@ -353,3 +353,108 @@ class DeBERTaZeroshot:
         scores = cast(list[float], result["scores"])
         by_label = dict(zip(labels, scores, strict=True))
         return {opt: float(by_label[opt]) for opt in options}
+
+
+# ---------------------------------------------------------------------------
+# BGE-m3 + per-task logistic regression: "could we have used embeddings?" check.
+# ---------------------------------------------------------------------------
+
+
+class Embedder(Protocol):
+    """Shape of the BGE-m3 encode call. Factored out so tests inject a fake."""
+
+    def __call__(self, texts: list[str]) -> NDArray[np.float32]: ...
+
+
+class BGEm3LR:
+    """BGE-m3 sentence embedder + per-task scikit-learn LogisticRegression.
+
+    Unlike the other baselines, this one needs training data. Call
+    `.fit(train_examples)` once per benchmark before `.predict()`. The
+    runner handles this with a `hasattr(baseline, "fit")` branch —
+    deliberately not on the base `Baseline` protocol, which stays
+    predict-only.
+
+    Supports Choice, Binary, and Rating uniformly — scikit-learn's
+    LogisticRegression handles string labels of any arity. Rating labels
+    lose their ordinal semantics (treated as nominal classes) but still
+    produce a usable distribution over the integer-string keys.
+
+    All examples in a `fit()` call must share the same question kind
+    AND label space (every benchmark trains its own head on its own
+    labels); the runner enforces this by scoping fit per benchmark.
+    """
+
+    name = "bge-m3-lr"
+
+    _DEFAULT_MODEL = "BAAI/bge-m3"
+
+    def __init__(
+        self,
+        embed_fn: Embedder,
+        *,
+        classifier: Any | None = None,
+    ) -> None:
+        self._embed = embed_fn
+        self._clf = classifier  # fitted sklearn LogisticRegression after .fit()
+        self._classes: list[str] | None = None
+
+    @classmethod
+    def load_default(
+        cls,
+        *,
+        model_id: str = _DEFAULT_MODEL,
+        device: str = "cpu",
+        batch_size: int = 32,
+        max_length: int = 512,
+    ) -> BGEm3LR:
+        """Build with a transformers-backed BGE-m3 embedder on `device` (`cpu` or `cuda`)."""
+        import torch
+        from transformers import AutoModel, AutoTokenizer
+
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        model = AutoModel.from_pretrained(model_id).to(device).eval()
+
+        @torch.no_grad()
+        def embed(texts: list[str]) -> NDArray[np.float32]:
+            vectors: list[NDArray[np.float32]] = []
+            for i in range(0, len(texts), batch_size):
+                batch = texts[i : i + batch_size]
+                enc = tokenizer(
+                    batch,
+                    padding=True,
+                    truncation=True,
+                    max_length=max_length,
+                    return_tensors="pt",
+                ).to(device)
+                out = model(**enc)
+                cls_vec = out.last_hidden_state[:, 0]
+                # BGE convention: L2-normalize the CLS vector.
+                cls_vec = cls_vec / cls_vec.norm(dim=-1, keepdim=True).clamp_min(1e-12)
+                vectors.append(cls_vec.cpu().to(torch.float32).numpy())
+            return np.concatenate(vectors, axis=0) if vectors else np.zeros((0, 0), np.float32)
+
+        return cls(embed)
+
+    def fit(self, train_examples: list[BenchmarkExample]) -> None:
+        """Train the LR head on `train_examples`. Idempotent — a second fit replaces the head."""
+        from sklearn.linear_model import LogisticRegression
+
+        if not train_examples:
+            raise ValueError("BGEm3LR.fit requires at least one training example")
+        texts = [ex.state_text for ex in train_examples]
+        labels = [ex.gold for ex in train_examples]
+        features = self._embed(texts)
+        self._clf = LogisticRegression(max_iter=1000).fit(features, labels)
+        # sklearn exposes classes_ in sorted order after fit; preserve that order.
+        self._classes = list(map(str, self._clf.classes_))
+
+    def predict(self, example: BenchmarkExample) -> Distribution:
+        if self._clf is None or self._classes is None:
+            raise RuntimeError(
+                "BGEm3LR.predict called before .fit(). The runner must call fit "
+                "with the benchmark's labeled train split before scoring."
+            )
+        features = self._embed([example.state_text])
+        probs = self._clf.predict_proba(features)[0]
+        return {label: float(p) for label, p in zip(self._classes, probs, strict=True)}
