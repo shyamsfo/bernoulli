@@ -32,6 +32,8 @@ Bernoulli answers three kinds of questions. Pick the one that matches your probl
 
 Every request has a `state` (the thing you want to reason about — text today, images in a future release) and a list of `questions`. You can ask multiple questions at once — Bernoulli answers all of them against the same state in one engine call.
 
+> Examples below are deliberately small so you can copy-paste and run them. For realistic use cases that combine multiple question types against a document-sized state (support thread, LLM output, code diff + context), see [`USECASES.md`](USECASES.md).
+
 ---
 
 ## Choice
