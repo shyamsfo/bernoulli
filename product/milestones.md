@@ -185,7 +185,7 @@ Tasks:
   - [x] 4b. `DeBERTa` baseline — `MoritzLaurer/deberta-v3-large-zeroshot-v2.0`. Adds a ~800 MB model pull on first use; no new pip deps (transformers already in).
   - [x] 4c. `BGEm3LR` baseline — `BAAI/bge-m3` + per-task logistic regression. Adds a ~2 GB model pull; scikit-learn added to dev group too (was only in the `eval` extra).
   - [ ] Per-benchmark fine-tuned-encoder ceilings — belong in each benchmark's subfolder, not here. Done case-by-case where a public fine-tune exists.
-- [ ] Migrate SST-2 → `benchmarks/academic/sst2/`.
+- [x] Migrate SST-2 → `benchmarks/academic/sst2/`.
 - [ ] Migrate AG News → `benchmarks/academic/ag_news/`.
 - [ ] Migrate Banking77 → `benchmarks/academic/banking77/` (also fits "triage"; keep in academic for the Jev comparability table).
 - [ ] Add TweetEval-emotion → `benchmarks/academic/tweeteval_emotion/`.
