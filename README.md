@@ -9,7 +9,7 @@ Jev takes unstructured state (text or JSON) plus typed questions and returns cal
 - Usage: [`HTTP.md`](HTTP.md) · [`CLI.md`](CLI.md) · landing: [`USAGE.md`](USAGE.md)
 - **Design pitch + realistic use cases**: [`USECASES.md`](USECASES.md)
 - Current milestone + task list: [`product/milestones.md`](product/milestones.md)
-- Dev box (AWS g5.xlarge): [`deploy/README.md`](deploy/README.md)
+- Dev box + model/hardware sizing table: [`deploy/README.md`](deploy/README.md)
 - Session reports: [`product/reports/`](product/reports/)
 
 **Status.** M1–M3 complete. M4 (text-only production serving) is essentially done: vLLM backend, FastAPI server, Docker image, request batching, load test — only the step-up to the production backbone (M4e) is parked, pending `g6e.xlarge` capacity in `us-east-1`. Next up: M5 hardening (auth, metrics, offline mode, CI regression gate, v1.0 tag).
