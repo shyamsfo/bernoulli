@@ -193,7 +193,7 @@ Tasks:
 - [ ] Add post-cutoff arXiv classification → `benchmarks/academic/arxiv_post_cutoff/`. Must include a `make_dataset.py` that pins the cutoff rule explicitly (dataset dates strictly later than the backbone's training cutoff) so the "couldn't have seen it" claim is defensible when we swap backbones. **Split into 10a (scaffolding + sample data) and 10b (actual run + full snapshot) because the real run needs the `arxiv` pip dep + network access on the dev box.**
   - [x] 10a. Loader + `make_dataset.py` skeleton + 3-row `data/sample.jsonl` + tests. No new deps yet.
   - [ ] 10b. Run `make_dataset.py` on the dev box (requires `arxiv` dep, writes `data/dataset.jsonl`). Commit the full post-cutoff snapshot.
-- [ ] Reword + reorder stability runner — reuse `bernoulli/debias.py` for reorder; add a lightweight paraphrase set per benchmark (3 reworded stems is enough).
+- [x] Reword + reorder stability runner — reuse `bernoulli/debias.py` for reorder; add a lightweight paraphrase set per benchmark (3 reworded stems is enough).
 - [ ] Build each baseline for the 6 tasks (same-model generative, DeBERTa-zeroshot, BGE-m3 + LR). Fine-tuned-encoder ceiling is optional per task — do it where a public fine-tune exists; skip if we'd need to train one.
 - [ ] First results run: fill `benchmarks/README.md` summary table with Bernoulli vs baselines across the 6 academic tasks + coverage sub-tables + stability column.
 
