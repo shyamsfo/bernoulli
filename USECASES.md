@@ -65,6 +65,8 @@ Same backbone under the hood. Different reading mechanism — Bernoulli reads th
 
 3. **Composable.** Same state → different question configs → different outputs. You can A/B test the question wording, swap in a calibrated temperature per question type, add a new question without re-engineering the pipeline. The state is the data; the questions are the queries; both evolve independently.
 
+4. **One output token.** API pricing is weighted toward output: a classification call that generates `"yes"` or `"refund"` still pays 3–5× the input rate on each of those tokens. Bernoulli generates exactly one token per forward pass (`max_tokens=1`) — the output-token line item drops to a floor regardless of how your provider prices it. Self-hosting changes this calculus (you're paying GPU time instead of per-token), but the output-token observation generalizes: in a decision workload, output tokens are a weird thing to charge for.
+
 ### When Bernoulli is wrong for the job
 
 If you need generated text — a summary, an explanation, a rewritten email, a code suggestion — use a generative LLM. Bernoulli is for decisions, not content.
