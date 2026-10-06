@@ -188,7 +188,7 @@ Tasks:
 - [x] Migrate SST-2 → `benchmarks/academic/sst2/`.
 - [x] Migrate AG News → `benchmarks/academic/ag_news/`.
 - [x] Migrate Banking77 → `benchmarks/academic/banking77/` (also fits "triage"; keep in academic for the Jev comparability table).
-- [ ] Add TweetEval-emotion → `benchmarks/academic/tweeteval_emotion/`.
+- [x] Add TweetEval-emotion → `benchmarks/academic/tweeteval_emotion/`.
 - [ ] Add PAWS → `benchmarks/academic/paws/`.
 - [ ] Add post-cutoff arXiv classification → `benchmarks/academic/arxiv_post_cutoff/`. Must include a `make_dataset.py` that pins the cutoff rule explicitly (dataset dates strictly later than the backbone's training cutoff) so the "couldn't have seen it" claim is defensible when we swap backbones.
 - [ ] Reword + reorder stability runner — reuse `bernoulli/debias.py` for reorder; add a lightweight paraphrase set per benchmark (3 reworded stems is enough).
