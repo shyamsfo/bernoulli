@@ -68,7 +68,7 @@ Headline metric per benchmark is **accuracy** unless noted. ECE is 10-bin (JevBe
 | [Banking77](academic/banking77/) | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
 | [TweetEval-emotion](academic/tweeteval_emotion/) | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
 | [PAWS](academic/paws/) | TBD       | TBD                      | n/a (binary)     | TBD         | TBD                | TBD          | TBD       |
-| arXiv post-cutoff     | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
+| [arXiv post-cutoff](academic/arxiv_post_cutoff/) | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
 
 ### Use cases (M9)
 
