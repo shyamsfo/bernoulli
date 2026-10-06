@@ -103,18 +103,29 @@ section{padding:88px 0;border-top:1px solid var(--line)}
 .sec-head h2{font:400 clamp(36px,4.6vw,52px)/1.05 "Instrument Serif",serif;margin-top:14px}
 .sec-head p{margin-top:16px;color:var(--ink-2);font-size:17px}
 
-/* compare */
-.compare{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.lane{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
-.lane h3{font:500 15px/1.3 Inter,sans-serif;display:flex;justify-content:space-between;align-items:center}
-.lane ol{list-style:none;margin-top:18px;display:grid;gap:8px}
-.lane li{font:13px/1.4 "JetBrains Mono",monospace;padding:10px 12px;border-radius:7px;background:var(--surface-2);color:var(--ink-2);display:flex;gap:10px}
-.lane li b{color:var(--ink-3);font-weight:400}
-.lane.old li:nth-child(n+3){text-decoration:line-through;text-decoration-color:var(--ink-3)}
-.lane.new{border-color:var(--accent)}
-.lane.new li{background:var(--accent-soft);color:var(--ink)}
-.lane.new li b{color:var(--accent)}
-@media (max-width:760px){.compare{grid-template-columns:1fr}}
+/* why — code comparison + wins */
+.why-code{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:36px}
+.why-lane{background:var(--code-bg);color:var(--code-ink);border-radius:var(--radius);overflow:hidden;border:1px solid #ffffff14}
+.why-lane.new{border-color:var(--accent)}
+.why-head{padding:12px 16px;border-bottom:1px solid #ffffff14;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.why-head .label{font:500 12px/1 "JetBrains Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--code-ink)}
+.why-head .label.new{color:var(--accent)}
+.why-head .sub{font:11px/1.3 "JetBrains Mono",monospace;color:var(--code-dim)}
+.why-lane pre{padding:16px 18px;font:12px/1.65 "JetBrains Mono",monospace;overflow-x:auto;white-space:pre;color:var(--code-ink)}
+.why-lane pre .k{color:var(--code-key)} .why-lane pre .s{color:var(--code-str)} .why-lane pre .c{color:var(--code-dim)}
+.why-lane pre .warn{color:var(--warn)}
+@media (max-width:900px){.why-code{grid-template-columns:1fr}}
+
+.why-wins{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.win{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+.win .stat{font:400 38px/1 "Instrument Serif",serif;color:var(--accent)}
+.win .stat small{font-size:14px;color:var(--ink-3);font-family:"JetBrains Mono",monospace;letter-spacing:.04em;margin-left:4px}
+.win h4{margin-top:10px;font-size:15px;font-weight:600}
+.win p{margin-top:8px;font-size:13.5px;color:var(--ink-2);line-height:1.55}
+.win code{font:12px "JetBrains Mono",monospace;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+.why-foot{margin-top:28px;font-size:14px;color:var(--ink-3);text-align:center}
+@media (max-width:900px){.why-wins{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.why-wins{grid-template-columns:1fr}}
 
 /* use cases */
 .use-cases{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
@@ -270,6 +281,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
   <div class="wrap">
     <a href="#" class="brand"><span class="brand-mark" aria-hidden="true"></span>Bernoulli</a>
     <div class="nav-links">
+      <a href="#why" class="hide-sm">Why</a>
       <a href="#use-cases" class="hide-sm">Use cases</a>
       <a href="#how" class="hide-sm">How it works</a>
       <a href="#benchmarks" class="hide-sm">Benchmarks</a>
@@ -339,30 +351,80 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
     <div class="sec-head">
       <div class="eyebrow">Why</div>
       <h2>Your app needs a branch, not a paragraph.</h2>
-      <p>The usual way to get a decision from an LLM is to make it write text and then hope the text parses. Bernoulli reads the answer straight out of the model's logits instead.</p>
+      <p>Traditional LLM calls stuff instructions, context, and the question into one prompt, then parse the generated text. Bernoulli splits context (<em>state</em>) from queries (<em>questions</em>) and reads the probability directly. Same backbone — different reading mechanism.</p>
     </div>
-    <div class="compare">
-      <div class="lane old">
-        <h3>Prompted LLM <span class="eyebrow">generative</span></h3>
-        <ol>
-          <li><b>1</b>Prompt: "Reply in JSON…"</li>
-          <li><b>2</b>Generate tokens</li>
-          <li><b>3</b>Parse output, repair malformed JSON</li>
-          <li><b>4</b>Retry on refusal or off-format answer</li>
-          <li><b>5</b>Confidence? Ask the model to guess one</li>
-        </ol>
+
+    <div class="why-code">
+      <div class="why-lane">
+        <div class="why-head">
+          <span class="label">Traditional LLM</span>
+          <span class="sub">one call per question · parse what comes back</span>
+        </div>
+<pre><span class="c">// one HTTP call per question</span>
+POST /chat/completions
+{
+  <span class="k">"messages"</span>: [
+    {<span class="k">"role"</span>: <span class="s">"system"</span>,
+     <span class="k">"content"</span>: <span class="s">"Reply with one word: refund, exchange, tracking, other."</span>},
+    {<span class="k">"role"</span>: <span class="s">"user"</span>,
+     <span class="k">"content"</span>: <span class="s">"&lt;the email&gt;\nWhat does the customer want?"</span>}
+  ]
+}
+
+<span class="c">// response — now parse it</span>
+response.choices[0].message.content === <span class="s">"refund"</span>
+                                 <span class="warn">// or "refund."</span>
+                                 <span class="warn">// or "The customer wants refund."</span>
+                                 <span class="warn">// or a refusal, or malformed JSON...</span>
+<span class="c">// confidence? ask the model to guess one, maybe parse that too</span></pre>
       </div>
-      <div class="lane new">
-        <h3>Bernoulli <span class="eyebrow" style="color:var(--accent)">logit scoring</span></h3>
-        <ol>
-          <li><b>1</b>State + typed question</li>
-          <li><b>2</b>One forward pass</li>
-          <li><b>3</b>Softmax over label tokens only</li>
-          <li><b>4</b>Debias + calibrate</li>
-          <li><b>5</b>Typed decision with a real probability</li>
-        </ol>
+      <div class="why-lane new">
+        <div class="why-head">
+          <span class="label new">Bernoulli</span>
+          <span class="sub">many questions per call · typed decision out</span>
+        </div>
+<pre><span class="c">// one call, as many questions as you want</span>
+POST /v1/decide
+{
+  <span class="k">"state"</span>: {<span class="k">"text"</span>: <span class="s">"&lt;the email&gt;"</span>},
+  <span class="k">"questions"</span>: [
+    {<span class="k">"id"</span>: <span class="s">"intent"</span>, <span class="k">"type"</span>: <span class="s">"choice"</span>,
+     <span class="k">"prompt"</span>: <span class="s">"What does the customer want?"</span>,
+     <span class="k">"options"</span>: [<span class="s">"refund"</span>, <span class="s">"exchange"</span>, <span class="s">"tracking"</span>, <span class="s">"other"</span>]}
+  ]
+}
+
+<span class="c">// response — already typed</span>
+response.decisions.intent.answer       === <span class="s">"refund"</span>
+response.decisions.intent.confidence   === 0.72
+response.decisions.intent.distribution.tracking === 0.24</pre>
       </div>
     </div>
+
+    <div class="why-wins">
+      <div class="win">
+        <div class="stat">~70<small>ms</small></div>
+        <h4>Per added question</h4>
+        <p>State tokens are processed once per call. Ask 20 things about one document — pay for the document once, each question adds ~70 ms on a 7B.</p>
+      </div>
+      <div class="win">
+        <div class="stat">p=0.72</div>
+        <h4>Typed, not text</h4>
+        <p>Branch on <code>confidence &gt; 0.9</code> or <code>expected ≥ 4.0</code>. No regex, no "did it say Yes or yes.", no JSON repair, no retry on refusal.</p>
+      </div>
+      <div class="win">
+        <div class="stat">1×N</div>
+        <h4>Composable</h4>
+        <p>Same state, different question configs. A/B test wording, swap in a calibrated temperature per type, add a question — no re-engineering.</p>
+      </div>
+      <div class="win">
+        <div class="stat">1<small>token</small></div>
+        <h4>One output token</h4>
+        <p>API pricing is weighted toward output: 3–5× input rates. Classification generates one token (<code>max_tokens=1</code>) — the output line item drops to the floor.</p>
+      </div>
+    </div>
+
+    <p class="why-foot">Bernoulli is for decisions, not content. If you need prose — summaries, explanations, rewrites — use a generative LLM.</p>
   </div>
 </section>
 
