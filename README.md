@@ -6,7 +6,7 @@ Jev takes unstructured state (text or JSON) plus typed questions and returns cal
 
 - Jev reference: [typesafe.ai](https://typesafe.ai/) · [System One concept docs](https://docs.typesafe.ai/concepts/system-one)
 - Full brief: [`vision_and_roadmap.md`](vision_and_roadmap.md)
-- Usage (CLI + HTTP, config, examples): [`USAGE.md`](USAGE.md)
+- Usage: [`HTTP.md`](HTTP.md) · [`CLI.md`](CLI.md) · landing: [`USAGE.md`](USAGE.md)
 - Current milestone + task list: [`product/milestones.md`](product/milestones.md)
 - Dev box (AWS g5.xlarge): [`deploy/README.md`](deploy/README.md)
 - Session reports: [`product/reports/`](product/reports/)
