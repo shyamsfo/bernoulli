@@ -128,3 +128,35 @@ Notes:
 - `g6` and `g6e` capacity in `us-east-1` has been intermittent; the current pin to `g5.xlarge` is the result of hitting `InsufficientInstanceCapacity` on both across every supported AZ. Try `-var 'availability_zone=us-east-1b'` (or `1d`) if the default also runs dry.
 - The table above sticks to the Qwen2.5-VL family because that's what the scorer + chat template are tested with. Any other transformers-compatible VLM should work — the single-token-label check in `bernoulli/labels.py` catches tokenizer surprises at `HFScorer` construction, so a bad swap fails loudly rather than silently.
 - Memory numbers are approximate — exact footprint depends on KV cache sizing, prefix caching, and your tolerance for max context length. Measure, don't guess.
+
+---
+
+## CPU-only / Graviton deployment (llama.cpp)
+
+**Short answer:** possible for low volume, not currently wired up. The technique Bernoulli uses — one forward pass per question, read logits at the answer position restricted to label tokens — fits llama.cpp cleanly, since `llama.cpp` exposes per-token logprobs over the full vocab natively. There is no fundamental blocker beyond writing a `LlamaCppScorer` that implements the same `Scorer` protocol as `HFScorer` / `VLLMScorer`. Debias, chunked scoring, and calibration all sit above that protocol and would work unchanged.
+
+**What exists today:** nothing CPU-specific. `BERNOULLI_SCORER` has `hf` and `vllm`; both need CUDA. A `llamacpp` scorer would go in `bernoulli/llamacpp_scorer.py`, probably via [`llama-cpp-python`](https://github.com/abetlen/llama-cpp-python) with `logits_all=True`, slicing the final-position logits by the single-token label ids from `bernoulli/labels.py`.
+
+**Rough latency expectations** (Qwen2.5-VL-7B as Q4_K_M GGUF, ~4.5 GB RAM, ~300-token prompt + 1 output token, reverse debias = 2 passes):
+
+| Host                                      | ~$/hr    | Per-question latency (est.) | vs A10G reference |
+|-------------------------------------------|----------|-----------------------------|-------------------|
+| A10G 24 GB (`g5.xlarge`, current GPU ref) | ~$1.01   | ~75 ms                      | 1×                |
+| Graviton3 `c7g.4xlarge` (16 vCPU, SVE)    | ~$0.58   | ~3–6 s                      | ~50×              |
+| Graviton4 `c8g.4xlarge` (16 vCPU, SVE2)   | ~$0.64   | ~2–5 s                      | ~40×              |
+| Intel `c7i.4xlarge` (16 vCPU, AVX-512)    | ~$0.71   | ~3–5 s                      | ~50×              |
+| M3 Max / M4 Pro Mac (Metal)               | laptop   | ~1–2 s                      | ~20×              |
+
+Numbers are back-of-envelope from published llama.cpp benchmarks on 7B Q4_K_M; measure before quoting them.
+
+**When CPU makes sense:**
+- Air-gapped / on-prem environments where no GPU is available.
+- Hobbyist or demo use at low volume (hundreds of decisions/day, not thousands/minute).
+- Local dev on an Apple Silicon Mac — Metal-backed llama.cpp is a genuinely useful fast loop.
+
+**When it does not:**
+- Any latency SLO under ~1 s. The GPU path is 20–50× faster per question.
+- High-concurrency serving — llama.cpp batching is primitive next to vLLM's continuous batching + prefix caching. A single GPU box will out-serve a rack of Gravitons.
+- The multimodal path (M6+). llama.cpp has partial Qwen2.5-VL vision support via `mmproj` files, but it is less mature than the HF/vLLM paths; expect friction.
+
+**Alternative without llama.cpp:** `HFScorer` with `BERNOULLI_DEVICE=cpu` and `BERNOULLI_DTYPE=float32` runs the existing code path on any CPU box, no new scorer required. It is slower than llama.cpp (full-precision transformers on CPU, no quantization) but needs zero new code. Useful as a sanity check or for a one-shot script where you don't care about latency.
