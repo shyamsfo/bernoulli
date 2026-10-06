@@ -296,8 +296,9 @@ if d["safe"]["probability"] < 0.9:
 
 # Factual check: if model is confidently wrong-shaped, add a disclaimer
 if d["factual_risk"]["expected"] >= 4.0:
-    response_to_user = append_disclaimer(response_to_user,
-        "Some factual details may be inaccurate — please verify.")
+    response_to_user = append_disclaimer(
+        response_to_user, "Some factual details may be inaccurate — please verify."
+    )
 
 # Over-refusal check: if the model refused but shouldn't have, log for
 # the eval team
@@ -501,16 +502,20 @@ if d["deploy_risk"]["expected"] >= 3.0:
     pr.block_automerge()
 
 if not d["test_coverage_adequate"]["answer"] and d["test_coverage_adequate"]["probability"] < 0.3:
-    pr.add_comment("Model flagged this as missing test coverage for the behavior change. "
-                   "Reviewers: please verify.")
+    pr.add_comment(
+        "Model flagged this as missing test coverage for the behavior change. "
+        "Reviewers: please verify."
+    )
 
 if not d["backwards_compatible"]["answer"]:
     pr.add_label("breaking-change")
 
 # Dashboards: track severity + deploy-risk distributions across weeks
-record_pr_signal(pr_id=pr.id,
-                 severity_dist=d["severity"]["distribution"],
-                 deploy_risk_dist=d["deploy_risk"]["distribution"])
+record_pr_signal(
+    pr_id=pr.id,
+    severity_dist=d["severity"]["distribution"],
+    deploy_risk_dist=d["deploy_risk"]["distribution"],
+)
 ```
 
 Note that `category` is a 7-way choice and `severity` / `deploy_risk` are tiny-scale ratings (1–3 and 1–5). The right scale granularity is "the number of distinct actions you'd take" — don't ask for 1–10 severity if your action space is only `{merge-now, needs-senior-review, don't-deploy}`.
