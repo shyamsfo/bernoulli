@@ -32,20 +32,26 @@ Single HTML file, section-per-section. In reading order:
 
 | Section id   | Purpose                                                  |
 |--------------|----------------------------------------------------------|
-| hero         | Headline + lede + CTAs + live demo card (right side).    |
+| hero         | Headline + lede + CTAs (GitHub / Book a demo / usage guide) + live demo card (right side). |
 | `#why`       | Why Bernoulli vs a traditional LLM — side-by-side JSON code lanes + 4-wins strip. |
 | `#use-cases` | Three use-case cards (Support triage / LLM guardrails / Content moderation) with links to USECASES.md. |
 | `#features`  | 6-tile feature grid.                                     |
 | `#how`       | 5-step visual pipeline — Build prompt → Forward pass → Keep labels → Debias → Calibrate. |
 | `#benchmarks`| SST-2 table (Bernoulli vs generative baseline) + 3 highlight callouts. |
 | `#trust`     | Confidence story — waffle chart + interactive coverage slider. |
-| `.final`     | CTA + git clone one-liner.                               |
+| `.final`     | CTAs (GitHub / Book a demo / Contact us) + git clone one-liner. |
+| `#demo-dialog` | "Book a demo" popup (native `<dialog>`), opened by any `[data-open-demo]` button. See *Book a demo form* below. |
+| `footer`     | Tagline + `contact@deepstore.ai` mailto + Jev attribution. |
 
 Nav links reference these ids. Keep ids stable if restructuring.
+
+Top nav: Why · Use cases · How it works · Benchmarks, then an accent-filled **Book a demo** button (`.btn-accent`, opens the dialog), the theme toggle, and GitHub. `#trust` deliberately has no nav link. On narrow screens the text links hide (≤760px), GitHub shrinks to its icon (≤480px), and the theme toggle hides (≤340px) so the bar never overflows.
 
 ## Design system
 
 CSS variables live at the top of the `<style>` block. Light + dark themes auto-switch via `prefers-color-scheme`; explicit override via `data-theme="light|dark"` on `<html>`.
+
+**Theme toggle (two-state):** first visit follows the system setting (no `data-theme` set, CSS media query decides). The nav button flips light ↔ dark, sets `data-theme`, and saves the choice in `localStorage['theme']`. Its icon shows the theme a click switches *to* (moon on light, sun on dark). A tiny inline script in `<head>` applies the saved choice before first paint so there's no flash. While no choice is saved, the icon tracks live system changes. There is deliberately no "auto" state in the UI.
 
 **Type:**
 - `Instrument Serif` — hero H1, section H2s, big stat numerals.
@@ -82,6 +88,36 @@ CSS variables live at the top of the `<style>` block. Light + dark themes auto-s
 **Keeping metrics honest:**
 - The hero facts (`~145 ms p50`, `0.025 ECE`, `0 outbound calls`) and the Benchmarks table come from real eval runs. When upstream numbers change, update these.
 - The ~70 ms "per added question" number in the Why 4-wins strip comes from the M4f load test ([`evals/reports/loadtest.md`](https://github.com/shyamsfo/bernoulli/blob/main/evals/reports/loadtest.md)). Current steady-state on A10G 24GB with reverse debias.
+
+## Book a demo form
+
+The "Book a demo" popup writes each request as a row in a Google Sheet, via a **Google Apps Script web app** bound to that sheet. No third-party form service.
+
+**Wiring (in `index.html`):**
+- Any element with `data-open-demo` opens `#demo-dialog`. Close via `data-close-demo`, Esc, or backdrop click.
+- Fields: Name, Company, Email (required, validated client-side), Notes (optional).
+- `submitDemoRequest()` in the inline script is the only integration point. It POSTs `application/x-www-form-urlencoded` (a CORS "simple request", so no preflight) to `DEMO_ENDPOINT` with keys `Name`, `Email`, `Notes`, `Company`, plus the honeypot `website`.
+- Success requires the script to reply `{"ok":true}`. Anything else (HTTP error, `{"ok":false}`, network failure) shows the inline error with the `contact@deepstore.ai` fallback and keeps the user's input.
+- `.hp` / `#d-website` is a visually hidden honeypot. The script silently drops rows where it's filled.
+
+**The sheet:**
+- Row 1 headers: `Name | Email | Notes | Company`. Optional `Timestamp` column anywhere, which the script fills with the submission time.
+- The script maps columns **by header name**, so columns can be reordered freely. A new column only gets data if the page sends a key with exactly that name.
+
+**The script** (Extensions → Apps Script in the sheet), `doPost(e)`:
+- Reads `e.parameter`, drops honeypot hits, appends one row in header order with a `LockService` lock.
+- Sanitizes values: caps at 5000 chars and prefixes `'` to anything starting with `= + - @` (blocks formula injection).
+- Returns JSON via `ContentService`.
+- Deployed as **Web app — Execute as: Me — Who has access: Anyone**.
+
+**Changing the script — important:** use **Deploy → Manage deployments → ✏️ → Version: New version**. That keeps the same `/exec` URL. "New deployment" mints a new URL; if that happens, update `DEMO_ENDPOINT` in `index.html` and redeploy the page.
+
+**Testing:**
+- Script alone: `curl -sL -d "Name=Test&Email=t@example.com&Notes=hi&Company=Acme" "$DEMO_ENDPOINT"` should return `{"ok":true}` and add a row. Delete the test row afterwards.
+- Page: after `just deploy`, submit once on the live site and confirm the row plus the thank-you screen.
+- For automated/local tests, intercept `script.google.com` (e.g. Playwright `page.route`) so test runs don't write rows.
+
+**History:** a SheetMonkey endpoint was tried first and dropped (rows weren't landing in the sheet).
 
 ## Recipes
 

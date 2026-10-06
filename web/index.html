@@ -57,6 +57,12 @@ nav .wrap{display:flex;align-items:center;justify-content:space-between;height:6
 .btn-primary:hover{border-color:var(--ink)}
 .btn svg{width:16px;height:16px;fill:currentColor}
 @media (max-width:760px){.nav-links .hide-sm{display:none}}
+.btn-accent{background:var(--accent);color:var(--bg);border-color:var(--accent);cursor:pointer}
+.btn-accent:hover{border-color:var(--accent);filter:brightness(1.08)}
+.btn-accent{white-space:nowrap}
+@media (max-width:480px){.nav-links{gap:8px}.nav-links .btn-accent{padding:9px 12px}.nav-links .gh-label{display:none}}
+@media (max-width:380px){.brand{font-size:20px;gap:8px}.nav-links{gap:6px}.nav-links .btn-accent{padding:9px 10px}}
+@media (max-width:340px){#theme-toggle{display:none}}
 
 /* hero */
 .hero{padding:88px 0 72px;display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center}
@@ -267,9 +273,45 @@ svg.curve text.lab-b{fill:var(--accent)}
 /* theme toggle */
 .btn-icon{padding:9px;line-height:0}
 .btn-icon svg{width:16px;height:16px;display:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-#theme-toggle[data-mode="auto"] svg[data-icon="auto"],
-#theme-toggle[data-mode="light"] svg[data-icon="light"],
-#theme-toggle[data-mode="dark"] svg[data-icon="dark"]{display:block}
+#theme-toggle[data-mode="light"] svg[data-icon="dark"],
+#theme-toggle[data-mode="dark"] svg[data-icon="light"]{display:block}
+
+
+/* book-a-demo dialog */
+.demo-dlg{margin:auto;width:min(480px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:0;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);box-shadow:0 30px 80px -20px rgba(0,0,0,.45)}
+.demo-dlg::backdrop{background:rgba(10,12,16,.55);backdrop-filter:blur(3px)}
+.demo-dlg[open]{animation:dlg-in .18s ease-out}
+@keyframes dlg-in{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.demo-dlg form{padding:28px}
+.dlg-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.dlg-head h2{font:400 34px/1.05 "Instrument Serif",serif;margin-top:10px}
+.dlg-head p{margin-top:8px;font-size:14.5px;color:var(--ink-2)}
+.dlg-x{flex:none;width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);font:18px/1 Inter,sans-serif;cursor:pointer}
+.dlg-x:hover{color:var(--ink);border-color:var(--ink-3)}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px}
+.field{display:grid;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font:500 11px/1 "JetBrains Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.field label .opt{text-transform:none;letter-spacing:0;color:var(--ink-3);opacity:.8}
+.field input,.field textarea{width:100%;font:15px/1.4 Inter,sans-serif;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;transition:border-color .15s,box-shadow .15s}
+.field textarea{min-height:96px;resize:vertical}
+.field input::placeholder,.field textarea::placeholder{color:var(--ink-3)}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.field input[aria-invalid="true"]{border-color:var(--warn)}
+.field .err{font-size:12.5px;color:var(--warn);min-height:0}
+.hp{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;opacity:0;pointer-events:none}
+.dlg-error{margin-top:18px;padding:10px 12px;border-radius:8px;border:1px solid var(--warn);color:var(--warn);font-size:13.5px}
+.dlg-error a{color:inherit}
+.dlg-actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:22px}
+.dlg-actions .btn{cursor:pointer}
+.demo-dlg form[aria-busy="true"],.demo-dlg form[aria-busy="true"] *{cursor:progress!important}
+.dlg-actions .btn:disabled{opacity:.7;transform:none}
+.dlg-done{text-align:center;padding:12px 0 4px}
+.dlg-done .tick{width:48px;height:48px;margin:0 auto;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:22px}
+.dlg-done h2{font:400 32px/1.1 "Instrument Serif",serif;margin-top:14px}
+.dlg-done p{margin-top:8px;font-size:14.5px;color:var(--ink-2)}
+.dlg-done .btn{margin-top:20px;cursor:pointer}
+@media (max-width:560px){.fields{grid-template-columns:1fr}.demo-dlg form{padding:22px}}
 
 /* cta + footer */
 .final{text-align:center;padding:104px 0}
@@ -281,6 +323,10 @@ svg.curve text.lab-b{fill:var(--accent)}
 footer{border-top:1px solid var(--line);padding:28px 0 40px;font-size:13px;color:var(--ink-3)}
 footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 </style>
+<script>
+  // Apply a saved theme before first paint (no flash). No saved choice = follow the system.
+  try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch(e) {}
+</script>
 </head>
 <body>
 
@@ -292,15 +338,14 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
       <a href="#use-cases" class="hide-sm">Use cases</a>
       <a href="#how" class="hide-sm">How it works</a>
       <a href="#benchmarks" class="hide-sm">Benchmarks</a>
-      <a href="#trust" class="hide-sm">Confidence</a>
-      <button id="theme-toggle" class="btn btn-icon" type="button" aria-label="Toggle color theme" title="Theme: auto">
-        <svg data-icon="auto" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+      <button type="button" class="btn btn-accent" data-open-demo>Book a demo</button>
+      <button id="theme-toggle" class="btn btn-icon" type="button" aria-label="Toggle color theme" title="Switch theme">
         <svg data-icon="light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.07-7.07l-1.42 1.42M6.34 17.66l-1.42 1.42m0-14.14l1.42 1.42m11.31 11.31l1.42 1.42"/></svg>
         <svg data-icon="dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
       </button>
-      <a class="btn" href="https://github.com/shyamsfo/bernoulli" target="_blank" rel="noopener">
+      <a class="btn" aria-label="GitHub" href="https://github.com/shyamsfo/bernoulli" target="_blank" rel="noopener">
         <svg viewBox="0 0 16 16" aria-hidden="true" style="fill:currentColor;stroke:none"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        GitHub
+        <span class="gh-label">GitHub</span>
       </a>
     </div>
   </div>
@@ -316,6 +361,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         View on GitHub
       </a>
+      <button class="btn" type="button" data-open-demo>Book a demo</button>
       <a class="btn" href="https://github.com/shyamsfo/bernoulli/blob/main/USAGE.md" target="_blank" rel="noopener">Read the usage guide →</a>
     </div>
     <div class="facts">
@@ -657,6 +703,8 @@ curl -s localhost:8000/v1/decide \
     <p>Bernoulli is early and moving fast. Star the repo, try the CLI on your own data, and watch it grow.</p>
     <div class="ctas">
       <a class="btn btn-primary" href="https://github.com/shyamsfo/bernoulli" target="_blank" rel="noopener">github.com/shyamsfo/bernoulli</a>
+      <button class="btn" type="button" data-open-demo>Book a demo</button>
+      <a class="btn" href="mailto:contact@deepstore.ai">Contact us</a>
     </div>
     <div class="clone"><span id="clone-cmd">git clone https://github.com/shyamsfo/bernoulli.git</span><button id="copy" type="button">Copy</button></div>
   </div>
@@ -664,31 +712,65 @@ curl -s localhost:8000/v1/decide \
 
 <footer>
   <div class="wrap">
-    <span>Bernoulli · an open-weight decision model</span>
+    <span>Bernoulli · an open-weight decision model · <a href="mailto:contact@deepstore.ai">contact@deepstore.ai</a></span>
     <span>Inspired by TypeSafe AI's Jev. Independent project, not affiliated.</span>
   </div>
 </footer>
 
+<dialog id="demo-dialog" class="demo-dlg" aria-labelledby="demo-title">
+  <form id="demo-form" novalidate>
+    <div class="dlg-head">
+      <div>
+        <div class="eyebrow">Book a demo</div>
+        <h2 id="demo-title">See Bernoulli on your data.</h2>
+        <p>Tell us a little about what you're deciding. We'll get back to you within a couple of business days.</p>
+      </div>
+      <button type="button" class="dlg-x" data-close-demo aria-label="Close">×</button>
+    </div>
+    <div class="hp" aria-hidden="true"><label for="d-website">Website</label><input id="d-website" name="website" tabindex="-1" autocomplete="off"></div>
+    <div class="fields">
+      <div class="field"><label for="d-name">Name</label><input id="d-name" name="name" autocomplete="name" required placeholder="Ada Lovelace"><span class="err" id="e-name"></span></div>
+      <div class="field"><label for="d-company">Company</label><input id="d-company" name="company" autocomplete="organization" required placeholder="Analytical Engines Inc."><span class="err" id="e-company"></span></div>
+      <div class="field full"><label for="d-email">Email</label><input id="d-email" name="email" type="email" autocomplete="email" required placeholder="ada@company.com"><span class="err" id="e-email"></span></div>
+      <div class="field full"><label for="d-notes">Notes <span class="opt">(optional)</span></label><textarea id="d-notes" name="notes" placeholder="What decisions would you like to automate? Rough volume, latency needs, on-prem constraints…"></textarea></div>
+    </div>
+    <p class="dlg-error" id="demo-error" role="alert" hidden>Couldn't send your request. Please try again, or email <a href="mailto:contact@deepstore.ai">contact@deepstore.ai</a>.</p>
+    <div class="dlg-actions">
+      <button type="button" class="btn" data-close-demo>Cancel</button>
+      <button type="submit" class="btn btn-primary" id="demo-submit">Request demo</button>
+    </div>
+  </form>
+  <div class="dlg-done" id="demo-done" hidden style="padding:28px">
+    <div class="tick" aria-hidden="true">✓</div>
+    <h2>Thanks, we've got it.</h2>
+    <p id="demo-done-msg">We'll be in touch shortly.</p>
+    <button type="button" class="btn" data-close-demo>Close</button>
+  </div>
+</dialog>
+
 <script>
-  // theme toggle — cycles auto → light → dark → auto; persists in localStorage
+  // theme toggle — first visit follows the system setting; the button flips light <-> dark
+  // and remembers the choice. The saved choice is applied early by the inline script in <head>.
   (function(){
     const html = document.documentElement;
     const btn = document.getElementById('theme-toggle');
     const KEY = 'theme';
-    const saved = localStorage.getItem(KEY);
-    if (saved === 'light' || saved === 'dark') html.setAttribute('data-theme', saved);
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const current = () => html.getAttribute('data-theme') || (mq.matches ? 'dark' : 'light');
     function sync(){
-      const mode = html.getAttribute('data-theme') || 'auto';
-      btn.setAttribute('data-mode', mode);
-      btn.title = 'Theme: ' + mode + ' (click to change)';
+      const cur = current(), next = cur === 'dark' ? 'light' : 'dark';
+      btn.setAttribute('data-mode', cur);
+      btn.title = 'Switch to ' + next + ' theme';
+      btn.setAttribute('aria-label', btn.title);
     }
     btn.addEventListener('click', ()=>{
-      const cur = html.getAttribute('data-theme');
-      const next = !cur ? 'light' : cur === 'light' ? 'dark' : null;
-      if (next){ html.setAttribute('data-theme', next); localStorage.setItem(KEY, next); }
-      else { html.removeAttribute('data-theme'); localStorage.removeItem(KEY); }
+      const next = current() === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      try { localStorage.setItem(KEY, next); } catch(e) {}
       sync();
     });
+    // While the visitor hasn't chosen, track live system changes (e.g. macOS auto dark at sunset).
+    mq.addEventListener('change', sync);
     sync();
   })();
 
@@ -776,6 +858,72 @@ const GENERR=[13,16,73,85,88,112,117,143,159,166,183,223,230,235,243,249,266,271
     mk.setAttribute('cx',x(k/N));mk.setAttribute('cy',y(acc));ml.setAttribute('x1',x(k/N));ml.setAttribute('x2',x(k/N));
   }
   cov.addEventListener('input',update); update();
+
+
+  // ---- book-a-demo dialog
+  (function(){
+    const dlg=document.getElementById('demo-dialog'), form=document.getElementById('demo-form'),
+          done=document.getElementById('demo-done'), submit=document.getElementById('demo-submit');
+    const open=()=>{form.hidden=false;done.hidden=true;document.getElementById('demo-error').hidden=true;dlg.showModal();document.getElementById('d-name').focus()};
+    const close=()=>dlg.close();
+    document.querySelectorAll('[data-open-demo]').forEach(b=>b.addEventListener('click',open));
+    dlg.addEventListener('click',e=>{ if(e.target.closest('[data-close-demo]')||e.target===dlg) close(); });
+
+    const rules={
+      name:v=>v.trim()?'':'Please enter your name.',
+      company:v=>v.trim()?'':'Please enter your company.',
+      email:v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())?'':'Please enter a valid email.'
+    };
+    function validate(){
+      let first=null;
+      for(const [k,fn] of Object.entries(rules)){
+        const el=form.elements[k], msg=fn(el.value);
+        el.setAttribute('aria-invalid',msg?'true':'false');
+        document.getElementById('e-'+k).textContent=msg;
+        if(msg&&!first) first=el;
+      }
+      if(first) first.focus();
+      return !first;
+    }
+    Object.keys(rules).forEach(k=>form.elements[k].addEventListener('input',e=>{
+      if(e.target.getAttribute('aria-invalid')==='true'){const m=rules[k](e.target.value);e.target.setAttribute('aria-invalid',m?'true':'false');document.getElementById('e-'+k).textContent=m;}
+    }));
+
+    // Demo requests go to a Google Sheet via a Google Apps Script web app (doPost).
+    // The script fills columns by matching row-1 headers: Name, Email, Notes, Company
+    // (+ Timestamp if present). Sent as urlencoded so it's a CORS "simple request".
+    // If the script is redeployed as a NEW deployment, its /exec URL changes. Update it here.
+    const DEMO_ENDPOINT='https://script.google.com/macros/s/AKfycbx6bSGZwSdBOqZR7wFyHdTsO6bBS6_tC8aM8S11lobxy0iKBLFNn1obCfY--1P1U6D2/exec';
+    async function submitDemoRequest(data){
+      const body=new URLSearchParams({
+        Name:data.name.trim(),
+        Email:data.email.trim(),
+        Notes:(data.notes||'').trim(),
+        Company:data.company.trim(),
+        website:data.website||''          // honeypot; script drops rows where this is filled
+      });
+      const res=await fetch(DEMO_ENDPOINT,{method:'POST',body});
+      if(!res.ok) throw new Error('Apps Script HTTP '+res.status);
+      const out=await res.json().catch(()=>({}));
+      if(!out.ok) throw new Error('Apps Script: '+(out.error||'unexpected response'));
+    }
+
+    form.addEventListener('submit',async e=>{
+      e.preventDefault();
+      document.getElementById('demo-error').hidden=true;
+      if(!validate()) return;
+      const data=Object.fromEntries(new FormData(form));
+      submit.disabled=true; submit.textContent='Sending…'; form.setAttribute('aria-busy','true');
+      try{
+        await submitDemoRequest(data);
+        document.getElementById('demo-done-msg').textContent="We'll be in touch at "+data.email.trim()+' shortly.';
+        form.reset(); form.hidden=true; done.hidden=false;
+      }catch(err){
+        console.error('demo request failed',err);
+        document.getElementById('demo-error').hidden=false;
+      }finally{ submit.disabled=false; submit.textContent='Request demo'; form.removeAttribute('aria-busy'); }
+    });
+  })();
 
   // copy clone command
   document.getElementById('copy').addEventListener('click',e=>{
