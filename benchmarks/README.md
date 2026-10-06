@@ -84,7 +84,7 @@ Headline metric per benchmark is **accuracy** unless noted. ECE is 10-bin (JevBe
 
 | Benchmark | Bernoulli | Jev | Delta |
 |-----------|-----------|-----|-------|
-| JevBench  | TBD       | TBD | TBD   |
+| [JevBench](jevbench/) | TBD       | TBD | TBD   |
 
 ### Latency + cost (reported once per backbone, not per benchmark)
 

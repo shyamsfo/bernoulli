@@ -221,10 +221,12 @@ Exit criteria: Each use-case card on the landing page has at least one benchmark
 ---
 
 ## M10 — JevBench adapter + leaderboard submission
-**Status**: ⏳ pending
+**Status**: 🔄 in progress
 **Goal**: Run Bernoulli through the official JevBench harness and submit to its public leaderboard. Getting listed is distribution; being measured on their rules is credibility.
 
 Tasks:
+- [x] Scaffold `benchmarks/jevbench/` — package, README, `results/` dir. The README spells out the three unknowns (upstream URL, adapter contract, submission flow) and the implementation plan once they're answered. **No adapter code yet** — writing stubs that might not match the real contract would be worse than a clear "here's what we need" doc.
+- [ ] Resolve the three unknowns from the README. Short investigation on typesafe.ai + docs.typesafe.ai, not a research project. **Next action.**
 - [ ] Vendor or clone JevBench into `benchmarks/jevbench/upstream/` (git submodule or pinned clone — decide based on their license and how often they update).
 - [ ] Write the adapter in `benchmarks/jevbench/adapter.py` so JevBench's harness can call Bernoulli's `/v1/decide`. Honor whatever contract they define for probability output and metric reporting.
 - [ ] Match JevBench conventions exactly: ECE with 10 bins (we already compute this from M8), cost per 1k decisions, their stability protocol (align with M8's where they agree; document any gaps).
