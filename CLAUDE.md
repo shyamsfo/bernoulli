@@ -93,12 +93,19 @@ ssh bernoulli 'cd ~/bernoulli && just test-fast'   # CPU-only, 100+ tests in ~5s
 just status                                   # terraform output + nvidia-smi + df
 just shell
 
-# eval harness
+# eval harness (pre-M8, snapshot reports in evals/reports/)
 ssh bernoulli 'cd ~/bernoulli && just eval sst2 reverse'
 ssh bernoulli 'cd ~/bernoulli && uv run python -m evals.run_eval --dataset banking77'
 ssh bernoulli 'cd ~/bernoulli && uv run python -m evals.fit_calibration \
     --from evals/reports/sst2.json --out calibration/qwen2.5-vl-7b.json'
 just reports-pull                             # bring sidecars + markdown back
+
+# benchmark harness (M8+): per-benchmark runner → benchmarks/<spec>/results/
+# Needs `just serve` up at :8000 first.
+ssh bernoulli 'cd ~/bernoulli && just benchmark academic/sst2 bernoulli,generative,deberta,bge-m3-lr 500'
+ssh bernoulli 'cd ~/bernoulli && just sweep-academic 500 2000'   # full matrix × 6 academic benchmarks
+ssh bernoulli 'cd ~/bernoulli && just sweep-usecase 500 2000'    # full matrix × 5 use-case benchmarks
+just benchmarks-pull                                             # bring results/ back
 
 # serving (two paths)
 ssh bernoulli 'cd ~/bernoulli && just serve'                       # uvicorn, HFScorer
