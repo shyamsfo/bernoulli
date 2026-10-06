@@ -194,7 +194,9 @@ Tasks:
   - [x] 10a. Loader + `make_dataset.py` skeleton + 3-row `data/sample.jsonl` + tests. No new deps yet.
   - [ ] 10b. Run `make_dataset.py` on the dev box (requires `arxiv` dep, writes `data/dataset.jsonl`). Commit the full post-cutoff snapshot.
 - [x] Reword + reorder stability runner — reuse `bernoulli/debias.py` for reorder; add a lightweight paraphrase set per benchmark (3 reworded stems is enough).
-- [ ] Build each baseline for the 6 tasks (same-model generative, DeBERTa-zeroshot, BGE-m3 + LR). Fine-tuned-encoder ceiling is optional per task — do it where a public fine-tune exists; skip if we'd need to train one.
+- [ ] Build each baseline for the 6 tasks (same-model generative, DeBERTa-zeroshot, BGE-m3 + LR). Fine-tuned-encoder ceiling is optional per task — do it where a public fine-tune exists; skip if we'd need to train one. **Split into 12a (runner CLI, no GPU) and 12b (actual sweep across all baselines × 6 tasks on the dev box, GPU-bound).**
+  - [x] 12a. `benchmarks/run.py` CLI — load a benchmark, instantiate baselines, predict + compute metrics + stability, write `results/<date>.md`. One benchmark per invocation.
+  - [ ] 12b. Run the sweep on the dev box for each of the 6 academic benchmarks × the applicable baselines. Commit `results/<date>.md` per benchmark.
 - [ ] First results run: fill `benchmarks/README.md` summary table with Bernoulli vs baselines across the 6 academic tasks + coverage sub-tables + stability column.
 
 Exit criteria: `benchmarks/README.md` renders a comparison table with ≥ 5 of the 6 academic tasks × ≥ 3 baselines (us, same-model generative, DeBERTa-zeroshot). Each task's `results/latest.md` has coverage sub-table and stability score. Historical `evals/reports/*.md` left in place as a snapshot of pre-migration numbers.
