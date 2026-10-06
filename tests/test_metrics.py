@@ -6,7 +6,16 @@ import math
 
 import pytest
 
-from evals.metrics import accuracy, brier, ece, latency_summary, macro_f1, nll
+from benchmarks.common.metrics import (
+    accuracy,
+    brier,
+    coverage_curve,
+    ece,
+    latency_summary,
+    macro_f1,
+    nll,
+    stability,
+)
 
 
 class TestAccuracy:
@@ -113,3 +122,69 @@ class TestLatencySummary:
 
     def test_empty(self) -> None:
         assert latency_summary([]) == {"p50_ms": 0.0, "p95_ms": 0.0, "mean_ms": 0.0}
+
+
+class TestCoverageCurve:
+    def test_perfect_classifier_is_perfect_at_every_coverage(self) -> None:
+        gold = ["a", "b", "a", "b"]
+        preds = [
+            {"a": 0.95, "b": 0.05},
+            {"a": 0.05, "b": 0.95},
+            {"a": 0.80, "b": 0.20},
+            {"a": 0.20, "b": 0.80},
+        ]
+        cov = coverage_curve(gold, preds)
+        assert cov[0.95] == 1.0
+        assert cov[0.50] == 1.0
+
+    def test_kept_subset_is_the_most_confident(self) -> None:
+        gold = ["a", "b", "a", "b"]
+        # The two most confident predictions (0.99 each) are both wrong — on purpose.
+        # At coverage=0.5 we keep only those two: accuracy should be 0.0.
+        # At full coverage we keep all four — the two unconfident ones are correct — accuracy = 0.5.
+        preds = [
+            {"a": 0.01, "b": 0.99},  # most confident, wrong
+            {"a": 0.99, "b": 0.01},  # most confident, wrong
+            {"a": 0.60, "b": 0.40},  # correct
+            {"a": 0.40, "b": 0.60},  # correct
+        ]
+        cov = coverage_curve(gold, preds, levels=[1.0, 0.5])
+        assert cov[1.0] == 0.5
+        assert cov[0.5] == 0.0
+
+    def test_rejects_out_of_range_level(self) -> None:
+        with pytest.raises(ValueError, match="coverage level"):
+            coverage_curve(["a"], [{"a": 1.0, "b": 0.0}], levels=[1.5])
+        with pytest.raises(ValueError, match="coverage level"):
+            coverage_curve(["a"], [{"a": 1.0, "b": 0.0}], levels=[0.0])
+
+    def test_empty(self) -> None:
+        cov = coverage_curve([], [], levels=[0.95, 0.5])
+        assert cov == {0.95: 0.0, 0.5: 0.0}
+
+
+class TestStability:
+    def test_all_variants_agree_with_reference(self) -> None:
+        ref = ["a", "b", "a"]
+        variants = [["a", "b", "a"], ["a", "b", "a"]]
+        assert stability(ref, variants) == 1.0
+
+    def test_one_example_flips_under_one_variant(self) -> None:
+        ref = ["a", "b", "a", "b"]
+        variants = [
+            ["a", "b", "a", "b"],  # all agree
+            ["a", "b", "x", "b"],  # third example flips
+        ]
+        # 3 of 4 examples remain stable across *all* variants
+        assert stability(ref, variants) == 0.75
+
+    def test_no_variants_counts_as_fully_stable(self) -> None:
+        """With zero variants, there's nothing to disagree — treat as stable."""
+        assert stability(["a", "b"], []) == 1.0
+
+    def test_empty_reference(self) -> None:
+        assert stability([], [["a"]]) == 0.0
+
+    def test_length_mismatch_rejected(self) -> None:
+        with pytest.raises(ValueError, match="length"):
+            stability(["a", "b"], [["a"]])

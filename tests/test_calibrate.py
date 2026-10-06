@@ -131,7 +131,7 @@ class TestFileFormat:
 class TestFitImprovesNLL:
     def test_t_from_overconfident_improves_nll(self) -> None:
         """Sanity check: the fitted T should reduce NLL on the training set."""
-        from evals.metrics import nll
+        from benchmarks.common.metrics import nll
 
         gold = ["pos"] * 50 + ["neg"] * 50
         preds = _overconfident(gold, 100)
@@ -141,6 +141,6 @@ class TestFitImprovesNLL:
         nll_after = nll(gold, calibrated)
         assert nll_after < nll_before
         # And ECE should also drop — overconfidence is the whole problem
-        from evals.metrics import ece
+        from benchmarks.common.metrics import ece
 
         assert ece(gold, calibrated) < ece(gold, preds)

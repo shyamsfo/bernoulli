@@ -20,12 +20,12 @@ from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 
+from benchmarks.common import metrics as metrics_mod
 from bernoulli.calibrate import Calibration, load_calibration
 from bernoulli.config import load_settings
 from bernoulli.decide import decide
 from bernoulli.scorer import Scorer, load_scorer
 from bernoulli.types import DecideOptions, DecideRequest, Decision, State
-from evals import metrics as metrics_mod
 from evals.baselines import generative_decide
 from evals.example import EvalExample
 

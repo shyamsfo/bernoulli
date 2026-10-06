@@ -1,9 +1,21 @@
-"""Classification + calibration metrics.
+"""Classification + calibration metrics for every benchmark.
 
-Pure numpy — no scikit-learn — so the eval harness runs with the base install.
+Pure numpy — no scikit-learn — so the harness runs with the base install.
 All metrics operate on parallel lists of (gold_label, pred_distribution_dict)
 pairs. The dict is {option_string: probability}, matching the DecideResponse
 shape. The gold_label is one of the option_strings.
+
+Reporting conventions (`benchmarks/README.md`):
+
+- **ECE** — call `ece(..., n_bins=10)` for the JevBench-compatible headline
+  and `ece(..., n_bins=15)` for continuity with pre-M8 reports.
+- **Coverage curves** — `coverage_curve(gold, preds)` at the standard
+  [0.95, 0.90, 0.80, 0.50] rates. This is the curve behind the
+  landing-page slider.
+- **Stability** — `stability(reference_top1, variant_top1_lists)` returns
+  the fraction of examples whose top-1 answer is unchanged across every
+  variant. Call once with the reorder variants, once with the reword
+  variants, and report the pair.
 """
 
 from __future__ import annotations
@@ -132,3 +144,74 @@ def latency_summary(latencies_ms: Sequence[int]) -> dict[str, float]:
         "p95_ms": float(np.percentile(arr, 95)),
         "mean_ms": float(arr.mean()),
     }
+
+
+DEFAULT_COVERAGE_LEVELS: tuple[float, ...] = (0.95, 0.90, 0.80, 0.50)
+
+
+def coverage_curve(
+    gold: Sequence[str],
+    preds: Sequence[Distribution],
+    levels: Sequence[float] = DEFAULT_COVERAGE_LEVELS,
+) -> dict[float, float]:
+    """Accuracy at each coverage rate.
+
+    Rank examples by top-class confidence (max probability). At coverage
+    c, keep the top ceil(c * N) most-confident examples and report
+    accuracy on that kept subset. This is the curve behind the
+    landing-page slider: *"if we auto-decide the X% most confident,
+    what accuracy do we get?"*
+
+    Returns a dict keyed by coverage level in the order provided.
+    """
+    if not gold:
+        return {float(c): 0.0 for c in levels}
+    labels, mat = _align(preds)
+    pred_idx = np.argmax(mat, axis=1)
+    confidences = mat[np.arange(len(mat)), pred_idx]
+    correct = np.asarray(
+        [labels[int(i)] == g for i, g in zip(pred_idx, gold, strict=True)],
+        dtype=np.float64,
+    )
+    order = np.argsort(-confidences, kind="stable")
+    correct_sorted = correct[order]
+    n = len(gold)
+    out: dict[float, float] = {}
+    for c in levels:
+        if not 0.0 < c <= 1.0:
+            raise ValueError(f"coverage level must be in (0, 1], got {c}")
+        k = max(1, int(np.ceil(c * n)))
+        out[float(c)] = float(correct_sorted[:k].mean())
+    return out
+
+
+def stability(
+    reference_top1: Sequence[str],
+    variant_top1_lists: Sequence[Sequence[str]],
+) -> float:
+    """Fraction of examples whose top-1 answer is unchanged across every variant.
+
+    `reference_top1[i]` is the top-1 answer under the canonical option
+    order and question stem. Each entry of `variant_top1_lists` is a
+    parallel list of top-1 answers under one variant (a reorder
+    permutation, or a reworded stem). An example is **stable** iff its
+    top-1 matches the reference under every variant.
+
+    Call once with the reorder variants to get `stability_reorder`, once
+    with the reword variants to get `stability_reword`, and report the
+    pair in each benchmark's `results/latest.md`.
+    """
+    if not reference_top1:
+        return 0.0
+    if not variant_top1_lists:
+        return 1.0
+    n = len(reference_top1)
+    stable_mask = np.ones(n, dtype=bool)
+    for v, variant in enumerate(variant_top1_lists):
+        if len(variant) != n:
+            raise ValueError(f"variant {v} has length {len(variant)} but reference has {n}")
+        stable_mask &= np.asarray(
+            [a == b for a, b in zip(reference_top1, variant, strict=True)],
+            dtype=bool,
+        )
+    return float(stable_mask.mean())
