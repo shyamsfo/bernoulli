@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
-authors = [{ name = "nuw" }]
+authors = [{ name = "DeepStore", email = "shyam@deepstore.ai" }]
 
 dependencies = [
     "pydantic>=2.9",
