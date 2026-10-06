@@ -177,8 +177,8 @@ Design decisions (locked here; revisit only with cause):
 - **Dropping BoolQ**: it's a reading-comprehension task, not a decision task, and the 63% hurts the story without testing what the product claims. Keep the `evals/reports/boolq.md` historical report in place; just don't carry BoolQ into `benchmarks/`.
 
 Tasks:
-- [~] Create `benchmarks/README.md` with the empty summary leaderboard, the "how to run" one-liner, and the methodology section (metric definitions, baseline conventions, stability protocol).
-- [ ] `benchmarks/common/dataset.py` — standardized `BenchmarkExample(state, question, gold, source, meta)` loader interface. Allow subclasses to add dataset-specific fields.
+- [x] Create `benchmarks/README.md` with the empty summary leaderboard, the "how to run" one-liner, and the methodology section (metric definitions, baseline conventions, stability protocol).
+- [~] `benchmarks/common/dataset.py` — standardized `BenchmarkExample(state, question, gold, source, meta)` loader interface. Allow subclasses to add dataset-specific fields.
 - [ ] `benchmarks/common/metrics.py` — accuracy, macro-F1, ECE (10 + 15 bin), Brier, NLL, coverage curves at [0.95, 0.90, 0.80, 0.50], stability score. Pure numpy, no sklearn.
 - [ ] `benchmarks/common/baselines.py` — Bernoulli-via-HTTP, same-model generative baseline (lift from `evals/baselines.py`), DeBERTa-v3-zeroshot (`MoritzLaurer/deberta-v3-large-zeroshot-v2.0`), BGE-m3 + logistic regression per task, one fine-tuned encoder per benchmark as the ceiling.
 - [ ] Migrate SST-2 → `benchmarks/academic/sst2/`.
