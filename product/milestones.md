@@ -186,8 +186,8 @@ Tasks:
   - [x] 4c. `BGEm3LR` baseline — `BAAI/bge-m3` + per-task logistic regression. Adds a ~2 GB model pull; scikit-learn added to dev group too (was only in the `eval` extra).
   - [ ] Per-benchmark fine-tuned-encoder ceilings — belong in each benchmark's subfolder, not here. Done case-by-case where a public fine-tune exists.
 - [x] Migrate SST-2 → `benchmarks/academic/sst2/`.
-- [ ] Migrate AG News → `benchmarks/academic/ag_news/`.
-- [ ] Migrate Banking77 → `benchmarks/academic/banking77/` (also fits "triage"; keep in academic for the Jev comparability table).
+- [x] Migrate AG News → `benchmarks/academic/ag_news/`.
+- [x] Migrate Banking77 → `benchmarks/academic/banking77/` (also fits "triage"; keep in academic for the Jev comparability table).
 - [ ] Add TweetEval-emotion → `benchmarks/academic/tweeteval_emotion/`.
 - [ ] Add PAWS → `benchmarks/academic/paws/`.
 - [ ] Add post-cutoff arXiv classification → `benchmarks/academic/arxiv_post_cutoff/`. Must include a `make_dataset.py` that pins the cutoff rule explicitly (dataset dates strictly later than the backbone's training cutoff) so the "couldn't have seen it" claim is defensible when we swap backbones.

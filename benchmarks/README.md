@@ -64,8 +64,8 @@ Headline metric per benchmark is **accuracy** unless noted. ECE is 10-bin (JevBe
 | Benchmark             | Bernoulli | Generative (same model) | DeBERTa-zeroshot | BGE-m3 + LR | Fine-tuned ceiling | ECE (10-bin) | Stability |
 |-----------------------|-----------|--------------------------|------------------|-------------|--------------------|--------------|-----------|
 | [SST-2](academic/sst2/) | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
-| AG News               | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
-| Banking77             | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
+| [AG News](academic/ag_news/) | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
+| [Banking77](academic/banking77/) | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
 | TweetEval-emotion     | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
 | PAWS                  | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
 | arXiv post-cutoff     | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
