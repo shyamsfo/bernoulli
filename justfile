@@ -114,3 +114,8 @@ reports-pull:
 # load test the serving HTTP API; usage: just loadtest  (needs the server up)
 loadtest url="http://127.0.0.1:8000":
     uv run python -m evals.loadtest --url {{url}} --out evals/reports/loadtest.md
+
+# deploy the bernoulli.live landing page from web/ to ssd2 (sudo rsync; needs passwordless sudo on ssd2)
+deploy-web:
+    rsync -av --delete --rsync-path="sudo rsync" web/ ssd2:/var/www/bernoulli.live/html/
+    @echo "deployed → https://www.bernoulli.live/"
