@@ -31,7 +31,7 @@ and makes most sense in its own commit alongside its dependency bump.
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING, Protocol, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -262,3 +262,94 @@ class Generative:
         )
         resp = generative_decide(req, self._scorer)
         return distribution_from_decision(resp.decisions[example.question.id], example.question)
+
+
+# ---------------------------------------------------------------------------
+# DeBERTa-v3-zeroshot: strongest open encoder zero-shot classifier.
+# "Did we need an LLM at all?" check for every academic benchmark.
+# ---------------------------------------------------------------------------
+
+
+class ZeroShotClassifier(Protocol):
+    """Shape of the `transformers.pipeline('zero-shot-classification', ...)` callable.
+
+    Factored into a Protocol so tests can inject a mock without pulling in
+    an 800 MB HF model. Production code builds one via `DeBERTaZeroshot.load_default()`.
+    """
+
+    def __call__(
+        self,
+        sequences: str,
+        candidate_labels: list[str],
+        *,
+        hypothesis_template: str = ...,
+        multi_label: bool = ...,
+    ) -> dict[str, Any]: ...
+
+
+class DeBERTaZeroshot:
+    """Zero-shot classifier via `MoritzLaurer/deberta-v3-large-zeroshot-v2.0`.
+
+    Choice questions map cleanly: the option strings become the candidate
+    labels and the classifier's softmax over them is the output distribution.
+
+    Binary and Rating questions raise NotImplementedError on purpose:
+
+    - Binary "Yes"/"No" is semantic nonsense for a zero-shot classifier —
+      the hypothesis template needs natural-language labels like
+      "harmful"/"safe", which are per-benchmark. A benchmark that wants
+      DeBERTa on a binary question should preprocess into a 2-way choice.
+    - Rating over integer-string labels degrades to coin flips. Not worth
+      reporting.
+
+    The runner is expected to leave the DeBERTa column empty for benchmarks
+    whose Question kind isn't Choice.
+    """
+
+    name = "deberta"
+
+    _DEFAULT_MODEL = "MoritzLaurer/deberta-v3-large-zeroshot-v2.0"
+    _DEFAULT_TEMPLATE = "This text is about {}."
+
+    def __init__(
+        self,
+        classifier: ZeroShotClassifier,
+        *,
+        hypothesis_template: str = _DEFAULT_TEMPLATE,
+    ) -> None:
+        self._classifier = classifier
+        self._hypothesis_template = hypothesis_template
+
+    @classmethod
+    def load_default(
+        cls,
+        *,
+        model_id: str = _DEFAULT_MODEL,
+        device: int | str = -1,
+        hypothesis_template: str = _DEFAULT_TEMPLATE,
+    ) -> DeBERTaZeroshot:
+        """Build with the default HF zero-shot pipeline on `device` (-1 for CPU, 0 for cuda:0)."""
+        from transformers import pipeline
+
+        clf = pipeline("zero-shot-classification", model=model_id, device=device)
+        return cls(cast(ZeroShotClassifier, clf), hypothesis_template=hypothesis_template)
+
+    def predict(self, example: BenchmarkExample) -> Distribution:
+        if not isinstance(example.question, ChoiceQuestion):
+            raise NotImplementedError(
+                f"DeBERTaZeroshot supports ChoiceQuestion only; got "
+                f"{type(example.question).__name__}. Skip this baseline column "
+                f"on binary/rating benchmarks."
+            )
+        options = list(example.question.options)
+        result = self._classifier(
+            example.state_text,
+            candidate_labels=options,
+            hypothesis_template=self._hypothesis_template,
+            multi_label=False,
+        )
+        # HF pipeline returns labels in confidence-sorted order; realign to options.
+        labels = cast(list[str], result["labels"])
+        scores = cast(list[float], result["scores"])
+        by_label = dict(zip(labels, scores, strict=True))
+        return {opt: float(by_label[opt]) for opt in options}

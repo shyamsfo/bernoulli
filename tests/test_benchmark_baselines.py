@@ -17,6 +17,7 @@ import pytest
 
 from benchmarks.common.baselines import (
     BernoulliHTTP,
+    DeBERTaZeroshot,
     Distribution,
     Generative,
     distribution_from_decision,
@@ -124,3 +125,79 @@ class TestGenerativeWrapper:
 
     def test_name(self) -> None:
         assert Generative.name == "generative"
+
+
+class _FakeZeroShot:
+    """Mock stand-in for the HF zero-shot pipeline — no model, no download."""
+
+    def __init__(self, scores_by_label: dict[str, float]) -> None:
+        self._scores = scores_by_label
+        self.called_with: tuple[str, list[str], str, bool] | None = None
+
+    def __call__(
+        self,
+        sequences: str,
+        candidate_labels: list[str],
+        *,
+        hypothesis_template: str = "This text is about {}.",
+        multi_label: bool = False,
+    ) -> dict[str, Any]:
+        self.called_with = (sequences, list(candidate_labels), hypothesis_template, multi_label)
+        # HF returns labels sorted by score desc. Mimic that.
+        scored = sorted(
+            ((lab, self._scores[lab]) for lab in candidate_labels),
+            key=lambda t: -t[1],
+        )
+        return {
+            "sequence": sequences,
+            "labels": [lab for lab, _ in scored],
+            "scores": [s for _, s in scored],
+        }
+
+
+class TestDeBERTaZeroshot:
+    def test_name(self) -> None:
+        assert DeBERTaZeroshot.name == "deberta"
+
+    def test_choice_distribution_realigned_to_option_order(self) -> None:
+        # Fake returns "positive" first (highest score). We expect the output
+        # dict to be keyed by the original option order, not pipeline order.
+        q = ChoiceQuestion(id="sentiment", prompt="?", options=["negative", "positive"])
+        example = BenchmarkExample(state_text="great movie", question=q, gold="positive")
+        fake = _FakeZeroShot({"negative": 0.1, "positive": 0.9})
+        baseline = DeBERTaZeroshot(fake)
+
+        dist = baseline.predict(example)
+
+        assert list(dist.keys()) == ["negative", "positive"]
+        assert dist["negative"] == pytest.approx(0.1)
+        assert dist["positive"] == pytest.approx(0.9)
+        assert fake.called_with is not None
+        assert fake.called_with[0] == "great movie"
+        assert fake.called_with[1] == ["negative", "positive"]
+        assert fake.called_with[3] is False  # multi_label
+
+    def test_custom_hypothesis_template_is_forwarded(self) -> None:
+        q = ChoiceQuestion(id="x", prompt="?", options=["a", "b"])
+        example = BenchmarkExample(state_text="hi", question=q, gold="a")
+        fake = _FakeZeroShot({"a": 0.6, "b": 0.4})
+        baseline = DeBERTaZeroshot(fake, hypothesis_template="The intent here is {}.")
+        baseline.predict(example)
+        assert fake.called_with is not None
+        assert fake.called_with[2] == "The intent here is {}."
+
+    def test_binary_raises_not_implemented(self) -> None:
+        q = BinaryQuestion(id="x", prompt="?")
+        example = BenchmarkExample(state_text="hi", question=q, gold="Yes")
+        fake = _FakeZeroShot({})
+        baseline = DeBERTaZeroshot(fake)
+        with pytest.raises(NotImplementedError, match="ChoiceQuestion"):
+            baseline.predict(example)
+
+    def test_rating_raises_not_implemented(self) -> None:
+        q = RatingQuestion(id="x", prompt="?", scale=(1, 5))
+        example = BenchmarkExample(state_text="hi", question=q, gold="3")
+        fake = _FakeZeroShot({})
+        baseline = DeBERTaZeroshot(fake)
+        with pytest.raises(NotImplementedError, match="ChoiceQuestion"):
+            baseline.predict(example)
