@@ -77,8 +77,8 @@ Headline metric per benchmark is **accuracy** unless noted. ECE is 10-bin (JevBe
 | [WildGuardTest](guardrails/wildguard_test/) | accuracy / F1 | TBD | Llama Guard 3 / ShieldGemma / WG | TBD | TBD |
 | [ToxicChat](guardrails/toxicchat/) | accuracy / F1 | TBD | Llama Guard 3 / ShieldGemma / OpenAI Mod | TBD | TBD |
 | [XSTest](guardrails/xstest/) | accuracy + false-refusal % | TBD | Llama Guard 3 / ShieldGemma / WG | TBD | TBD |
-| CLINC150 (with OOS) | accuracy / OOS AUROC | TBD       | DeBERTa-zeroshot                  | TBD          | TBD       |
-| Yelp 1-5 stars      | MAE / off-by-one acc | TBD       | DeBERTa-zeroshot                  | TBD          | TBD       |
+| [CLINC150-OOS](triage/clinc150_oos/) | accuracy / OOS AUROC | TBD | DeBERTa-zeroshot | TBD | TBD |
+| [Yelp 1-5 stars](ratings/yelp_stars/) | MAE / off-by-one acc | TBD | DeBERTa-zeroshot | TBD | TBD |
 
 ### Jev category (M10)
 

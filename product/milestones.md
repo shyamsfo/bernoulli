@@ -211,8 +211,8 @@ Tasks:
 - [x] `benchmarks/guardrails/wildguard_test/` — WildGuardTest. Baselines: Llama Guard 3, ShieldGemma, WildGuard-7B (these also read token probabilities, so the comparison is apples-to-apples).
 - [x] `benchmarks/guardrails/toxicchat/` — ToxicChat. Same baselines as above where applicable.
 - [x] `benchmarks/guardrails/xstest/` — XSTest for over-refusal. Report refusal-rate and accuracy separately; a good guardrail is accurate *without* over-refusing.
-- [ ] `benchmarks/triage/clinc150_oos/` — CLINC150 with the out-of-scope split. Report OOS detection AUROC alongside in-domain accuracy — this is the "none of these" probability story in a number.
-- [ ] `benchmarks/ratings/yelp_stars/` — Yelp 1-5 star reviews. Tests the rating question type end-to-end. Report MAE and off-by-one accuracy in addition to the standard metrics.
+- [x] `benchmarks/triage/clinc150_oos/` — CLINC150 with the out-of-scope split. Report OOS detection AUROC alongside in-domain accuracy — this is the "none of these" probability story in a number.
+- [x] `benchmarks/ratings/yelp_stars/` — Yelp 1-5 star reviews. Tests the rating question type end-to-end. Report MAE and off-by-one accuracy in addition to the standard metrics.
 - [ ] Three use-case domain tables appended to `benchmarks/README.md` (guardrails / triage / ratings).
 - [ ] Cross-reference: each use-case card on `web/index.html` gets a link to the matching `benchmarks/<domain>/<name>/results/latest.md` so the pitch is backed by numbers at a click.
 
