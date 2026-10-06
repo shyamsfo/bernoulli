@@ -112,3 +112,13 @@ docker run --rm --gpus all -p 8000:8000 \
 - **Task runner**: [`just`](https://just.systems/).
 - **Container**: Dockerfile uses `vllm/vllm-openai:v0.31.0-cu129-ubuntu2404` as the base.
 - **Project management**: the [ds-work plugin](https://github.com/shyamsfo/ds-work-plugin) — milestones, backlog, parking-lot, and session reports all live under [`product/`](product/).
+
+## License
+
+The Bernoulli **source code** is released under the Apache License 2.0 — see [`LICENSE`](LICENSE). Copyright 2026 DeepStore.
+
+The Apache 2.0 grant covers only the code in this repository. It does **not** cover:
+
+- **Model weights.** Bernoulli loads an external VLM at runtime; the weights ship under their own license. For the default [`Qwen/Qwen2.5-VL-7B-Instruct`](https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct) that is Apache 2.0, but other sizes in the Qwen family (notably the 72B variants) use the Qwen License, which has commercial-use restrictions. Check the backbone's model card before swapping `BERNOULLI_MODEL_ID`.
+- **Eval datasets.** The datasets wired into `evals/` (SST-2, AG News, BoolQ, Banking77) are pulled from Hugging Face at runtime and each has its own terms of use. Nothing is redistributed from this repo.
+- **Container base images.** The Dockerfile builds on top of `vllm/vllm-openai` (Apache 2.0 upstream), which in turn pulls CUDA + PyTorch under NVIDIA / Meta's respective licenses. Review those before shipping a derived image.

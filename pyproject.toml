@@ -4,7 +4,8 @@ version = "0.0.1"
 description = "Calibrated multimodal decision model: text + images + typed questions → probabilities."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 authors = [{ name = "nuw" }]
 
 dependencies = [
