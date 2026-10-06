@@ -189,7 +189,7 @@ Tasks:
 - [x] Migrate AG News → `benchmarks/academic/ag_news/`.
 - [x] Migrate Banking77 → `benchmarks/academic/banking77/` (also fits "triage"; keep in academic for the Jev comparability table).
 - [x] Add TweetEval-emotion → `benchmarks/academic/tweeteval_emotion/`.
-- [ ] Add PAWS → `benchmarks/academic/paws/`.
+- [x] Add PAWS → `benchmarks/academic/paws/`.
 - [ ] Add post-cutoff arXiv classification → `benchmarks/academic/arxiv_post_cutoff/`. Must include a `make_dataset.py` that pins the cutoff rule explicitly (dataset dates strictly later than the backbone's training cutoff) so the "couldn't have seen it" claim is defensible when we swap backbones.
 - [ ] Reword + reorder stability runner — reuse `bernoulli/debias.py` for reorder; add a lightweight paraphrase set per benchmark (3 reworded stems is enough).
 - [ ] Build each baseline for the 6 tasks (same-model generative, DeBERTa-zeroshot, BGE-m3 + LR). Fine-tuned-encoder ceiling is optional per task — do it where a public fine-tune exists; skip if we'd need to train one.
