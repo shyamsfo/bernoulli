@@ -1,0 +1,21 @@
+# web/justfile — self-contained deploy for the bernoulli.live landing page.
+# Standalone from the parent project; useful when iterating on the page
+# in Claude Desktop or similar tools that have only this folder in context.
+
+default:
+    @just --list
+
+# Preview locally — opens index.html in the default browser (macOS).
+preview:
+    open index.html
+
+# Deploy to ssd2:/var/www/bernoulli.live/html/.
+# Needs passwordless sudo for your SSH user on ssd2 (the html dir is root-owned).
+# Repo-only files (README.md, CLAUDE.md, justfile) are excluded from the live site.
+deploy:
+    rsync -av --delete --rsync-path="sudo rsync" \
+        --exclude='README.md' \
+        --exclude='CLAUDE.md' \
+        --exclude='justfile' \
+        ./ ssd2:/var/www/bernoulli.live/html/
+    @echo "deployed → https://www.bernoulli.live/"
