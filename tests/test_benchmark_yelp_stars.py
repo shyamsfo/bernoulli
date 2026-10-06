@@ -86,3 +86,35 @@ def test_load_train_matches_convention(
 
 def test_limit_caps_output(patched_load_dataset: dict[str, _FakeDataset]) -> None:
     assert len(list(load(limit=1))) == 1
+
+
+class TestExtraMetrics:
+    def test_mae_uses_expected_value_over_full_distribution(self) -> None:
+        from benchmarks.ratings.yelp_stars.loader import extra_metrics
+
+        q = QUESTION
+        examples = [
+            BenchmarkExample(state_text="s", question=q, gold="3", source="t"),
+        ]
+        # Expected = 1*0 + 2*0 + 3*0.6 + 4*0.4 + 5*0 = 3.4; gold=3 ⇒ MAE = 0.4.
+        preds = [{"1": 0.0, "2": 0.0, "3": 0.6, "4": 0.4, "5": 0.0}]
+        out = extra_metrics(["3"], preds, examples)
+        assert out["mae"] == pytest.approx(0.4)
+        assert out["off_by_one_accuracy"] == pytest.approx(1.0)
+
+    def test_off_by_one_counts_within_one_star(self) -> None:
+        from benchmarks.ratings.yelp_stars.loader import extra_metrics
+
+        q = QUESTION
+        examples = [
+            BenchmarkExample(state_text="s", question=q, gold="5", source="t"),
+            BenchmarkExample(state_text="s", question=q, gold="5", source="t"),
+            BenchmarkExample(state_text="s", question=q, gold="5", source="t"),
+        ]
+        preds = [
+            {"1": 0, "2": 0, "3": 0, "4": 1.0, "5": 0},  # argmax=4, off by 1 ✓
+            {"1": 0, "2": 0, "3": 0, "4": 0, "5": 1.0},  # exact ✓
+            {"1": 1.0, "2": 0, "3": 0, "4": 0, "5": 0},  # off by 4 ✗
+        ]
+        out = extra_metrics(["5", "5", "5"], preds, examples)
+        assert out["off_by_one_accuracy"] == pytest.approx(2 / 3)

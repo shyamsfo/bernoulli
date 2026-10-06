@@ -62,3 +62,36 @@ def load(limit: int | None = None) -> Iterator[BenchmarkExample]:
 def load_train(limit: int | None = None) -> Iterator[BenchmarkExample]:
     """Stream the training split (650,000 examples) — for trainable baselines (`BGEm3LR`)."""
     return _yield_split("train", limit)
+
+
+def extra_metrics(
+    gold: list[str],
+    preds: list[dict[str, float]],
+    examples: list[BenchmarkExample],
+) -> dict[str, float]:
+    """Rating-specific metrics the generic accuracy headline hides.
+
+    Standard accuracy treats predicting 4 stars when the gold is 5 as equally
+    wrong as predicting 1 — which is not how a human reads a rating error.
+
+    - `mae` — mean |expected_stars - gold_int|, where expected_stars is Σ p_i · i
+      over the five rating keys. This is the natural rating-error metric; it
+      uses the full predicted distribution, not just the argmax.
+    - `off_by_one_accuracy` — fraction of examples where |argmax(dist) - gold_int| ≤ 1.
+    """
+    gold_ints = [int(g) for g in gold]
+    rating_values = list(range(_SCALE[0], _SCALE[1] + 1))
+
+    expected = []
+    top1_int = []
+    for p in preds:
+        exp = sum(p.get(str(v), 0.0) * v for v in rating_values)
+        expected.append(exp)
+        top1_label = max(p.items(), key=lambda kv: (kv[1], kv[0]))[0]
+        top1_int.append(int(top1_label))
+
+    mae = sum(abs(e - g) for e, g in zip(expected, gold_ints, strict=True)) / max(len(gold), 1)
+    off_by_one = sum(1 for p, g in zip(top1_int, gold_ints, strict=True) if abs(p - g) <= 1) / max(
+        len(gold), 1
+    )
+    return {"mae": float(mae), "off_by_one_accuracy": float(off_by_one)}

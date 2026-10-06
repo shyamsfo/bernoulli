@@ -144,6 +144,27 @@ class TestRunOneBaseline:
 
 
 class TestWriteReport:
+    def test_passes_extra_metrics_fn_through(self) -> None:
+        """The runner forwards module.extra_metrics into BaselineMetrics.extras."""
+        examples = [_choice_example("great", gold="positive")]
+
+        def fake_extras(
+            gold: list[str], preds: list[Distribution], exs: list[BenchmarkExample]
+        ) -> dict[str, float]:
+            # Return a sentinel value proving the fn ran with the expected shape.
+            return {"custom_metric": 0.42}
+
+        result = _run_one_baseline(
+            "always-positive",
+            _AlwaysPositive(0.8),
+            examples,
+            reword_stems=(),
+            train_examples=None,
+            train_limit=None,
+            extra_metrics_fn=fake_extras,
+        )
+        assert result.extras == {"custom_metric": 0.42}
+
     def test_markdown_and_sidecar_round_trip(self, tmp_path: Path) -> None:
         examples = [
             _choice_example("great", gold="positive"),

@@ -130,3 +130,81 @@ def test_missing_oos_label_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(datasets, "load_dataset", fake_load_dataset)
     with pytest.raises(RuntimeError, match="expected an intent named 'oos'"):
         list(load())
+
+
+class TestExtraMetrics:
+    def test_oos_auroc_perfect_score_when_scores_separate(self) -> None:
+        from benchmarks.triage.clinc150_oos.loader import extra_metrics
+
+        q = QUESTION
+        examples = [
+            BenchmarkExample(
+                state_text="in-scope q",
+                question=q,
+                gold="Yes",
+                source="t",
+                meta={"is_oos": False},
+            ),
+            BenchmarkExample(
+                state_text="oos q",
+                question=q,
+                gold="No",
+                source="t",
+                meta={"is_oos": True},
+            ),
+        ]
+        # Confidence tracks is_oos perfectly: in-scope → P(No)=0.1, OOS → P(No)=0.9.
+        preds = [{"Yes": 0.9, "No": 0.1}, {"Yes": 0.1, "No": 0.9}]
+        gold = ["Yes", "No"]
+        out = extra_metrics(gold, preds, examples)
+        assert out["oos_auroc"] == pytest.approx(1.0)
+        assert out["in_scope_accuracy"] == pytest.approx(1.0)
+        assert out["oos_recall"] == pytest.approx(1.0)
+
+    def test_oos_recall_counts_argmax_no_only(self) -> None:
+        from benchmarks.triage.clinc150_oos.loader import extra_metrics
+
+        q = QUESTION
+        # Two OOS examples; baseline labels one "No" (correct recall), the other "Yes" (missed).
+        examples = [
+            BenchmarkExample(
+                state_text="a",
+                question=q,
+                gold="No",
+                source="t",
+                meta={"is_oos": True},
+            ),
+            BenchmarkExample(
+                state_text="b",
+                question=q,
+                gold="No",
+                source="t",
+                meta={"is_oos": True},
+            ),
+        ]
+        preds = [{"Yes": 0.2, "No": 0.8}, {"Yes": 0.8, "No": 0.2}]
+        gold = ["No", "No"]
+        out = extra_metrics(gold, preds, examples)
+        assert out["oos_recall"] == pytest.approx(0.5)
+
+    def test_degenerate_single_class_returns_safe_defaults(self) -> None:
+        from benchmarks.triage.clinc150_oos.loader import extra_metrics
+
+        q = QUESTION
+        # All in-scope; no OOS examples.
+        examples = [
+            BenchmarkExample(
+                state_text=f"q{i}",
+                question=q,
+                gold="Yes",
+                source="t",
+                meta={"is_oos": False},
+            )
+            for i in range(3)
+        ]
+        preds = [{"Yes": 0.9, "No": 0.1} for _ in range(3)]
+        gold = ["Yes"] * 3
+        out = extra_metrics(gold, preds, examples)
+        assert out["oos_auroc"] == 0.5  # degenerate
+        assert out["in_scope_accuracy"] == pytest.approx(1.0)
+        assert out["oos_recall"] == 0.0

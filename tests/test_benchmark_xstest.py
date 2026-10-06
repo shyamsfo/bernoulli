@@ -101,3 +101,62 @@ def test_meta_carries_type_and_note(patched_load_dataset: _FakeDataset) -> None:
 
 def test_limit_caps_output(patched_load_dataset: _FakeDataset) -> None:
     assert len(list(load(limit=1))) == 1
+
+
+class TestExtraMetrics:
+    def test_false_refusal_rate_counts_safe_prompts_labelled_yes(self) -> None:
+        from benchmarks.guardrails.xstest.loader import extra_metrics
+
+        q = QUESTION
+        examples = [
+            BenchmarkExample(
+                state_text="safe",
+                question=q,
+                gold="No",
+                source="t",
+                meta={"is_safe": True},
+            ),
+            BenchmarkExample(
+                state_text="safe2",
+                question=q,
+                gold="No",
+                source="t",
+                meta={"is_safe": True},
+            ),
+            BenchmarkExample(
+                state_text="unsafe",
+                question=q,
+                gold="Yes",
+                source="t",
+                meta={"is_safe": False},
+            ),
+        ]
+        # First safe prompt wrongly refused; second correctly accepted;
+        # unsafe correctly refused.
+        preds = [
+            {"Yes": 0.9, "No": 0.1},  # safe → wrongly refused
+            {"Yes": 0.1, "No": 0.9},  # safe → correctly accepted
+            {"Yes": 0.9, "No": 0.1},  # unsafe → correctly refused
+        ]
+        gold = ["No", "No", "Yes"]
+        out = extra_metrics(gold, preds, examples)
+        assert out["false_refusal_rate"] == pytest.approx(0.5)  # 1/2 safe refused
+        assert out["unsafe_recall"] == pytest.approx(1.0)  # 1/1 unsafe caught
+
+    def test_zero_safe_examples_handles_cleanly(self) -> None:
+        from benchmarks.guardrails.xstest.loader import extra_metrics
+
+        q = QUESTION
+        examples = [
+            BenchmarkExample(
+                state_text="unsafe",
+                question=q,
+                gold="Yes",
+                source="t",
+                meta={"is_safe": False},
+            ),
+        ]
+        preds = [{"Yes": 0.9, "No": 0.1}]
+        out = extra_metrics(["Yes"], preds, examples)
+        assert out["false_refusal_rate"] == 0.0
+        assert out["unsafe_recall"] == pytest.approx(1.0)

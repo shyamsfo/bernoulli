@@ -94,3 +94,44 @@ def load(limit: int | None = None) -> Iterator[BenchmarkExample]:
 def load_train(limit: int | None = None) -> Iterator[BenchmarkExample]:
     """Stream the training split (15,250 examples) — for trainable baselines (`BGEm3LR`)."""
     return _yield_split("train", limit)
+
+
+def extra_metrics(
+    gold: list[str],
+    preds: list[dict[str, float]],
+    examples: list[BenchmarkExample],
+) -> dict[str, float]:
+    """Benchmark-specific metrics the generic runner doesn't emit.
+
+    - `oos_auroc` — treat P(gold == "No") as the OOS-detection score and
+      `meta.is_oos` as the ground-truth flag. Standard binary ROC-AUC.
+      Degenerate (one class only) → returns 0.5.
+    - `in_scope_accuracy` — accuracy on the in-scope-only subset.
+    - `oos_recall` — fraction of OOS examples the baseline flags as "No".
+    """
+    import numpy as np
+    from sklearn.metrics import roc_auc_score
+
+    is_oos = np.asarray([bool(ex.meta.get("is_oos", False)) for ex in examples], dtype=bool)
+    scores = np.asarray([float(p.get("No", 0.0)) for p in preds], dtype=np.float64)
+    top1 = [max(p.items(), key=lambda kv: (kv[1], kv[0]))[0] for p in preds]
+
+    out: dict[str, float] = {}
+    if is_oos.any() and (~is_oos).any():
+        out["oos_auroc"] = float(roc_auc_score(is_oos.astype(int), scores))
+    else:
+        out["oos_auroc"] = 0.5  # degenerate — one class only
+
+    in_scope_mask = ~is_oos
+    if in_scope_mask.any():
+        correct_in = sum(1 for i in range(len(gold)) if in_scope_mask[i] and top1[i] == gold[i])
+        out["in_scope_accuracy"] = correct_in / int(in_scope_mask.sum())
+    else:
+        out["in_scope_accuracy"] = 0.0
+
+    if is_oos.any():
+        flagged = sum(1 for i in range(len(gold)) if is_oos[i] and top1[i] == "No")
+        out["oos_recall"] = flagged / int(is_oos.sum())
+    else:
+        out["oos_recall"] = 0.0
+    return out

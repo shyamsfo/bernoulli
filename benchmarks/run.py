@@ -80,6 +80,7 @@ class BaselineMetrics:
     stability_reword: float
     n_examples: int
     note: str = ""  # free text, e.g. "trained on 5k examples"
+    extras: dict[str, float] | None = None  # benchmark-specific metrics (OOS AUROC, MAE, ...)
 
 
 # ---------------------------------------------------------------------------
@@ -136,6 +137,7 @@ def _run_one_baseline(
     reword_stems: tuple[str, ...],
     train_examples: list[BenchmarkExample] | None,
     train_limit: int | None,
+    extra_metrics_fn: Any | None = None,
 ) -> BaselineMetrics:
     """Fit (if trainable) + predict + metrics + stability for one baseline."""
     note = ""
@@ -161,6 +163,10 @@ def _run_one_baseline(
     gold = [ex.gold for ex in examples]
     stability = stability_run(baseline, examples, reword_stems)
 
+    extras: dict[str, float] | None = None
+    if extra_metrics_fn is not None:
+        extras = {k: float(v) for k, v in extra_metrics_fn(gold, preds, examples).items()}
+
     return BaselineMetrics(
         name=name,
         accuracy=accuracy(gold, preds),
@@ -175,6 +181,7 @@ def _run_one_baseline(
         stability_reword=stability.reword_score,
         n_examples=len(examples),
         note=note,
+        extras=extras,
     )
 
 
@@ -246,6 +253,28 @@ def write_report(
         cells = " | ".join(f"{r.coverage[c]:.4f}" for c in DEFAULT_COVERAGE_LEVELS)
         lines.append(f"| {r.name} | {cells} |")
     lines.append("")
+
+    # --- extras (benchmark-specific) ---------------------------------
+    extras_keys: list[str] = []
+    for r in results:
+        if r.extras:
+            for k in r.extras:
+                if k not in extras_keys:
+                    extras_keys.append(k)
+    if extras_keys:
+        lines.append("## Extras (benchmark-specific)")
+        header_cols = " | ".join(extras_keys)
+        lines.append(f"| baseline | {header_cols} |")
+        lines.append("|---|" + "---|" * len(extras_keys))
+        for r in results:
+            if r.extras is None:
+                cells = " | ".join("—" for _ in extras_keys)
+            else:
+                cells = " | ".join(
+                    f"{r.extras[k]:.4f}" if k in r.extras else "—" for k in extras_keys
+                )
+            lines.append(f"| {r.name} | {cells} |")
+        lines.append("")
 
     # --- latency ------------------------------------------------------
     lines.append("## Per-call latency (one example at a time; not the serving-batched path)")
@@ -328,6 +357,7 @@ def main(argv: list[str] | None = None) -> None:  # pragma: no cover — invoked
         train_examples = list(module.load_train(limit=args.train_limit))
         print(f"[run] {len(train_examples)} training examples", file=sys.stderr)
 
+    extra_metrics_fn = getattr(module, "extra_metrics", None)
     results: list[BaselineMetrics] = []
     for name in requested:
         print(f"[run] running baseline: {name}", file=sys.stderr)
@@ -343,6 +373,7 @@ def main(argv: list[str] | None = None) -> None:  # pragma: no cover — invoked
                 reword_stems=reword_stems,
                 train_examples=train_examples,
                 train_limit=args.train_limit,
+                extra_metrics_fn=extra_metrics_fn,
             )
         )
 
