@@ -6,6 +6,43 @@ Each entry has: numbers table, what's sellable, honest limitations, honest gaps,
 
 ---
 
+## 2026-10-07 (evening) — arXiv post-cutoff real data in; anti-contamination claim backed
+
+### What landed
+
+- `make_dataset.py` ran on the dev box: 200 arXiv papers across cs.CL / cs.CV / math.PR / econ.EM, publication dates **2026-09-18 to 2026-10-06**, every one strictly after `BACKBONE_CUTOFF = 2025-01-01` (and well after any plausible Qwen2.5-VL training cutoff).
+- First benchmark run on the real data (N=100 test).
+
+### Numbers
+
+| baseline | acc | ECE (10) | NLL | note |
+|---|---|---|---|---|
+| **Bernoulli** | **0.95** | **0.047** | **0.21** | wins on acc, calibration, NLL |
+| Generative | 0.92 | 0.080 | 2.21 | NLL **10.7× worse** |
+| BGE-m3 + LR | 0.94 | 0.509 | 0.87 | acc close; overconfident on 100 train → ECE blown out |
+
+### Why this matters
+
+Every other benchmark in the suite could, in principle, be in Qwen2.5-VL's pretraining corpus. arXiv post-cutoff can't be — the papers didn't exist yet. This row answers the sharpest skeptic question — *"are you just scoring on data the model memorised?"* — with a clear no.
+
+Bernoulli hits 0.95 accuracy on data the model demonstrably hasn't seen, with the calibration gap intact (10.7× NLL ratio). The anti-contamination claim is now backed.
+
+### What this moves
+
+- `benchmarks/README.md` leaderboard — arXiv row fills in with real numbers.
+- `web/benchmarks.html` detail page — arXiv row replaces the "placeholder pending 10b" footnote.
+- `web/index.html` summary strip — new 6th row *"arXiv post-cutoff · papers the model can't have seen"* with the 0.95 / 0.92 / 10.7× cells. Takes the public-page thesis from "9 benchmarks confirm" to "9 benchmarks including anti-contamination confirm."
+- The caveats section drops one bullet (arXiv placeholder) permanently.
+
+### What's still outstanding
+
+- WildGuardTest gated on HF.
+- No DeBERTa column.
+- N=100 is small.
+- Dev-tier backbone (M4e capacity).
+
+---
+
 ## 2026-10-07 (afternoon) — First M9 use-case sweep in
 
 ### M9 numbers (N=100, dev-tier Qwen2.5-VL-7B on A10G, g5.xlarge)

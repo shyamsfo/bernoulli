@@ -599,9 +599,10 @@ response.decisions.intent.distribution.tracking === 0.24</pre>
             <tr><td>PAWS · adversarial paraphrase</td><td class="n win">0.83</td><td class="n">0.82</td><td class="n win">12×</td></tr>
             <tr><td>CLINC150-OOS · in-scope</td><td class="n win">0.46</td><td class="n">0.37</td><td class="n win">18×</td></tr>
             <tr><td>Yelp · 1-5 star rating</td><td class="n win">0.58</td><td class="n">0.55</td><td class="n win">14×</td></tr>
+            <tr><td>arXiv post-cutoff · papers the model <em>can't</em> have seen</td><td class="n win">0.95</td><td class="n">0.92</td><td class="n win">10.7×</td></tr>
           </tbody>
         </table>
-        <p class="fine">N=100 eval per benchmark · Qwen2.5-VL-7B-Instruct · 2026-10-07. See <a href="/benchmarks.html">benchmarks.html</a> for all 9 benchmarks across every metric, the trained-encoder (BGE-m3+LR) column, methodology, and known caveats. Raw per-benchmark result markdowns live at <a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks" target="_blank" rel="noopener">github.com/shyamsfo/bernoulli/benchmarks</a>.</p>
+        <p class="fine">N=100 eval per benchmark · Qwen2.5-VL-7B-Instruct · 2026-10-07. arXiv row is anti-contamination: papers published Sept-Oct 2026, strictly after any plausible training cutoff. See <a href="/benchmarks.html">benchmarks.html</a> for all 9 benchmarks across every metric, the trained-encoder (BGE-m3+LR) column, methodology, and known caveats. Raw per-benchmark result markdowns live at <a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks" target="_blank" rel="noopener">github.com/shyamsfo/bernoulli/benchmarks</a>.</p>
       </div>
       <div class="callouts">
         <div class="callout"><div class="big">12<small>×</small></div><p>better NLL than the same-model generative baseline on PAWS, at higher accuracy (0.83 vs 0.82). Adversarial paraphrase binary — the hardest calibration test in the suite.</p></div>

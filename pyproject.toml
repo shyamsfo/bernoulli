@@ -30,6 +30,7 @@ eval = [
     "matplotlib>=3.9",
     "datasets>=3.0",
     "httpx>=0.27",
+    "arxiv>=2.1",
 ]
 # M4+: vLLM serving
 serve = [
@@ -64,6 +65,7 @@ dev = [
     "scipy>=1.13",
     "scikit-learn>=1.5",
     "httpx>=0.27",
+    "arxiv>=2.1",
     # serve deps (M4+)
     "vllm>=0.9",
     "fastapi>=0.115",

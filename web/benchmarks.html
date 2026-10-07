@@ -244,8 +244,10 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
           <tr><td></td><td class="n">Generative</td><td class="n">0.82</td><td class="n">0.80</td><td class="n">0.180</td><td class="n">0.360</td><td class="n">4.97</td><td class="n na">(n/a, 0.89)</td></tr>
           <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n">0.56</td><td class="n">0.51</td><td class="n">0.009</td><td class="n">0.499</td><td class="n">0.69</td><td class="n na">(n/a, 1.00)</td></tr>
 
-          <tr class="sep"><td colspan="8">arXiv post-cutoff · anti-contamination (placeholder set — 2 rows)</td></tr>
-          <tr><td colspan="8" class="na" style="font-size:13px">arXiv post-cutoff loader + <code style="font:12.5px 'JetBrains Mono',monospace;background:var(--surface-2);padding:1px 5px;border-radius:4px">make_dataset.py</code> ship structure only; <em>real snapshot pending</em> (M8 task 10b). Numbers for Bernoulli/Generative on the 2-row placeholder sample are not meaningful and are intentionally omitted from this table. See the <a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/arxiv_post_cutoff" target="_blank" rel="noopener">README</a>.</td></tr>
+          <tr class="sep"><td colspan="8">arXiv post-cutoff · anti-contamination (papers from Sept-Oct 2026)</td></tr>
+          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/arxiv_post_cutoff" target="_blank" rel="noopener">arXiv post-cutoff · 4-way category</a></td><td class="n">Bernoulli</td><td class="n win">0.95</td><td class="n win">0.95</td><td class="n win">0.047</td><td class="n win">0.102</td><td class="n win">0.21</td><td class="n">(0.95, 0.94)</td></tr>
+          <tr><td></td><td class="n">Generative</td><td class="n">0.92</td><td class="n">0.92</td><td class="n">0.080</td><td class="n">0.160</td><td class="n">2.21</td><td class="n">(0.86, 0.66)</td></tr>
+          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n">0.94</td><td class="n">0.94</td><td class="n">0.509</td><td class="n">0.453</td><td class="n">0.87</td><td class="n">(1.00, 1.00)</td></tr>
         </tbody>
       </table>
     </div>
@@ -346,7 +348,7 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
         <li><strong>XSTest unsafe_recall = 0.36.</strong> Bernoulli's 0% false-refusal is a product-grade property, but it under-flags actually-unsafe prompts. For a complete guardrail you want Bernoulli as the first-pass "don't over-refuse" gate paired with an escalation path (human-in-loop or a tuned classifier) for the long tail.</li>
         <li><strong>CLINC150-OOS OOS recall ≈ 0.52 for Bernoulli.</strong> Coin flip on the "none of these" story. Likely prompt-framing + stem rewording; investigation pending.</li>
         <li><strong>Dev-tier backbone.</strong> Numbers are from Qwen2.5-VL-7B-Instruct on an AWS g5.xlarge (A10G 24GB). The production step-up to <code>Qwen2.5-VL-32B-Instruct-AWQ</code> on g6e.xlarge (L40S 48GB) is parked on AWS capacity.</li>
-        <li><strong>arXiv post-cutoff dataset is 2 placeholder rows.</strong> The anti-contamination guard needs <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/academic/arxiv_post_cutoff/make_dataset.py" target="_blank" rel="noopener">a real run of make_dataset.py</a> (M8 task 10b). Numbers from the placeholder are intentionally omitted from the tables above.</li>
+        <li><strong>arXiv post-cutoff dataset was regenerated 2026-10-07.</strong> 200 papers across 4 categories, publication dates 2026-09-18 to 2026-10-06 — well after any plausible Qwen2.5-VL training cutoff. On this provably-unseen corpus, Bernoulli hits 0.95 acc with NLL 10.7× better than Generative. The anti-contamination claim is backed by real data, not a placeholder. If the backbone is swapped to a later-cutoff model, <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/academic/arxiv_post_cutoff/make_dataset.py" target="_blank" rel="noopener">make_dataset.py</a> re-runs with the updated cutoff.</li>
       </ul>
     </div>
   </div>

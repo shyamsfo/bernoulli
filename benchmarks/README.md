@@ -68,10 +68,10 @@ Each cell is `accuracy` unless noted; **bold** = best in row. ECE is 10-bin (Jev
 | [Banking77](academic/banking77/) | 0.57 | 0.48 | **0.98** | **1.65** | 13.9 | 8.4× | 0.116 | (0.13 ⚠️, 0.59) |
 | [TweetEval-emotion](academic/tweeteval_emotion/) | 0.77 | 0.76 | **0.80** | **0.63** | 6.63 | 10.5× | 0.120 | (0.89, 0.89) |
 | [PAWS](academic/paws/) | **0.83** | 0.82 | 0.56 | **0.41** | 4.97 | 12× | 0.076 | (—, 0.94) |
-| [arXiv post-cutoff](academic/arxiv_post_cutoff/) | — | — | — | — | — | — | — | — |
+| [arXiv post-cutoff](academic/arxiv_post_cutoff/) | **0.95** | 0.92 | 0.94 | **0.21** | 2.21 | 10.7× | 0.047 | (0.95, 0.94) |
 
 - Banking77 reorder = 0.13 ⚠️ is architectural, not a bug — chunked scoring (77 options > 26 letters) is sensitive to which labels fall in which chunk. See the parking-lot item on cross-chunk debias.
-- arXiv post-cutoff: dataset is 2 placeholder rows pending M8 task 10b (`make_dataset.py` run). Numbers from the placeholder are intentionally omitted.
+- arXiv post-cutoff: real snapshot generated 2026-10-07 via `make_dataset.py` — 200 papers across 4 categories (cs.CL / cs.CV / math.PR / econ.EM), publication dates 2026-09-18 to 2026-10-06 (all strictly after `BACKBONE_CUTOFF = 2025-01-01`, well after any plausible Qwen2.5-VL cutoff). Bernoulli 0.95 on data the model demonstrably hasn't seen.
 - BGE-m3+LR is trained on 500 labeled examples per task. On Banking77 (77-way intent) it dominates — a trained encoder with enough class-balanced data beats zero-shot on fixed label spaces. Honest "when to use what" story: BGE+LR for high-label-count tasks with real training data; Bernoulli everywhere else.
 
 ### Use cases (M9)
