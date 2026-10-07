@@ -4,8 +4,9 @@ from benchmarks.triage.clinc150_oos.loader import (
     QUESTION,
     REWORD_STEMS,
     SOURCE,
+    extra_metrics,
     load,
     load_train,
 )
 
-__all__ = ["QUESTION", "REWORD_STEMS", "SOURCE", "load", "load_train"]
+__all__ = ["QUESTION", "REWORD_STEMS", "SOURCE", "extra_metrics", "load", "load_train"]

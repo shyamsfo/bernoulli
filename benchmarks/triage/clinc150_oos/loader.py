@@ -62,10 +62,21 @@ def _oos_label_id(ds: object) -> int:
         ) from exc
 
 
-def _yield_split(split: str, limit: int | None) -> Iterator[BenchmarkExample]:
+def _yield_split(split: str, limit: int | None, *, shuffle: bool = False) -> Iterator[BenchmarkExample]:
+    """Stream `split`.
+
+    The train split is grouped by intent (all 150 in-scope intents in
+    blocks, then 250 OOS). A naive `--train-limit 500` therefore gives
+    all in-scope rows and no OOS, which breaks any downstream classifier
+    (e.g. `BGEm3LR.fit` fails with sklearn's one-class ValueError).
+    Pass `shuffle=True` to interleave the OOS examples before yielding.
+    `load_train` sets this; `load` does not (eval order is irrelevant).
+    """
     from datasets import load_dataset
 
     ds = load_dataset(_HF_PATH, _HF_CONFIG, split=split)
+    if shuffle:
+        ds = ds.shuffle(seed=0)
     oos_id = _oos_label_id(ds)
     features = ds.features  # type: ignore[attr-defined]
     for i, row in enumerate(ds):
@@ -87,13 +98,24 @@ def _yield_split(split: str, limit: int | None) -> Iterator[BenchmarkExample]:
 
 
 def load(limit: int | None = None) -> Iterator[BenchmarkExample]:
-    """Stream the evaluation split (`test`, 5,500 examples)."""
-    return _yield_split("test", limit)
+    """Stream the evaluation split (`test`, 5,500 examples).
+
+    Shuffled with a fixed seed so `--limit N` produces a class-balanced
+    sample. Dataset is grouped by intent, with all 1,000 OOS examples at
+    the tail — a naive `--limit 100` otherwise returns 100 in-scope
+    examples with zero OOS, which makes `oos_auroc` degenerate to 0.5.
+    """
+    return _yield_split("test", limit, shuffle=True)
 
 
 def load_train(limit: int | None = None) -> Iterator[BenchmarkExample]:
-    """Stream the training split (15,250 examples) — for trainable baselines (`BGEm3LR`)."""
-    return _yield_split("train", limit)
+    """Stream the training split (15,250 examples) — for trainable baselines (`BGEm3LR`).
+
+    Shuffled with a fixed seed so `--train-limit N` produces a
+    class-balanced sample (dataset is otherwise grouped by intent, with
+    all OOS examples at the tail).
+    """
+    return _yield_split("train", limit, shuffle=True)
 
 
 def extra_metrics(

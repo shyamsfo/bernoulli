@@ -60,6 +60,12 @@ class _FakeDataset:
     def __iter__(self):  # type: ignore[no-untyped-def]
         return iter(self._rows)
 
+    def shuffle(self, seed: int = 0) -> _FakeDataset:
+        # Deterministic, order-preserving stand-in — the real datasets.Dataset
+        # permutes the rows, but the mock only needs to return something that
+        # iterates. Tests assert on label presence/counts, not ordering.
+        return self
+
 
 @pytest.fixture
 def patched_load_dataset(monkeypatch: pytest.MonkeyPatch) -> dict[str, _FakeDataset]:

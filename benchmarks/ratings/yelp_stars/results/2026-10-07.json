@@ -1,0 +1,98 @@
+{
+  "benchmark": "ratings/yelp_stars",
+  "repro": {
+    "benchmark": "ratings/yelp_stars",
+    "bernoulli_commit": "unknown",
+    "model_id": "unset",
+    "model_revision": "unset",
+    "hardware": "ip-172-31-84-107",
+    "python": "3.12.3",
+    "source": "yelp_stars"
+  },
+  "results": [
+    {
+      "name": "bernoulli",
+      "accuracy": 0.58,
+      "macro_f1": 0.5490878711931344,
+      "ece_10": 0.19625693410634992,
+      "ece_15": 0.19625693410634995,
+      "brier": 0.5441081766612129,
+      "nll": 0.9131412581674121,
+      "coverage": {
+        "0.95": 0.5894736842105263,
+        "0.9": 0.6,
+        "0.8": 0.625,
+        "0.5": 0.78
+      },
+      "latency_ms": {
+        "p50_ms": 157.5,
+        "p95_ms": 436.25,
+        "mean_ms": 192.16
+      },
+      "stability_reorder": null,
+      "stability_reword": 0.77,
+      "n_examples": 100,
+      "note": "",
+      "extras": {
+        "mae": 0.4382226625790645,
+        "off_by_one_accuracy": 0.95
+      }
+    },
+    {
+      "name": "generative",
+      "accuracy": 0.55,
+      "macro_f1": 0.5135580641892002,
+      "ece_10": 0.44999999999999996,
+      "ece_15": 0.44999999999999996,
+      "brier": 0.9,
+      "nll": 12.433959502167845,
+      "coverage": {
+        "0.95": 0.5578947368421052,
+        "0.9": 0.5888888888888889,
+        "0.8": 0.6,
+        "0.5": 0.64
+      },
+      "latency_ms": {
+        "p50_ms": 117.0,
+        "p95_ms": 252.14999999999998,
+        "mean_ms": 136.08
+      },
+      "stability_reorder": null,
+      "stability_reword": 0.64,
+      "n_examples": 100,
+      "note": "",
+      "extras": {
+        "mae": 0.5,
+        "off_by_one_accuracy": 0.95
+      }
+    },
+    {
+      "name": "bge-m3-lr",
+      "accuracy": 0.48,
+      "macro_f1": 0.45374546155155554,
+      "ece_10": 0.05593725711107253,
+      "ece_15": 0.1092209294438362,
+      "brier": 0.6182811472130806,
+      "nll": 1.1381279676222993,
+      "coverage": {
+        "0.95": 0.49473684210526314,
+        "0.9": 0.4888888888888889,
+        "0.8": 0.5,
+        "0.5": 0.52
+      },
+      "latency_ms": {
+        "p50_ms": 837.5,
+        "p95_ms": 2588.0,
+        "mean_ms": 1086.71
+      },
+      "stability_reorder": null,
+      "stability_reword": 1.0,
+      "n_examples": 100,
+      "note": "trained on 500 examples",
+      "extras": {
+        "mae": 0.6770960250403733,
+        "off_by_one_accuracy": 0.95
+      }
+    }
+  ]
+}
