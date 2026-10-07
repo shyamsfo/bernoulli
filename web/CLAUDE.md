@@ -17,14 +17,17 @@ The source project lives at [github.com/shyamsfo/bernoulli](https://github.com/s
 
 ```
 web/
-├── index.html    # single-page landing — inlined CSS + JS, no build step
+├── index.html       # single-page landing — inlined CSS + JS, no build step
+├── benchmarks.html  # standalone /benchmarks.html — all 9 benchmark numbers + methodology + caveats + reproducibility
 ├── favicon.svg
-├── justfile      # deploy recipes (local to this folder)
-├── CLAUDE.md     # this file
-└── README.md     # short "how to edit + deploy" (parent-project-oriented)
+├── justfile         # deploy recipes (local to this folder)
+├── CLAUDE.md        # this file
+└── README.md        # short "how to edit + deploy" (parent-project-oriented)
 ```
 
 No build pipeline. Edit, deploy, done.
+
+**Two-page story.** `index.html` is the landing/sales page with a tight benchmarks summary strip (5 headline rows + CTA). `benchmarks.html` is the detail page — academic + use-case tables with every metric, methodology, caveats, and reproducibility. The index.html summary links to `/benchmarks.html` ("See all 9 benchmarks →"); `benchmarks.html` nav links back to `/`. Both link out to the raw per-benchmark result markdowns + JSON sidecars under `github.com/shyamsfo/bernoulli/benchmarks/`.
 
 ## Page structure
 
@@ -37,7 +40,7 @@ Single HTML file, section-per-section. In reading order:
 | `#use-cases` | Three use-case cards (Support triage / LLM guardrails / Content moderation) with links to USECASES.md. |
 | `#features`  | 6-tile feature grid.                                     |
 | `#how`       | 5-step visual pipeline — Build prompt → Forward pass → Keep labels → Debias → Calibrate. |
-| `#benchmarks`| SST-2 table (Bernoulli vs generative baseline) + 3 highlight callouts. |
+| `#benchmarks`| 5-row headline summary (SST-2, Banking77, PAWS, CLINC150-OOS, Yelp) with NLL ratio column + 3 callouts (12× NLL on PAWS, 0.00 false-refusal on XSTest, 0.44 MAE on Yelp) + CTA to `/benchmarks.html` + CTA to the raw GitHub folder. **Keep the summary numbers in sync with the detail page** when a new sweep lands. |
 | `#trust`     | Confidence story — waffle chart + interactive coverage slider. |
 | `.final`     | CTAs (GitHub / Book a demo / Contact us) + git clone one-liner. |
 | `#demo-dialog` | "Book a demo" popup (native `<dialog>`), opened by any `[data-open-demo]` button. See *Book a demo form* below. |

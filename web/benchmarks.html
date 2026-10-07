@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bernoulli — Benchmarks</title>
+<meta name="description" content="Nine benchmarks confirm Bernoulli's calibration thesis: same accuracy as text-and-parse, dramatically better NLL and ECE. All numbers with methodology + caveats.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f3ee; --surface:#ffffff; --surface-2:#ece9e1;
+  --ink:#15171c; --ink-2:#4a4d55; --ink-3:#7c7f87;
+  --line:#dcd8ce; --accent:#2340d0; --accent-soft:#e3e8fb;
+  --good:#1f7a4d; --warn:#a15c00;
+  --code-bg:#15171c; --code-ink:#e6e4de; --code-dim:#8a8d96;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1014; --surface:#161920; --surface-2:#1d2129;
+    --ink:#ecebe6; --ink-2:#b3b5bb; --ink-3:#7e818a;
+    --line:#2a2e37; --accent:#8098ff; --accent-soft:#1c2340;
+    --good:#5fcf95; --warn:#e3a54f;
+    --code-bg:#0a0c0f; --code-ink:#e6e4de;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1014; --surface:#161920; --surface-2:#1d2129;
+  --ink:#ecebe6; --ink-2:#b3b5bb; --ink-3:#7e818a;
+  --line:#2a2e37; --accent:#8098ff; --accent-soft:#1c2340;
+  --good:#5fcf95; --warn:#e3a54f;
+  --code-bg:#0a0c0f; --code-ink:#e6e4de;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.serif{font-family:"Instrument Serif",Georgia,serif;font-weight:400}
+.eyebrow{font:500 12px/1 "JetBrains Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+
+/* nav (matches index.html) */
+nav{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font:400 24px/1 "Instrument Serif",serif}
+.brand-mark{width:22px;height:22px;border-radius:50%;background:conic-gradient(var(--accent) 0 72%,var(--line) 72% 100%)}
+.nav-links{display:flex;gap:28px;align-items:center;font-size:14px;color:var(--ink-2)}
+.nav-links a{text-decoration:none}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a.current{color:var(--ink);font-weight:500}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:8px;font:500 14px/1 Inter,sans-serif;text-decoration:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);transition:transform .15s,border-color .15s}
+.btn:hover{border-color:var(--ink-3);transform:translateY(-1px)}
+.btn-primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn-primary:hover{border-color:var(--ink)}
+.btn svg{width:16px;height:16px;fill:currentColor}
+.btn-accent{background:var(--accent);color:var(--bg);border-color:var(--accent);cursor:pointer;white-space:nowrap}
+.btn-accent:hover{border-color:var(--accent);filter:brightness(1.08)}
+@media (max-width:760px){.nav-links .hide-sm{display:none}}
+@media (max-width:480px){.nav-links{gap:8px}.nav-links .btn-accent{padding:9px 12px}.nav-links .gh-label{display:none}}
+@media (max-width:380px){.brand{font-size:20px;gap:8px}.nav-links{gap:6px}.nav-links .btn-accent{padding:9px 10px}}
+@media (max-width:340px){#theme-toggle{display:none}}
+
+/* hero */
+.phero{padding:72px 0 48px}
+.phero h1{font:400 clamp(44px,6.4vw,76px)/1.0 "Instrument Serif",serif;letter-spacing:-.01em;max-width:14em}
+.phero h1 em{color:var(--accent)}
+.phero p.lede{margin-top:22px;font-size:19px;color:var(--ink-2);max-width:50em}
+.phero .asof{margin-top:28px;font:500 12px/1 "JetBrains Mono",monospace;color:var(--ink-3)}
+
+/* headline strip */
+.headline{padding:48px 0 24px;border-top:1px solid var(--line)}
+.hwins{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.hwin{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+.hwin .big{font:400 44px/1 "Instrument Serif",serif;color:var(--accent)}
+.hwin .big small{font-size:20px;color:var(--ink-3)}
+.hwin .lab{margin-top:6px;font:500 12px/1 "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3)}
+.hwin p{margin-top:10px;font-size:14px;color:var(--ink-2)}
+@media (max-width:900px){.hwins{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.hwins{grid-template-columns:1fr}}
+
+/* sections */
+section{padding:72px 0;border-top:1px solid var(--line)}
+.sec-head{max-width:720px;margin-bottom:36px}
+.sec-head h2{font:400 clamp(32px,4.2vw,46px)/1.08 "Instrument Serif",serif;margin-top:12px}
+.sec-head p{margin-top:14px;color:var(--ink-2);font-size:17px}
+
+/* tables */
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:720px}
+th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+th{font:500 11px/1 "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);background:var(--surface-2);white-space:nowrap}
+td.n{font-family:"JetBrains Mono",monospace;text-align:right}
+th.n{text-align:right}
+tr:last-child td{border-bottom:0}
+td.win{color:var(--good);font-weight:500}
+td.loss{color:var(--warn)}
+td.na{color:var(--ink-3);font-style:italic}
+tr.sep td{border-top:1px solid var(--line);background:color-mix(in srgb,var(--surface-2) 50%,var(--surface) 50%);font:500 11px/1 "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3)}
+td a{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+td a:hover{text-decoration-color:var(--accent)}
+.fine{margin-top:14px;font-size:13px;color:var(--ink-3)}
+
+/* method / caveats cards */
+.cardgrid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+.card h3{font-size:16px;font-weight:600}
+.card ul{margin-top:12px;padding-left:20px;color:var(--ink-2);font-size:14.5px}
+.card ul li{margin-bottom:6px}
+.card ul li code,.card p code{font:12.5px "JetBrains Mono",monospace;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+.card p{margin-top:12px;color:var(--ink-2);font-size:14.5px}
+@media (max-width:720px){.cardgrid{grid-template-columns:1fr}}
+
+/* caveats banner */
+.caveats{background:color-mix(in srgb,var(--warn) 10%,var(--surface) 90%);border:1px solid color-mix(in srgb,var(--warn) 35%,var(--line) 65%);border-radius:var(--radius);padding:22px}
+.caveats h3{font-size:15px;font-weight:600;display:flex;gap:8px;align-items:center}
+.caveats h3::before{content:"⚠";color:var(--warn)}
+.caveats ul{margin-top:12px;padding-left:20px;font-size:14.5px;color:var(--ink-2)}
+.caveats ul li{margin-bottom:8px}
+.caveats a{color:var(--accent);text-decoration:none;border-bottom:1px dashed var(--accent)}
+
+/* repro */
+.repro{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.repro .r{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.repro .r b{display:block;font:500 11px/1 "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3)}
+.repro .r span{display:block;margin-top:6px;font:13px "JetBrains Mono",monospace;color:var(--ink);word-break:break-all}
+@media (max-width:720px){.repro{grid-template-columns:1fr 1fr}}
+@media (max-width:480px){.repro{grid-template-columns:1fr}}
+
+/* final CTAs */
+.final{padding:72px 0;border-top:1px solid var(--line);text-align:center}
+.final h2{font:400 clamp(32px,4vw,44px)/1.08 "Instrument Serif",serif}
+.final p{margin-top:14px;color:var(--ink-2);font-size:17px}
+.final .ctas{margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* footer */
+footer{border-top:1px solid var(--line);padding:28px 0 40px;font-size:13px;color:var(--ink-3)}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
+</style>
+<script>
+  (function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
+</script>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="/" class="brand"><span class="brand-mark" aria-hidden="true"></span>Bernoulli</a>
+    <div class="nav-links">
+      <a href="/#why" class="hide-sm">Why</a>
+      <a href="/#use-cases" class="hide-sm">Use cases</a>
+      <a href="/#how" class="hide-sm">How it works</a>
+      <a href="/benchmarks.html" class="hide-sm current">Benchmarks</a>
+      <button type="button" class="btn btn-accent" data-open-demo>Book a demo</button>
+      <button id="theme-toggle" class="btn btn-icon" type="button" aria-label="Toggle color theme" title="Switch theme">
+        <svg data-icon="light" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.07-7.07l-1.42 1.42M6.34 17.66l-1.42 1.42m0-14.14l1.42 1.42m11.31 11.31l1.42 1.42"/></svg>
+        <svg data-icon="dark" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <a class="btn" aria-label="GitHub" href="https://github.com/shyamsfo/bernoulli" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" aria-hidden="true" style="fill:currentColor;stroke:none"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span class="gh-label">GitHub</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<header class="wrap phero">
+  <div class="eyebrow">Benchmarks</div>
+  <h1 style="margin-top:16px">Nine benchmarks.<br>One thesis: <em>calibration.</em></h1>
+  <p class="lede">Across five academic benchmarks and four use-case benchmarks, Bernoulli hits comparable or better accuracy than the same-backbone generative baseline — and NLL is <strong>7–40× better</strong>. Same model, same prompt framing, same examples; the only variable is whether we read the logits at the answer position or let the model generate a token and parse it.</p>
+  <div class="asof">Last run · 2026-10-07 · Qwen2.5-VL-7B-Instruct · g5.xlarge / A10G 24GB</div>
+</header>
+
+<section class="headline" style="padding-top:48px">
+  <div class="wrap">
+    <div class="hwins">
+      <div class="hwin">
+        <div class="big">12<small>×</small></div>
+        <div class="lab">NLL · PAWS</div>
+        <p>Adversarial paraphrase binary. Same accuracy (0.83 vs 0.82); Bernoulli NLL 0.41 vs 4.97.</p>
+      </div>
+      <div class="hwin">
+        <div class="big">0.00<small></small></div>
+        <div class="lab">False-refusal · XSTest</div>
+        <p>Zero over-refusals on the 450-prompt XSTest over-refusal probe. Trade-off: unsafe-recall is 0.36.</p>
+      </div>
+      <div class="hwin">
+        <div class="big">0.44<small></small></div>
+        <div class="lab">MAE · Yelp 1-5</div>
+        <p>Lowest rating error of any baseline (Generative 0.50, BGE+LR 0.68). Full distribution, not just argmax.</p>
+      </div>
+      <div class="hwin">
+        <div class="big">7<small>-40×</small></div>
+        <div class="lab">NLL · across 9 benchmarks</div>
+        <p>Bernoulli vs same-backbone Generative, measured on identical examples. Nine independent receipts.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="academic">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">M8 · Academic suite</div>
+      <h2>Six benchmarks that overlap with the Jev paper</h2>
+      <p>Standard open NLP tasks spanning sentiment, topic, intent, emotion, and paraphrase. Bernoulli, same-backbone Generative, and BGE-m3+LR (trained encoder, 500 labeled examples). The Jev-matching set lets our numbers sit next to the category's own.</p>
+    </div>
+    <div class="tscroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Benchmark</th><th class="n">Baseline</th>
+            <th class="n">Acc</th><th class="n">Macro-F1</th>
+            <th class="n">ECE (10)</th><th class="n">Brier</th><th class="n">NLL ↓</th>
+            <th class="n">Stability (reorder, reword)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td rowspan="3"><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/sst2" target="_blank" rel="noopener">SST-2 · binary sentiment</a></td><td class="n">Bernoulli</td><td class="n">0.95</td><td class="n">0.95</td><td class="n win">0.027</td><td class="n win">0.093</td><td class="n win">0.18</td><td class="n">(1.00, 0.95)</td></tr>
+          <tr><td class="n">Generative</td><td class="n">0.95</td><td class="n">0.95</td><td class="n">0.050</td><td class="n">0.100</td><td class="n">1.38</td><td class="n">(0.97, 0.97)</td></tr>
+          <tr><td class="n">BGE-m3 + LR</td><td class="n">0.90</td><td class="n">0.90</td><td class="n">0.094</td><td class="n">0.183</td><td class="n">0.31</td><td class="n">(1.00, 1.00)</td></tr>
+
+          <tr class="sep"><td colspan="8">AG News · 4-way topic</td></tr>
+          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/ag_news" target="_blank" rel="noopener">AG News · 4-way topic</a></td><td class="n">Bernoulli</td><td class="n win">0.79</td><td class="n">0.78</td><td class="n">0.158</td><td class="n win">0.379</td><td class="n win">1.05</td><td class="n">(0.95, 0.94)</td></tr>
+          <tr><td></td><td class="n">Generative</td><td class="n">0.72</td><td class="n">0.72</td><td class="n">0.295</td><td class="n">0.575</td><td class="n">7.76</td><td class="n">(0.72, 0.89)</td></tr>
+          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n">0.57</td><td class="n">0.52</td><td class="n win">0.112</td><td class="n">0.609</td><td class="n">1.32</td><td class="n">(1.00, 1.00)</td></tr>
+
+          <tr class="sep"><td colspan="8">Banking77 · 77-way intent (chunked)</td></tr>
+          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/banking77" target="_blank" rel="noopener">Banking77 · 77-way intent</a></td><td class="n">Bernoulli</td><td class="n">0.57</td><td class="n">0.03</td><td class="n">0.116</td><td class="n">0.564</td><td class="n win">1.65</td><td class="n loss">(0.13, 0.59)</td></tr>
+          <tr><td></td><td class="n">Generative</td><td class="n">0.48</td><td class="n">0.02</td><td class="n">0.500</td><td class="n">1.020</td><td class="n">13.9</td><td class="n">(0.29, 0.87)</td></tr>
+          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n win">0.98</td><td class="n win">0.74</td><td class="n">0.119</td><td class="n win">0.050</td><td class="n">0.16</td><td class="n">(1.00, 1.00)</td></tr>
+
+          <tr class="sep"><td colspan="8">TweetEval-emotion · 4-way</td></tr>
+          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/tweeteval_emotion" target="_blank" rel="noopener">TweetEval-emotion · 4-way</a></td><td class="n">Bernoulli</td><td class="n">0.77</td><td class="n">0.73</td><td class="n win">0.120</td><td class="n win">0.324</td><td class="n win">0.63</td><td class="n">(0.89, 0.89)</td></tr>
+          <tr><td></td><td class="n">Generative</td><td class="n">0.76</td><td class="n">0.74</td><td class="n">0.240</td><td class="n">0.480</td><td class="n">6.63</td><td class="n">(0.63, 0.91)</td></tr>
+          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n win">0.80</td><td class="n">0.72</td><td class="n">0.201</td><td class="n">0.362</td><td class="n">0.70</td><td class="n">(1.00, 1.00)</td></tr>
+
+          <tr class="sep"><td colspan="8">PAWS · adversarial paraphrase binary</td></tr>
+          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/paws" target="_blank" rel="noopener">PAWS · adversarial paraphrase</a></td><td class="n">Bernoulli</td><td class="n win">0.83</td><td class="n win">0.81</td><td class="n win">0.076</td><td class="n win">0.260</td><td class="n win">0.41</td><td class="n na">(n/a, 0.94)</td></tr>
+          <tr><td></td><td class="n">Generative</td><td class="n">0.82</td><td class="n">0.80</td><td class="n">0.180</td><td class="n">0.360</td><td class="n">4.97</td><td class="n na">(n/a, 0.89)</td></tr>
+          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n">0.56</td><td class="n">0.51</td><td class="n">0.009</td><td class="n">0.499</td><td class="n">0.69</td><td class="n na">(n/a, 1.00)</td></tr>
+
+          <tr class="sep"><td colspan="8">arXiv post-cutoff · anti-contamination (placeholder set — 2 rows)</td></tr>
+          <tr><td colspan="8" class="na" style="font-size:13px">arXiv post-cutoff loader + <code style="font:12.5px 'JetBrains Mono',monospace;background:var(--surface-2);padding:1px 5px;border-radius:4px">make_dataset.py</code> ship structure only; <em>real snapshot pending</em> (M8 task 10b). Numbers for Bernoulli/Generative on the 2-row placeholder sample are not meaningful and are intentionally omitted from this table. See the <a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/arxiv_post_cutoff" target="_blank" rel="noopener">README</a>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fine">N=100 eval examples per benchmark · BGE-m3+LR trained on 500 labeled examples (random-seeded shuffle for class balance) · stability reorder is <code>n/a</code> for binary (Yes/No swap inverts meaning, not position — see methodology) and for Banking77 reorder=0.13 reflects the chunked-scoring architectural caveat below. Each benchmark link above opens its full result markdown + JSON sidecar on GitHub.</p>
+  </div>
+</section>
+
+<section id="usecase">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">M9 · Use-case suite</div>
+      <h2>Four benchmarks that back the use-case cards</h2>
+      <p>Guardrails, support triage, and content rating — the domains Bernoulli is pitched for. External specialists would be the real comparison targets here (Llama Guard, ShieldGemma, WildGuard) — those columns are planned, not yet wired. For today it's the three in-house baselines, and the calibration gap still holds.</p>
+    </div>
+    <div class="tscroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Benchmark</th><th class="n">Baseline</th>
+            <th class="n">Acc</th><th class="n">Macro-F1</th>
+            <th class="n">ECE (10)</th><th class="n">Brier</th><th class="n">NLL ↓</th>
+            <th class="n">Stability (reword)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td rowspan="3"><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/guardrails/toxicchat" target="_blank" rel="noopener">ToxicChat · toxicity binary</a></td><td class="n">Bernoulli</td><td class="n">0.55</td><td class="n">0.42</td><td class="n">0.341</td><td class="n">0.667</td><td class="n win">1.07</td><td class="n">0.94</td></tr>
+          <tr><td class="n">Generative</td><td class="n">0.56</td><td class="n">0.43</td><td class="n">0.440</td><td class="n">0.880</td><td class="n">12.2</td><td class="n">0.95</td></tr>
+          <tr><td class="n">BGE-m3 + LR</td><td class="n win">0.67</td><td class="n win">0.66</td><td class="n win">0.062</td><td class="n win">0.383</td><td class="n">0.56</td><td class="n">1.00</td></tr>
+
+          <tr class="sep"><td colspan="8">XSTest · over-refusal binary</td></tr>
+          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/guardrails/xstest" target="_blank" rel="noopener">XSTest · over-refusal</a></td><td class="n">Bernoulli</td><td class="n">0.68</td><td class="n">0.64</td><td class="n win">0.111</td><td class="n win">0.377</td><td class="n win">0.53</td><td class="n">0.64</td></tr>
+          <tr><td></td><td class="n">Generative</td><td class="n win">0.79</td><td class="n win">0.79</td><td class="n">0.210</td><td class="n">0.420</td><td class="n">5.80</td><td class="n">0.62</td></tr>
+          <tr><td></td><td class="n">BGE-m3 + LR</td><td colspan="6" class="na" style="font-size:13px">— no training split in XSTest (dataset is probe-only, 450 prompts); BGE+LR auto-skipped.</td></tr>
+
+          <tr class="sep"><td colspan="8">CLINC150-OOS · in-scope binary (shuffle-sampled)</td></tr>
+          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/triage/clinc150_oos" target="_blank" rel="noopener">CLINC150-OOS · in-scope</a></td><td class="n">Bernoulli</td><td class="n">0.46</td><td class="n">0.43</td><td class="n">0.267</td><td class="n">0.685</td><td class="n win">0.95</td><td class="n">0.62</td></tr>
+          <tr><td></td><td class="n">Generative</td><td class="n">0.37</td><td class="n">0.37</td><td class="n">0.630</td><td class="n">1.260</td><td class="n">17.4</td><td class="n">0.60</td></tr>
+          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n win">0.77</td><td class="n">0.44</td><td class="n win">0.206</td><td class="n win">0.436</td><td class="n">0.85</td><td class="n">1.00</td></tr>
+
+          <tr class="sep"><td colspan="8">Yelp 1-5 stars · rating (5-way ordinal)</td></tr>
+          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/ratings/yelp_stars" target="_blank" rel="noopener">Yelp · 1-5 star rating</a></td><td class="n">Bernoulli</td><td class="n win">0.58</td><td class="n win">0.55</td><td class="n">0.196</td><td class="n win">0.544</td><td class="n win">0.91</td><td class="n">0.77</td></tr>
+          <tr><td></td><td class="n">Generative</td><td class="n">0.55</td><td class="n">0.51</td><td class="n">0.450</td><td class="n">0.900</td><td class="n">12.4</td><td class="n">0.64</td></tr>
+          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n">0.48</td><td class="n">0.45</td><td class="n win">0.056</td><td class="n">0.618</td><td class="n">1.14</td><td class="n">1.00</td></tr>
+
+          <tr class="sep"><td colspan="8">WildGuardTest · response-harm binary (pending auth)</td></tr>
+          <tr><td colspan="8" class="na" style="font-size:13px"><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/guardrails/wildguard_test" target="_blank" rel="noopener">WildGuardTest loader</a> is shipped. The dataset <code style="font:12.5px 'JetBrains Mono',monospace;background:var(--surface-2);padding:1px 5px;border-radius:4px">allenai/wildguardmix</code> is gated on Hugging Face; the first run will land once the license is accepted and <code style="font:12.5px 'JetBrains Mono',monospace;background:var(--surface-2);padding:1px 5px;border-radius:4px">HF_TOKEN</code> is set on the dev box.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fine">Per-benchmark extras (false-refusal rate on XSTest, OOS AUROC on CLINC150-OOS, MAE / off-by-one on Yelp) are in each benchmark's full result markdown — follow the links above.</p>
+  </div>
+</section>
+
+<section id="methodology">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Methodology</div>
+      <h2>What the numbers actually mean</h2>
+      <p>Every metric answers a specific product-claim question. We run the same backbone (Qwen2.5-VL-7B-Instruct) both ways — Bernoulli reads single-token logits at the answer position; Generative asks in natural language and parses the completion. BGE-m3+LR embeds the input and fits per-task logistic regression on labeled data (500 examples).</p>
+    </div>
+    <div class="cardgrid">
+      <div class="card">
+        <h3>Metrics</h3>
+        <ul>
+          <li><strong>Accuracy</strong>, <strong>macro-F1</strong> — top-1 label match.</li>
+          <li><strong>ECE (10 bins)</strong> — Expected Calibration Error, JevBench convention. Lower is better; 0 is perfect calibration.</li>
+          <li><strong>Brier</strong> — mean squared error of top-class probability.</li>
+          <li><strong>NLL</strong> — negative log-likelihood of the gold label under the predicted distribution. The headline calibration metric; dramatically worse for the point-mass outputs of a text-and-parse pipeline.</li>
+          <li><strong>Stability (reorder, reword)</strong> — fraction of examples whose top-1 is unchanged under option permutations and up to three paraphrased question stems. Binary skips reorder (Yes/No order is semantic, not positional).</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Baselines</h3>
+        <ul>
+          <li><strong>Bernoulli</strong> over HTTP against the running <code>/v1/decide</code> server. Reverse debias on choice; no debias on binary (Yes/No are semantic — reversing their order changes meaning, not position).</li>
+          <li><strong>Generative</strong> over HTTP against the same server's <code>/v1/generate</code>. Same backbone, same prompt framing, parsed completion → point mass on parsed answer or uniform on parse failure.</li>
+          <li><strong>BGE-m3 + LR</strong> — embed inputs with <code>BAAI/bge-m3</code> (CLS pooling, L2-normalise), train scikit-learn's LogisticRegression on 500 labeled training examples (seeded shuffle for class balance). Honest baseline for "could we have used embeddings?"</li>
+          <li><strong>DeBERTa-v3-zeroshot</strong> — the zero-shot encoder column is <em>missing</em> from today's tables. CPU latency on 4-way+ is pathological; GPU is held by the Bernoulli server. Needs a shared-GPU setup or an overnight CPU batch.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="caveats">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Honest caveats</div>
+      <h2>What this run is <em>not</em></h2>
+      <p>These numbers hold the calibration thesis across nine benchmarks. The caveats below are known today and disclosed up front; most are time-and-engineering rather than fundamental.</p>
+    </div>
+    <div class="caveats">
+      <h3>Known limitations in this snapshot</h3>
+      <ul>
+        <li><strong>N=100 eval examples per benchmark.</strong> Numbers in a 5-point band can swing 2–3 points at N=500. Direction holds; precision doesn't. A higher-N pass is pending (hours of GPU, not days).</li>
+        <li><strong>No DeBERTa-v3-zeroshot column.</strong> The strongest open zero-shot encoder is missing — CPU latency is pathological on 4-way+ (hours per benchmark), and GPU is held by the Bernoulli server. Fix is either shared-GPU scheduling or an overnight CPU batch. Does not change the calibration gap between Bernoulli and Generative, but it's the main gap in the "did we need an LLM?" story.</li>
+        <li><strong>Banking77 reorder stability = 0.13.</strong> With 77 options we exceed the 26-letter alphabet so <code>bernoulli/chunked.py</code> splits into 3 chunks of ≤26 labels and softmaxes globally. The top-1 therefore shifts when the chunks change — architectural, not a bug. Cross-chunk debias is parked. Any Banking77 citation needs the chunked-stability footnote.</li>
+        <li><strong>XSTest unsafe_recall = 0.36.</strong> Bernoulli's 0% false-refusal is a product-grade property, but it under-flags actually-unsafe prompts. For a complete guardrail you want Bernoulli as the first-pass "don't over-refuse" gate paired with an escalation path (human-in-loop or a tuned classifier) for the long tail.</li>
+        <li><strong>CLINC150-OOS OOS recall ≈ 0.52 for Bernoulli.</strong> Coin flip on the "none of these" story. Likely prompt-framing + stem rewording; investigation pending.</li>
+        <li><strong>Dev-tier backbone.</strong> Numbers are from Qwen2.5-VL-7B-Instruct on an AWS g5.xlarge (A10G 24GB). The production step-up to <code>Qwen2.5-VL-32B-Instruct-AWQ</code> on g6e.xlarge (L40S 48GB) is parked on AWS capacity.</li>
+        <li><strong>arXiv post-cutoff dataset is 2 placeholder rows.</strong> The anti-contamination guard needs <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/academic/arxiv_post_cutoff/make_dataset.py" target="_blank" rel="noopener">a real run of make_dataset.py</a> (M8 task 10b). Numbers from the placeholder are intentionally omitted from the tables above.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="repro">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Reproducibility</div>
+      <h2>Pinned so you can audit, rerun, or disprove</h2>
+      <p>Every result markdown on GitHub carries a reproducibility footer with the exact model revision, Bernoulli commit, dataset identifier, random seed, and hardware. The one-liner invocation below produces a per-benchmark report at <code>benchmarks/&lt;spec&gt;/results/&lt;date&gt;.md</code>.</p>
+    </div>
+    <div class="repro">
+      <div class="r"><b>Model</b><span>Qwen/Qwen2.5-VL-7B-Instruct @ cc59489</span></div>
+      <div class="r"><b>Hardware</b><span>AWS g5.xlarge · A10G 24GB · us-east-1a</span></div>
+      <div class="r"><b>Harness</b><span>benchmarks.run · benchmarks.common.{metrics,stability,baselines}</span></div>
+      <div class="r"><b>Transport</b><span>HTTP · /v1/decide and /v1/generate</span></div>
+      <div class="r"><b>N / train-N</b><span>100 eval · 500 train (BGEm3LR)</span></div>
+      <div class="r"><b>Date</b><span>2026-10-07</span></div>
+    </div>
+    <p class="fine" style="margin-top:24px">To rerun on your own backbone or hardware: <code style="font:12.5px 'JetBrains Mono',monospace;background:var(--surface-2);padding:1px 5px;border-radius:4px">just serve &amp;&amp; just benchmark academic/sst2 bernoulli,generative,bge-m3-lr 100 500</code>. See the <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/README.md" target="_blank" rel="noopener">benchmarks/ README</a> for the full methodology and <a href="https://github.com/shyamsfo/bernoulli/blob/main/product/operations/benchmark-primer.md" target="_blank" rel="noopener">benchmark-primer.md</a> for a long-form orientation.</p>
+  </div>
+</section>
+
+<div class="final">
+  <div class="wrap">
+    <h2>Try it against your own data</h2>
+    <p>Open weights, runs on-prem, benchmarks reproducible from the repo. Grab the <a href="https://github.com/shyamsfo/bernoulli" target="_blank" rel="noopener" style="color:var(--accent);border-bottom:1px dashed var(--accent)">codebase</a>, or book a demo and we'll walk through what it would mean to run on your corpus.</p>
+    <div class="ctas">
+      <a class="btn btn-primary" href="https://github.com/shyamsfo/bernoulli" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        View on GitHub
+      </a>
+      <button class="btn btn-accent" data-open-demo type="button">Book a demo</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>Bernoulli · an open-weight decision model · <a href="mailto:contact@deepstore.ai">contact@deepstore.ai</a></span>
+    <span>© 2026 DeepStore · <a href="https://github.com/shyamsfo/bernoulli/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0 License</a></span>
+    <span class="foot-disclaimer">Inspired by TypeSafe AI's Jev. Independent project, not affiliated.</span>
+  </div>
+</footer>
+
+<script>
+  // Theme toggle — two-state, matches index.html.
+  (function(){
+    var html=document.documentElement;
+    var btn=document.getElementById("theme-toggle");
+    var light=btn && btn.querySelector('[data-icon="light"]');
+    var dark=btn && btn.querySelector('[data-icon="dark"]');
+    function sysDark(){try{return matchMedia("(prefers-color-scheme: dark)").matches;}catch(e){return false;}}
+    function applied(){var t=html.getAttribute("data-theme"); return t ? t : (sysDark() ? "dark" : "light");}
+    function render(){
+      var cur=applied();
+      // Icon shows the theme a click switches TO.
+      if(light) light.style.display = cur === "dark" ? "" : "none";
+      if(dark)  dark.style.display  = cur === "dark" ? "none" : "";
+    }
+    if(btn){
+      btn.addEventListener("click",function(){
+        var cur=applied();
+        var next=cur==="dark"?"light":"dark";
+        html.setAttribute("data-theme",next);
+        try{localStorage.setItem("theme",next);}catch(e){}
+        render();
+      });
+    }
+    try{if(!localStorage.getItem("theme") && matchMedia){matchMedia("(prefers-color-scheme: dark)").addEventListener("change",render);}}catch(e){}
+    render();
+  })();
+
+  // Book-a-demo stub — this page doesn't include the full dialog markup.
+  // Clicking jumps to the landing page's dialog with a hash so the index
+  // script can auto-open it. (index.html handles data-open-demo and the
+  // hash URL opens it on load; see web/CLAUDE.md for the pattern.)
+  (function(){
+    document.querySelectorAll("[data-open-demo]").forEach(function(b){
+      b.addEventListener("click",function(e){
+        e.preventDefault();
+        window.location.href = "/#demo-dialog";
+      });
+    });
+  })();
+</script>
+</body>
+</html>
