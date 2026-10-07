@@ -1,6 +1,12 @@
 # PAWS: Bernoulli below random — investigation
 
-**Status:** open, logged 2026-10-07 from the first N=100 academic sweep.
+**Status:** **resolved 2026-10-07**. Root cause: `reverse` debias on
+`BinaryQuestion` compounds the model's Yes-token prior instead of
+canceling positional bias — the labels (`Yes` / `No`) are themselves
+semantic. Fix: short-circuit debias to a no-op whenever the question is
+binary. Post-fix PAWS N=100: Bernoulli accuracy **0.83** (was 0.37),
+ECE 0.076 (was 0.176), NLL 0.41 (was 0.68) — Bernoulli now narrowly
+beats Generative on PAWS while being 12× better calibrated.
 
 ## The observation
 
@@ -59,3 +65,36 @@ Stop as soon as the smoking gun shows up. If H1 or H3 is right, the fix is one-l
 <!-- Append-only: date — observation / next step. Oldest first. -->
 
 - **2026-10-07** — Doc created from the first N=100 sweep. No investigation yet.
+- **2026-10-07** — **Step 1 complete (eyeball).** Ran 10 PAWS examples through the direct `HFScorer` + `decide()` path (no HTTP, no stability sweep):
+  - **Bernoulli predicted `Yes` on all 10 examples.** 4 golds were `Yes` (correct), 6 were `No` (wrong). Accuracy = 4/10 = 0.40, matching the N=100 sweep's 0.37 within noise.
+  - **P(Yes) range: [0.501, 0.637].** Every single prediction is just barely above the 0.5 threshold. The model never confidently says `No`.
+  - **H1 (label inversion) is ruled out.** If `Yes`/`No` were swapped at the scorer level, we would see `P(Yes) < 0.5` for `Yes`-gold examples. Instead every row has `P(Yes) > 0.5` regardless of gold. The semantics are correct; the problem is a **Yes-biased prior** on the paraphrase prompt.
+  - **H2 (prompt framing) moves to primary.** The current prompt — "Does Sentence 2 convey the same meaning as Sentence 1?" — may be priming the model toward Yes just by presenting two sentences in a comparison frame. Several of the actually-not-paraphrase examples are near-identical sentences with one word changed (number swap, place swap), which a lenient reading would call "same-ish". The dataset is adversarial by construction, and our framing seems to lean lenient.
+  - **H3 (reverse debias flipping) still worth checking.** For `BinaryQuestion` the debias path has to do something — either swap `Yes`/`No` semantically or no-op. If it's semantically swapping and the model has a position bias at the token level, the average could inflate P(Yes). Testable next.
+  - **Next step: H3 test** — rerun PAWS N=100 with `BERNOULLI_DEFAULT_DEBIAS=none`. If accuracy flips to ~0.63, debias is the culprit; if accuracy stays at ~0.37, debias is not involved and H2 is the remaining hypothesis.
+
+- **2026-10-07** — **Step 2 complete (H3 CONFIRMED).** 50 PAWS examples through the direct scorer, both configs side-by-side:
+  - `debias=reverse`: accuracy **0.380** (matches the N=100 sweep)
+  - `debias=none`: accuracy **0.860**
+  - 32/50 (64%) of examples flip between the two configs.
+  - **Root cause:** For `BinaryQuestion` the "labels" are the semantic tokens `Yes` / `No` themselves. When reverse debias renders the second pass as `Yes) No / No) Yes`, the model doesn't do the mental gymnastics of mapping label-token-at-position-0 to the semantically-swapped option — it just outputs the token that matches its semantic conviction. Result: the model's Yes-token prior gets **doubled** in the sum instead of **canceled** by position-flipping, because position-flipping doesn't exist in a prompt where the labels are themselves the semantics.
+  - For `ChoiceQuestion` with letter labels (A, B, C, ...) this doesn't happen — letters are arbitrary tokens with no inherent semantic prior.
+
+- **2026-10-07** — **Fix landed + verified.** `bernoulli/debias.py` short-circuits `reverse`/`cyclic` to `none` whenever `question` is a `BinaryQuestion`. Position bias on binary is a real problem but requires a different mechanism (e.g. stem rewording) — not label reordering. Tests updated: `test_binary_short_circuits_reverse_to_single_pass` + `test_binary_short_circuits_cyclic_too`. The pre-existing `test_binary_question_uses_yes_no_tokens` was encoding the buggy behavior and has been replaced.
+
+  **Post-fix PAWS N=100** (full sweep rerun):
+
+  | baseline | acc | ECE (10) | NLL | note |
+  |---|---|---|---|---|
+  | **bernoulli** | **0.83** | **0.076** | **0.41** | was 0.37 / 0.176 / 0.68 pre-fix |
+  | generative | 0.82 | 0.180 | 4.97 | unchanged (debias doesn't apply) |
+  | bge-m3-lr | 0.56 | 0.009 | 0.69 | unchanged |
+
+  Bernoulli narrowly beats Generative on PAWS, with ECE **2.4× better** and NLL **12× better**. The calibration-gap story now holds uniformly across all 5 real academic benchmarks (ignoring the 2-row arXiv placeholder).
+
+  **Blast radius of this bug:**
+  - All pre-fix `BinaryQuestion` results in-tree. In academic/, that's just PAWS; the first-sweep PAWS result file was overwritten.
+  - M9 use-case benchmarks that use `BinaryQuestion` (WildGuardTest, ToxicChat, XSTest, CLINC150-OOS). None have been swept yet, so no corrupted results exist — but any pre-fix smoke numbers I may have mentioned should be ignored.
+  - Historical `evals/reports/boolq.md` (pre-M8 snapshot, binary): would be affected, but it's an explicitly-dropped benchmark and the snapshot stays frozen as historical record. Noted in `benchmarks/README.md`'s "What is deliberately not here" section.
+
+  **Takeaway**: calibrated-probability pipelines need per-question-kind defense. Reverse-order debias works for Choice but is semantically wrong for Binary. Rating uses letter labels so it's fine. Future question kinds should get this question explicitly during review.

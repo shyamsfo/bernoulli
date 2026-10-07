@@ -158,14 +158,32 @@ class TestDebiasModes:
         assert len(scorer.calls) == 3
         assert np.allclose(probs, [1 / 3, 1 / 3, 1 / 3], atol=0.01)
 
-    def test_binary_question_uses_yes_no_tokens(self) -> None:
+    def test_binary_short_circuits_reverse_to_single_pass(self) -> None:
+        """BinaryQuestion + reverse should NOT run a second pass.
+
+        Yes/No are semantic labels, not arbitrary positions. Reversing their
+        order would compound the Yes-token prior rather than cancel position
+        bias (see product/learnings/paws-below-random.md). The debias module
+        short-circuits to a single-pass "none" for binary.
+        """
         q = BinaryQuestion(id="q", prompt="urgent?")
         tok = _FakeTokenizer()
         scorer = _ScriptedScorer(tok, {"Yes": [10.0, 0.0], "No": [10.0, 0.0]})
         probs = debias(scorer, state_text="x", question=q, mode="reverse")
-        # Run 1: labels [Yes, No], probs ~[1, 0]. Run 2: labels [No, Yes], probs ~[1, 0].
-        # Canonical: idx0=Yes gets 1 (run 1 pos 0) + 0 (run 2 pos 1) = 1; idx1=No gets 0+1=1. Avg = 0.5
-        assert np.isclose(probs[0], 0.5, atol=0.02)
+
+        # Exactly one score_batch call (one perm), not two.
+        assert len(scorer.calls) == 1
+        # Softmax of [10, 0] → [~1.0, ~0.0], so P(Yes) ≈ 1.0 (not the 0.5 that
+        # the old buggy average produced).
+        assert probs[0] > 0.99
+
+    def test_binary_short_circuits_cyclic_too(self) -> None:
+        """Same rationale — cyclic on binary is identical to reverse (one swap)."""
+        q = BinaryQuestion(id="q", prompt="urgent?")
+        tok = _FakeTokenizer()
+        scorer = _ScriptedScorer(tok, {"Yes": [10.0, 0.0], "No": [10.0, 0.0]})
+        _ = debias(scorer, state_text="x", question=q, mode="cyclic")
+        assert len(scorer.calls) == 1  # single pass, not k=2
 
     def test_rating_question_runs_correct_number_of_permutations(self) -> None:
         q = RatingQuestion(id="q", prompt="?", scale=(1, 5))  # width 5

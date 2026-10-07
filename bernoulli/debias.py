@@ -13,6 +13,17 @@ Modes:
 
 API: `debias(scorer, state_text, question, mode)` returns a probability
 array indexed by canonical option order.
+
+**BinaryQuestion exception.** For binary questions the labels are the
+semantic tokens `Yes` and `No` themselves. Reversing their order rewrites
+the prompt as `Yes) No / No) Yes`, which doesn't just swap positions — it
+inverts the meaning the model has to track. In practice (see
+`product/learnings/paws-below-random.md`) the reverse pass compounds the
+model's `Yes`-token prior instead of canceling it, which can flip a
+correct 86% classifier into a wrong 38% one. So reverse/cyclic debias is
+short-circuited to a no-op whenever `question` is a `BinaryQuestion`.
+Position bias on binary is a real problem but needs a different
+mechanism (e.g. rewording the question stem) — not label reordering.
 """
 
 from __future__ import annotations
@@ -81,9 +92,16 @@ def debias(
     if tok is None:
         raise RuntimeError("scorer has no .tokenizer attribute; needed to resolve label token ids")
 
+    # Short-circuit for BinaryQuestion — see the module docstring. The Yes/No
+    # labels are semantic, so reordering them changes the question meaning
+    # rather than correcting position bias. Falling back to no-op keeps the
+    # calibration honest; the Yes-token prior gets handled by prompt framing
+    # or (future) stem rewording, not by label swaps.
+    effective_mode: DebiasMode = "none" if isinstance(question, BinaryQuestion) else mode
+
     allowed = _allowed_ids(tok, question)
     n = len(allowed)
-    perms = _permutations_for(mode, n)
+    perms = _permutations_for(effective_mode, n)
 
     # Build all permutation prompts up front, send as a single batch — one
     # engine call on vLLM's continuous-batching path, loop on HFScorer.
