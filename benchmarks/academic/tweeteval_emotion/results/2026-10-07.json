@@ -1,0 +1,89 @@
+{
+  "benchmark": "academic/tweeteval_emotion",
+  "repro": {
+    "benchmark": "academic/tweeteval_emotion",
+    "bernoulli_commit": "unknown",
+    "model_id": "unset",
+    "model_revision": "unset",
+    "hardware": "ip-172-31-84-107",
+    "python": "3.12.3",
+    "source": "tweeteval_emotion"
+  },
+  "results": [
+    {
+      "name": "bernoulli",
+      "accuracy": 0.77,
+      "macro_f1": 0.7297278929460873,
+      "ece_10": 0.11971205174922944,
+      "ece_15": 0.1205376082658768,
+      "brier": 0.3243982855169057,
+      "nll": 0.6329780356014603,
+      "coverage": {
+        "0.95": 0.7789473684210526,
+        "0.9": 0.8,
+        "0.8": 0.85,
+        "0.5": 0.96
+      },
+      "latency_ms": {
+        "p50_ms": 96.0,
+        "p95_ms": 97.0,
+        "mean_ms": 93.46
+      },
+      "stability_reorder": 0.89,
+      "stability_reword": 0.89,
+      "n_examples": 100,
+      "note": "",
+      "extras": null
+    },
+    {
+      "name": "generative",
+      "accuracy": 0.76,
+      "macro_f1": 0.7388234629613939,
+      "ece_10": 0.24,
+      "ece_15": 0.24,
+      "brier": 0.48,
+      "nll": 6.631445067822852,
+      "coverage": {
+        "0.95": 0.7684210526315789,
+        "0.9": 0.7666666666666667,
+        "0.8": 0.75,
+        "0.5": 0.68
+      },
+      "latency_ms": {
+        "p50_ms": 93.0,
+        "p95_ms": 128.0,
+        "mean_ms": 105.31
+      },
+      "stability_reorder": 0.63,
+      "stability_reword": 0.91,
+      "n_examples": 100,
+      "note": "",
+      "extras": null
+    },
+    {
+      "name": "bge-m3-lr",
+      "accuracy": 0.8,
+      "macro_f1": 0.7218581108332661,
+      "ece_10": 0.20055435419082643,
+      "ece_15": 0.20055435419082643,
+      "brier": 0.36206200962134416,
+      "nll": 0.7019589097032753,
+      "coverage": {
+        "0.95": 0.8315789473684211,
+        "0.9": 0.8333333333333334,
+        "0.8": 0.85,
+        "0.5": 0.94
+      },
+      "latency_ms": {
+        "p50_ms": 296.5,
+        "p95_ms": 371.2,
+        "mean_ms": 298.39
+      },
+      "stability_reorder": 1.0,
+      "stability_reword": 1.0,
+      "n_examples": 100,
+      "note": "trained on 500 examples",
+      "extras": null
+    }
+  ]
+}

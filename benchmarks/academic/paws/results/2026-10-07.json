@@ -1,0 +1,89 @@
+{
+  "benchmark": "academic/paws",
+  "repro": {
+    "benchmark": "academic/paws",
+    "bernoulli_commit": "unknown",
+    "model_id": "unset",
+    "model_revision": "unset",
+    "hardware": "ip-172-31-84-107",
+    "python": "3.12.3",
+    "source": "paws"
+  },
+  "results": [
+    {
+      "name": "bernoulli",
+      "accuracy": 0.37,
+      "macro_f1": 0.27007299270072993,
+      "ece_10": 0.17575825750827792,
+      "ece_15": 0.2238264590501785,
+      "brier": 0.4873076926631467,
+      "nll": 0.6802896007142729,
+      "coverage": {
+        "0.95": 0.3894736842105263,
+        "0.9": 0.4111111111111111,
+        "0.8": 0.4625,
+        "0.5": 0.62
+      },
+      "latency_ms": {
+        "p50_ms": 90.0,
+        "p95_ms": 125.05,
+        "mean_ms": 96.97
+      },
+      "stability_reorder": null,
+      "stability_reword": 1.0,
+      "n_examples": 100,
+      "note": "",
+      "extras": null
+    },
+    {
+      "name": "generative",
+      "accuracy": 0.82,
+      "macro_f1": 0.7994652406417113,
+      "ece_10": 0.18000000000000005,
+      "ece_15": 0.18000000000000005,
+      "brier": 0.36,
+      "nll": 4.9735838008671385,
+      "coverage": {
+        "0.95": 0.8210526315789474,
+        "0.9": 0.8222222222222222,
+        "0.8": 0.825,
+        "0.5": 0.88
+      },
+      "latency_ms": {
+        "p50_ms": 125.0,
+        "p95_ms": 142.0,
+        "mean_ms": 127.65
+      },
+      "stability_reorder": null,
+      "stability_reword": 0.89,
+      "n_examples": 100,
+      "note": "",
+      "extras": null
+    },
+    {
+      "name": "bge-m3-lr",
+      "accuracy": 0.56,
+      "macro_f1": 0.5098039215686274,
+      "ece_10": 0.00845104038715357,
+      "ece_15": 0.0963374608755112,
+      "brier": 0.4987033991191124,
+      "nll": 0.6917364139136939,
+      "coverage": {
+        "0.95": 0.5368421052631579,
+        "0.9": 0.5333333333333333,
+        "0.8": 0.525,
+        "0.5": 0.5
+      },
+      "latency_ms": {
+        "p50_ms": 480.5,
+        "p95_ms": 585.05,
+        "mean_ms": 478.47
+      },
+      "stability_reorder": null,
+      "stability_reword": 1.0,
+      "n_examples": 100,
+      "note": "trained on 500 examples",
+      "extras": null
+    }
+  ]
+}

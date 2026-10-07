@@ -1,0 +1,64 @@
+{
+  "benchmark": "academic/arxiv_post_cutoff",
+  "repro": {
+    "benchmark": "academic/arxiv_post_cutoff",
+    "bernoulli_commit": "unknown",
+    "model_id": "unset",
+    "model_revision": "unset",
+    "hardware": "ip-172-31-84-107",
+    "python": "3.12.3",
+    "source": "arxiv_post_cutoff"
+  },
+  "results": [
+    {
+      "name": "bernoulli",
+      "accuracy": 0.5,
+      "macro_f1": 0.16666666666666666,
+      "ece_10": 0.3861358165740967,
+      "ece_15": 0.3861358165740967,
+      "brier": 0.7533494961650674,
+      "nll": 1.5986921860127972,
+      "coverage": {
+        "0.95": 0.5,
+        "0.9": 0.5,
+        "0.8": 0.5,
+        "0.5": 1.0
+      },
+      "latency_ms": {
+        "p50_ms": 127.5,
+        "p95_ms": 128.85,
+        "mean_ms": 127.5
+      },
+      "stability_reorder": 1.0,
+      "stability_reword": 1.0,
+      "n_examples": 2,
+      "note": "",
+      "extras": null
+    },
+    {
+      "name": "generative",
+      "accuracy": 1.0,
+      "macro_f1": 0.5,
+      "ece_10": 0.0,
+      "ece_15": 0.0,
+      "brier": 0.0,
+      "nll": -0.0,
+      "coverage": {
+        "0.95": 1.0,
+        "0.9": 1.0,
+        "0.8": 1.0,
+        "0.5": 1.0
+      },
+      "latency_ms": {
+        "p50_ms": 142.5,
+        "p95_ms": 142.95,
+        "mean_ms": 142.5
+      },
+      "stability_reorder": 0.5,
+      "stability_reword": 1.0,
+      "n_examples": 2,
+      "note": "",
+      "extras": null
+    }
+  ]
+}
