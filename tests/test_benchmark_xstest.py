@@ -70,6 +70,7 @@ def patched_load_dataset(monkeypatch: pytest.MonkeyPatch) -> _FakeDataset:
 
     def fake_load_dataset(path: str, split: str) -> _FakeDataset:
         assert path == "natolambert/xstest-v2-copy"
+        assert split == "prompts"
         return seeded
 
     import datasets

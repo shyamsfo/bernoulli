@@ -2,9 +2,18 @@
 
 Response-harm binary classification over (prompt, response) pairs from AllenAI's WildGuardMix dataset. Target comparison: Llama Guard 3, ShieldGemma, WildGuard-7B — all of which also read token probabilities, so a like-for-like comparison is honest.
 
-- **HF path**: [`allenai/wildguardmix`](https://huggingface.co/datasets/allenai/wildguardmix) · config `wildguardtest`
+- **HF path**: [`allenai/wildguardmix`](https://huggingface.co/datasets/allenai/wildguardmix) · config `wildguardtest`  **(gated — see auth note below)**
 - **Eval split**: `test` (1,725 examples).
 - **Train split**: config `wildguardtrain` split `train` (~86k examples) — consumed by `BGEm3LR.fit` and other trainable baselines.
+
+## Authentication required
+
+WildGuardMix is a **gated dataset** on HF. Before the loader can pull it:
+
+1. Visit [huggingface.co/datasets/allenai/wildguardmix](https://huggingface.co/datasets/allenai/wildguardmix) and accept the license (one-time per account).
+2. Set `HF_TOKEN=<your-hf-token>` in the environment the sweep runs under. On the dev box: `export HF_TOKEN=hf_...` in `~/.bashrc` or `~/.hf-token`.
+
+Without this, `load_dataset` raises `DatasetNotFoundError: Dataset 'allenai/wildguardmix' is a gated dataset on the Hub. You must be authenticated to access it.`
 
 ## State encoding
 

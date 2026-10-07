@@ -31,7 +31,7 @@ from benchmarks.common.dataset import BenchmarkExample
 from bernoulli.types import BinaryQuestion
 
 SOURCE = "clinc150_oos"
-_HF_PATH = "clinc_oos"
+_HF_PATH = "Clinc/clinc_oos"
 _HF_CONFIG = "plus"
 _OOS_NAME = "oos"
 

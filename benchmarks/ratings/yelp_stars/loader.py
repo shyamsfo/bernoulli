@@ -20,7 +20,7 @@ from benchmarks.common.dataset import BenchmarkExample
 from bernoulli.types import RatingQuestion
 
 SOURCE = "yelp_stars"
-_HF_PATH = "yelp_review_full"
+_HF_PATH = "Yelp/yelp_review_full"
 _SCALE = (1, 5)
 
 QUESTION = RatingQuestion(

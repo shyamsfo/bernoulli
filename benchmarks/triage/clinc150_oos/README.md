@@ -2,7 +2,7 @@
 
 Out-of-scope detection over short user utterances. 150 in-scope intents across 10 domains (banking, credit cards, travel, small talk, etc.) plus an explicit **out-of-scope** class — the canonical benchmark for "none of the above" probability behavior.
 
-- **HF path**: [`clinc_oos`](https://huggingface.co/datasets/clinc_oos) · config `plus`
+- **HF path**: [`Clinc/clinc_oos`](https://huggingface.co/datasets/Clinc/clinc_oos) · config `plus`
 - **Eval split**: `test` (5,500 examples: 4,500 in-scope + 1,000 OOS).
 - **Train split**: `train` (15,250 examples: 15,000 in-scope + 250 OOS) — consumed by `BGEm3LR.fit`.
 

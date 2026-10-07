@@ -56,7 +56,7 @@ def patched_load_dataset(monkeypatch: pytest.MonkeyPatch) -> dict[str, _FakeData
     }
 
     def fake_load_dataset(path: str, split: str) -> _FakeDataset:
-        assert path == "yelp_review_full"
+        assert path == "Yelp/yelp_review_full"
         return seeded[split]
 
     import datasets

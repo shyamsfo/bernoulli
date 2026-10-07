@@ -205,7 +205,7 @@ Exit criteria: `benchmarks/README.md` renders a comparison table with ≥ 5 of t
 ---
 
 ## M9 — Benchmarks: use-case coverage
-**Status**: ⏳ pending
+**Status**: 🔄 in progress
 **Goal**: Match the landing-page use-case cards (guardrails, support triage, content moderation / rating) with benchmarks whose results we can cite in the pitch. Each use case gets a baseline comparison against the model category that actually competes.
 
 Tasks:
@@ -214,6 +214,7 @@ Tasks:
 - [x] `benchmarks/guardrails/xstest/` — XSTest for over-refusal. Report refusal-rate and accuracy separately; a good guardrail is accurate *without* over-refusing.
 - [x] `benchmarks/triage/clinc150_oos/` — CLINC150 with the out-of-scope split. Report OOS detection AUROC alongside in-domain accuracy — this is the "none of these" probability story in a number.
 - [x] `benchmarks/ratings/yelp_stars/` — Yelp 1-5 star reviews. Tests the rating question type end-to-end. Report MAE and off-by-one accuracy in addition to the standard metrics.
+- [~] **M9 sweep run**: fire `just sweep-usecase` against the live server to produce `results/<date>.md` for each of the five use-case benchmarks. Mirror of M8 task 12b. Needs the generative-via-HTTP endpoint (shipped) and the per-benchmark `extra_metrics` hooks (shipped: OOS AUROC on CLINC150, false-refusal-rate on XSTest, MAE/off-by-one on Yelp). Blocks the two tasks below.
 - [ ] Three use-case domain tables appended to `benchmarks/README.md` (guardrails / triage / ratings).
 - [ ] Cross-reference: each use-case card on `web/index.html` gets a link to the matching `benchmarks/<domain>/<name>/results/latest.md` so the pitch is backed by numbers at a click.
 

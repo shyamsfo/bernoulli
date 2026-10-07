@@ -85,8 +85,13 @@ def _yield_split(split: str, limit: int | None) -> Iterator[BenchmarkExample]:
 
 
 def load(limit: int | None = None) -> Iterator[BenchmarkExample]:
-    """Stream the full XSTest set (250 examples). No train/test split in the source dataset."""
-    return _yield_split("train", limit)
+    """Stream the full XSTest prompt set (450 examples).
+
+    Dataset splits are per-model-response (`gpt4`, `llama2new`, …); the
+    `prompts` split is the pure prompt-only variant, which is what the
+    `should_refuse` binary classification uses.
+    """
+    return _yield_split("prompts", limit)
 
 
 def extra_metrics(

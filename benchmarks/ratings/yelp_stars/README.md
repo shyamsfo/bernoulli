@@ -2,7 +2,7 @@
 
 Rating classification over Yelp review paragraphs. First benchmark in the suite that uses `RatingQuestion` — exercises the integer-string response-key convention (`"1"` .. `"5"`) and the expected-value aggregation machinery.
 
-- **HF path**: [`yelp_review_full`](https://huggingface.co/datasets/yelp_review_full)
+- **HF path**: [`Yelp/yelp_review_full`](https://huggingface.co/datasets/Yelp/yelp_review_full)
 - **Eval split**: `test` (50,000 examples).
 - **Train split**: `train` (650,000 examples) — consumed by `BGEm3LR.fit`. Expect the first full run to use `--train-limit` (fitting the LR on half a million embeddings is overkill for the signal).
 

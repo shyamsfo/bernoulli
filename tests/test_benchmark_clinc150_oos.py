@@ -81,7 +81,7 @@ def patched_load_dataset(monkeypatch: pytest.MonkeyPatch) -> dict[str, _FakeData
     }
 
     def fake_load_dataset(path: str, config: str, split: str) -> _FakeDataset:
-        assert path == "clinc_oos"
+        assert path == "Clinc/clinc_oos"
         assert config == "plus"
         return seeded[split]
 
