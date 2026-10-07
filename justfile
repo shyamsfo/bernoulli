@@ -127,16 +127,20 @@ benchmark spec="academic/sst2" baselines="bernoulli" limit="" train_limit="2000"
 # Default --limit 500 keeps a full-matrix run under ~2h on g5.xlarge/7B.
 # Override with: just sweep-academic 2000 (or "" for no cap).
 # Requires `just serve` or docker-run already up at :8000 for the bernoulli baseline.
+# NOTE: `generative` is intentionally excluded from the default matrix on a
+# single-GPU box — it loads a second copy of the backbone and OOMs against the
+# server's copy. See parking-lot 2026-10-06. Re-add once an HTTP /v1/generate
+# endpoint lands.
 sweep-academic limit="500" train_limit="2000" url="http://127.0.0.1:8000":
     #!/usr/bin/env bash
     set -u
     declare -A matrix=(
-        ["academic/sst2"]="bernoulli,generative,deberta,bge-m3-lr"
-        ["academic/ag_news"]="bernoulli,generative,deberta,bge-m3-lr"
-        ["academic/banking77"]="bernoulli,generative,deberta,bge-m3-lr"
-        ["academic/tweeteval_emotion"]="bernoulli,generative,deberta,bge-m3-lr"
-        ["academic/paws"]="bernoulli,generative,bge-m3-lr"
-        ["academic/arxiv_post_cutoff"]="bernoulli,generative,deberta"
+        ["academic/sst2"]="bernoulli,deberta,bge-m3-lr"
+        ["academic/ag_news"]="bernoulli,deberta,bge-m3-lr"
+        ["academic/banking77"]="bernoulli,deberta,bge-m3-lr"
+        ["academic/tweeteval_emotion"]="bernoulli,deberta,bge-m3-lr"
+        ["academic/paws"]="bernoulli,bge-m3-lr"
+        ["academic/arxiv_post_cutoff"]="bernoulli,deberta"
     )
     succeeded=()
     failed=()
@@ -159,15 +163,16 @@ sweep-academic limit="500" train_limit="2000" url="http://127.0.0.1:8000":
     [ ${#failed[@]} -eq 0 ]
 
 # Sweep the M9 use-case benchmarks. Same pattern as sweep-academic.
+# `generative` excluded for the same single-GPU reason — see sweep-academic note.
 sweep-usecase limit="500" train_limit="2000" url="http://127.0.0.1:8000":
     #!/usr/bin/env bash
     set -u
     declare -A matrix=(
-        ["guardrails/wildguard_test"]="bernoulli,generative,bge-m3-lr"
-        ["guardrails/toxicchat"]="bernoulli,generative,bge-m3-lr"
-        ["guardrails/xstest"]="bernoulli,generative"
-        ["triage/clinc150_oos"]="bernoulli,generative,bge-m3-lr"
-        ["ratings/yelp_stars"]="bernoulli,generative,bge-m3-lr"
+        ["guardrails/wildguard_test"]="bernoulli,bge-m3-lr"
+        ["guardrails/toxicchat"]="bernoulli,bge-m3-lr"
+        ["guardrails/xstest"]="bernoulli"
+        ["triage/clinc150_oos"]="bernoulli,bge-m3-lr"
+        ["ratings/yelp_stars"]="bernoulli,bge-m3-lr"
     )
     succeeded=()
     failed=()
