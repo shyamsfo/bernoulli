@@ -6,7 +6,58 @@ Each entry has: numbers table, what's sellable, honest limitations, honest gaps,
 
 ---
 
-## 2026-10-07 — First academic sweep in; PAWS debias bug fixed
+## 2026-10-07 (afternoon) — First M9 use-case sweep in
+
+### M9 numbers (N=100, dev-tier Qwen2.5-VL-7B on A10G, g5.xlarge)
+
+| Benchmark | Bernoulli acc | Generative acc | BGE-m3+LR acc | Bernoulli NLL | Generative NLL | NLL ratio |
+|---|---|---|---|---|---|---|
+| ToxicChat | 0.55 | 0.56 | **0.67** | 1.07 | 12.2 | 11× |
+| XSTest | 0.68 | **0.79** | — | 0.53 | 5.80 | 11× |
+| CLINC150-OOS | 0.46 | 0.37 | **0.77** | 0.95 | 17.4 | **18×** |
+| Yelp 1-5 stars | **0.58** | 0.55 | 0.48 | **0.91** | 12.4 | 14× |
+
+Per-benchmark extras (post `__init__` re-export fix):
+
+- **XSTest**: Bernoulli `false_refusal_rate = 0.000`, `unsafe_recall = 0.36`. Generative `false_refusal_rate = 0.120`, `unsafe_recall = 0.70`. Bernoulli *never over-refuses* but under-flags unsafe prompts.
+- **CLINC150-OOS**: Bernoulli `oos_auroc = 0.49` (random), `oos_recall = 0.52`. Generative `oos_auroc = 0.55`, `oos_recall = 0.87`. BGE+LR `oos_auroc = 0.75` (**best**) but `oos_recall = 0.00` — probability discriminates while argmax doesn't.
+- **Yelp**: Bernoulli `MAE = 0.44` (**best**), `off_by_one = 0.95`. Generative `MAE = 0.50`, off-by-one 0.95. BGE+LR `MAE = 0.68`, off-by-one 0.95. All within one star for 95% of examples.
+
+Full reports: `benchmarks/{guardrails/toxicchat, guardrails/xstest, triage/clinc150_oos, ratings/yelp_stars}/results/2026-10-07.md`.
+
+**Not yet landed**: WildGuardTest. HF dataset `allenai/wildguardmix` is gated — needs one-time license acceptance on HF + `HF_TOKEN` env var. See the WildGuardTest README for the two-step unblock.
+
+### Sellable additions
+
+**Calibration gap confirmed on use-case benchmarks too.** Four M9 benchmarks each show Bernoulli NLL 11–18× better than Generative. Same thesis, different domain. Combined with the five academic benchmarks, that's **nine independent receipts** for *"same answer, dramatically better calibration."*
+
+**XSTest's 0% false-refusal rate is a genuinely sellable product property.** For the guardrails use case, "will never over-refuse a safe prompt" is a hard thing to guarantee from a generative LLM. Pair with an explicit escalation path for the long tail (unsafe_recall of 0.36 says we miss ~2/3 of actually-unsafe prompts, so Bernoulli alone is *not* a complete safety classifier — it's a cheap first-pass that trades recall for zero false refusals).
+
+**Yelp's MAE 0.44** beats Generative (0.50) and BGE+LR (0.68). For 5-way ordinal rating, Bernoulli's ability to use the full distribution (expected = Σ p_i · i) matters more than argmax — this is where the "typed decisions, not single tokens" story earns its keep.
+
+### Honest limitations
+
+1. **BGE-m3+LR dominates when training data is in-distribution**: ToxicChat (0.67 > 0.55), CLINC in_scope (1.00). It loses on Yelp (0.48 < 0.58) because 5-way ordinal regression on short review text isn't fit by linear LR, and because 500 examples × 5 classes = sparse per-class signal.
+2. **XSTest unsafe_recall = 0.36** is low. Bernoulli has a "never refuse" prior post-debias-fix. Not disqualifying, but means Bernoulli-as-sole-guardrail is wrong framing.
+3. **CLINC150-OOS oos_recall for Bernoulli = 0.52** = coin flip. The "none of these" probability story needs more work; probably prompt framing + maybe stem rewording.
+
+### Still-outstanding gaps
+
+- **WildGuardTest** stuck on HF gating (user action).
+- **DeBERTa column** across M9 — same CPU-latency pathological issue as M8.
+- **M9 landing-page cross-reference** (per-card link to the matching `results/latest.md`) — not yet done. Next natural task.
+- **N=500 scale-up** on both academic and use-case suites. Hours of GPU time; not yet done.
+- **arXiv post-cutoff real snapshot** (M8 task 10b).
+
+### Where we stand
+
+- **Internal technical-peer conversation**: can show 9 benchmarks with the calibration-gap story. Credible.
+- **Public landing page**: still missing WildGuardTest, DeBERTa column, and the per-card cross-reference. One day's work on cross-reference + WildGuard unblock closes most of the gap.
+- **JevBench submission**: still need the three JevBench unknowns + N=500 scale-up.
+
+---
+
+## 2026-10-07 (morning) — First academic sweep in; PAWS debias bug fixed
 
 ### Numbers (N=100 per benchmark, dev-tier backbone Qwen2.5-VL-7B on A10G)
 
