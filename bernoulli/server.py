@@ -1,8 +1,16 @@
-"""FastAPI server exposing /v1/decide, /healthz, /v1/models.
+"""FastAPI server exposing /v1/decide, /v1/generate, /healthz, /v1/models.
 
-Thin HTTP wrapper around `bernoulli.decide.decide()`. Loads the scorer and
-(optional) calibration once at startup via a lifespan context, then serves
-requests off a thread pool so blocking GPU work doesn't stall the event loop.
+Thin HTTP wrapper around `bernoulli.decide.decide()` + `bernoulli.generative.
+generative_decide()`. Loads the scorer and (optional) calibration once at
+startup via a lifespan context, then serves requests off a thread pool so
+blocking GPU work doesn't stall the event loop.
+
+`/v1/generate` is the baseline/comparison path: same request shape as
+/v1/decide, but internally produces its distribution by generating a short
+completion and parsing it (1.0/0.0 point mass on the parsed answer, uniform
+on parse failure). Only supported when the loaded scorer has a `.generate()`
+method — HFScorer does, VLLMScorer does not; a request against a non-
+generating scorer gets 501.
 
 Run with:
     uvicorn bernoulli.server:app --host 0.0.0.0 --port 8000
@@ -28,6 +36,7 @@ from fastapi import FastAPI, HTTPException
 from bernoulli.calibrate import Calibration, load_calibration
 from bernoulli.config import load_settings
 from bernoulli.decide import decide
+from bernoulli.generative import generative_decide
 from bernoulli.scorer import Scorer, load_scorer
 from bernoulli.types import DecideRequest, DecideResponse
 
@@ -95,6 +104,22 @@ def create_app(
                 cast(Scorer, app.state.scorer),
                 calibration=app.state.calibration,
             )
+        except NotImplementedError as exc:
+            raise HTTPException(status_code=501, detail=str(exc)) from exc
+
+    @app.post("/v1/generate", response_model=DecideResponse)
+    def generate_endpoint(request: DecideRequest) -> DecideResponse:
+        scorer_ = app.state.scorer
+        if not hasattr(scorer_, "generate"):
+            raise HTTPException(
+                status_code=501,
+                detail=(
+                    f"Loaded scorer ({type(scorer_).__name__}) has no .generate(); "
+                    f"use BERNOULLI_SCORER=hf for the generative baseline path."
+                ),
+            )
+        try:
+            return generative_decide(request, scorer_)
         except NotImplementedError as exc:
             raise HTTPException(status_code=501, detail=str(exc)) from exc
 

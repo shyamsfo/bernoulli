@@ -193,3 +193,52 @@ class TestDecide:
         )
         assert r.status_code == 501
         assert "image" in r.json()["detail"].lower()
+
+
+class _GeneratingScorer(_ConstantScorer):
+    """ConstantScorer + a scripted .generate() so /v1/generate has something to parse."""
+
+    def __init__(self, scripted: str = "A") -> None:
+        super().__init__()
+        self._scripted = scripted
+
+    def generate(self, prompt: str, *, max_new_tokens: int = 10) -> str:
+        return self._scripted
+
+
+class TestGenerate:
+    def test_choice_returns_shape(self) -> None:
+        app = create_app(scorer=_GeneratingScorer(scripted="negative"))
+        client = TestClient(app)
+        r = client.post(
+            "/v1/generate",
+            json={
+                "state": {"text": "whatever"},
+                "questions": [
+                    {
+                        "id": "sentiment",
+                        "type": "choice",
+                        "prompt": "pos or neg?",
+                        "options": ["negative", "positive"],
+                    }
+                ],
+            },
+        )
+        assert r.status_code == 200, r.json()
+        body = r.json()
+        d = body["decisions"]["sentiment"]
+        assert d["type"] == "choice"
+        assert d["answer"] == "negative"
+        assert d["distribution"] == {"negative": 1.0, "positive": 0.0}
+
+    def test_501_when_scorer_lacks_generate(self, client: TestClient) -> None:
+        """`_ConstantScorer` has no `.generate` → /v1/generate must 501, not 500."""
+        r = client.post(
+            "/v1/generate",
+            json={
+                "state": {"text": "x"},
+                "questions": [{"id": "a", "type": "binary", "prompt": "?"}],
+            },
+        )
+        assert r.status_code == 501
+        assert "generate" in r.json()["detail"].lower()

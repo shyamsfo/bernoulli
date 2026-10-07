@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from benchmarks.common.baselines import (
+from bernoulli.generative import (
     _build_generative_prompt,
     _decide_one_generative,
     generative_decide,

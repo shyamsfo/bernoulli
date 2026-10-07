@@ -21,10 +21,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from benchmarks.common import metrics as metrics_mod
-from benchmarks.common.baselines import generative_decide
 from bernoulli.calibrate import Calibration, load_calibration
 from bernoulli.config import load_settings
 from bernoulli.decide import decide
+from bernoulli.generative import generative_decide
 from bernoulli.scorer import Scorer, load_scorer
 from bernoulli.types import DecideOptions, DecideRequest, Decision, State
 from evals.example import EvalExample
@@ -85,7 +85,7 @@ def run(
     """Score every example and return an EvalResult with metrics + latency.
 
     method='bernoulli' uses the logit path (bernoulli.decide); 'generative'
-    uses the text-and-parse baseline (benchmarks.common.baselines.generative_decide).
+    uses the text-and-parse baseline (bernoulli.generative.generative_decide).
     """
     gold: list[str] = []
     preds: list[dict[str, float]] = []

@@ -118,16 +118,40 @@ class TestBernoulliHTTP:
 
 
 class TestGenerativeWrapper:
-    """The wrapper is a thin shim over `generative_decide` + distribution_from_decision.
+    """`Generative` is now an HTTP baseline over /v1/generate.
 
-    Both halves are tested in test_baselines.py (semantic) and
-    TestDistributionFromDecision above (conversion). Only the name is asserted
-    here — adding another end-to-end test with the scripted scorer would just
-    duplicate coverage.
+    Shares `_HTTPDecider` with `BernoulliHTTP`, so the HTTP request/response
+    behavior is covered by TestBernoulliHTTP. The semantic test for the
+    text-and-parse path lives in test_baselines.py against the real
+    `generative_decide` function in `bernoulli.generative`.
     """
 
     def test_name(self) -> None:
         assert Generative.name == "generative"
+
+    def test_posts_to_generate_endpoint(self) -> None:
+        q = ChoiceQuestion(id="sentiment", prompt="?", options=["negative", "positive"])
+        example = BenchmarkExample(state_text="great movie", question=q, gold="positive")
+        payload = {
+            "decisions": {
+                "sentiment": {
+                    "type": "choice",
+                    "answer": "positive",
+                    "confidence": 1.0,
+                    "distribution": {"negative": 0.0, "positive": 1.0},
+                }
+            },
+            "model": "Qwen/Qwen2.5-VL-7B-Instruct",
+            "calibration_version": None,
+            "latency_ms": 150,
+        }
+        client = _MockHttpxClient(payload)
+        baseline = Generative(base_url="http://127.0.0.1:8000", client=client)  # type: ignore[arg-type]
+
+        dist = baseline.predict(example)
+
+        assert client.posted_to == "http://127.0.0.1:8000/v1/generate"
+        assert dist == {"negative": 0.0, "positive": 1.0}
 
 
 class _FakeZeroShot:

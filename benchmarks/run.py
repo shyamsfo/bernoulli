@@ -7,7 +7,7 @@ Usage:
         --limit 100 \
         --bernoulli-url http://127.0.0.1:8000
 
-    # To include the Generative baseline, pass --with-generative (loads HFScorer):
+    # Generative is just another HTTP baseline (POST /v1/generate) — same server:
     uv run python -m benchmarks.run academic/sst2 \
         --baselines bernoulli,generative
 
@@ -94,29 +94,21 @@ def _build_baseline(
     bernoulli_url: str,
     device: str,
 ) -> Baseline:
-    """Instantiate a baseline by its short name. Factory kept dumb on purpose.
+    """Instantiate a baseline by its short name.
 
-    `generative` is deliberately not handled here — it needs an HFScorer
-    which the caller loads once and threads through. See _build_generative.
+    All baselines are now HTTP (bernoulli, generative) or local-model
+    (deberta, bge-m3-lr); none hold a second copy of the backbone, so
+    the factory stays dumb and the runner no longer has a special case.
     """
     if name == "bernoulli":
         return BernoulliHTTP(base_url=bernoulli_url)
+    if name == "generative":
+        return Generative(base_url=bernoulli_url)
     if name == "deberta":
         return DeBERTaZeroshot.load_default(device=0 if device == "cuda" else -1)
     if name == "bge-m3-lr":
         return BGEm3LR.load_default(device=device)
-    if name == "generative":
-        raise ValueError("Generative baseline is instantiated separately; use --with-generative.")
     raise ValueError(f"Unknown baseline {name!r}; must be one of {_KNOWN_BASELINES}")
-
-
-def _build_generative() -> Generative:
-    """Load the HFScorer via the project's load_scorer factory and wrap it."""
-    from bernoulli.config import load_settings
-    from bernoulli.scorer import load_scorer
-
-    scorer = load_scorer(load_settings())
-    return Generative(scorer)
 
 
 # ---------------------------------------------------------------------------
@@ -361,10 +353,7 @@ def main(argv: list[str] | None = None) -> None:  # pragma: no cover — invoked
     results: list[BaselineMetrics] = []
     for name in requested:
         print(f"[run] running baseline: {name}", file=sys.stderr)
-        if name == "generative":
-            baseline = _build_generative()
-        else:
-            baseline = _build_baseline(name, bernoulli_url=args.bernoulli_url, device=args.device)
+        baseline = _build_baseline(name, bernoulli_url=args.bernoulli_url, device=args.device)
         results.append(
             _run_one_baseline(
                 name,
