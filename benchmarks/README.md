@@ -55,30 +55,37 @@ The runner POSTs to a Bernoulli server (default `http://127.0.0.1:8000`). Start 
 
 ## Summary leaderboard
 
-Updated by each benchmark run. Empty rows will fill in as M8 → M9 → M10 progress.
+Last run: **2026-10-07**, N=100 eval per benchmark, dev-tier backbone Qwen2.5-VL-7B-Instruct on g5.xlarge/A10G 24GB. Per-benchmark result markdowns are linked from the Benchmark column. See [Honest caveats](#honest-caveats) below for what this snapshot is NOT (no DeBERTa column yet, N=100 is small, WildGuardTest pending auth, arXiv-sample is placeholder).
 
-Headline metric per benchmark is **accuracy** unless noted. ECE is 10-bin (JevBench convention). Stability is `(reorder, reword)`.
+Each cell is `accuracy` unless noted; **bold** = best in row. ECE is 10-bin (JevBench convention). Stability is `(reorder, reword)` for choice; `(—, reword)` for binary (reorder is semantic n/a for Yes/No labels).
 
 ### Academic (M8)
 
-| Benchmark             | Bernoulli | Generative (same model) | DeBERTa-zeroshot | BGE-m3 + LR | Fine-tuned ceiling | ECE (10-bin) | Stability |
-|-----------------------|-----------|--------------------------|------------------|-------------|--------------------|--------------|-----------|
-| [SST-2](academic/sst2/) | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
-| [AG News](academic/ag_news/) | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
-| [Banking77](academic/banking77/) | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
-| [TweetEval-emotion](academic/tweeteval_emotion/) | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
-| [PAWS](academic/paws/) | TBD       | TBD                      | n/a (binary)     | TBD         | TBD                | TBD          | TBD       |
-| [arXiv post-cutoff](academic/arxiv_post_cutoff/) | TBD       | TBD                      | TBD              | TBD         | TBD                | TBD          | TBD       |
+| Benchmark | Bernoulli | Generative | BGE-m3 + LR | Bernoulli NLL | Generative NLL | NLL ratio | Bernoulli ECE | Stability |
+|---|---|---|---|---|---|---|---|---|
+| [SST-2](academic/sst2/) | **0.95** | **0.95** | 0.90 | **0.18** | 1.38 | 7.6× | 0.027 | (1.00, 0.95) |
+| [AG News](academic/ag_news/) | **0.79** | 0.72 | 0.57 | **1.05** | 7.76 | 7.4× | 0.158 | (0.95, 0.94) |
+| [Banking77](academic/banking77/) | 0.57 | 0.48 | **0.98** | **1.65** | 13.9 | 8.4× | 0.116 | (0.13 ⚠️, 0.59) |
+| [TweetEval-emotion](academic/tweeteval_emotion/) | 0.77 | 0.76 | **0.80** | **0.63** | 6.63 | 10.5× | 0.120 | (0.89, 0.89) |
+| [PAWS](academic/paws/) | **0.83** | 0.82 | 0.56 | **0.41** | 4.97 | 12× | 0.076 | (—, 0.94) |
+| [arXiv post-cutoff](academic/arxiv_post_cutoff/) | — | — | — | — | — | — | — | — |
+
+- Banking77 reorder = 0.13 ⚠️ is architectural, not a bug — chunked scoring (77 options > 26 letters) is sensitive to which labels fall in which chunk. See the parking-lot item on cross-chunk debias.
+- arXiv post-cutoff: dataset is 2 placeholder rows pending M8 task 10b (`make_dataset.py` run). Numbers from the placeholder are intentionally omitted.
+- BGE-m3+LR is trained on 500 labeled examples per task. On Banking77 (77-way intent) it dominates — a trained encoder with enough class-balanced data beats zero-shot on fixed label spaces. Honest "when to use what" story: BGE+LR for high-label-count tasks with real training data; Bernoulli everywhere else.
 
 ### Use cases (M9)
 
-| Benchmark           | Headline metric      | Bernoulli | External baseline(s)              | ECE (10-bin) | Stability |
-|---------------------|----------------------|-----------|-----------------------------------|--------------|-----------|
-| [WildGuardTest](guardrails/wildguard_test/) | accuracy / F1 | TBD | Llama Guard 3 / ShieldGemma / WG | TBD | TBD |
-| [ToxicChat](guardrails/toxicchat/) | accuracy / F1 | TBD | Llama Guard 3 / ShieldGemma / OpenAI Mod | TBD | TBD |
-| [XSTest](guardrails/xstest/) | accuracy + false-refusal % | TBD | Llama Guard 3 / ShieldGemma / WG | TBD | TBD |
-| [CLINC150-OOS](triage/clinc150_oos/) | accuracy / OOS AUROC | TBD | DeBERTa-zeroshot | TBD | TBD |
-| [Yelp 1-5 stars](ratings/yelp_stars/) | MAE / off-by-one acc | TBD | DeBERTa-zeroshot | TBD | TBD |
+| Benchmark | Bernoulli | Generative | BGE-m3 + LR | Bernoulli NLL | Generative NLL | NLL ratio | Bernoulli ECE | Headline extra |
+|---|---|---|---|---|---|---|---|---|
+| [WildGuardTest](guardrails/wildguard_test/) | — | — | — | — | — | — | — | pending HF auth |
+| [ToxicChat](guardrails/toxicchat/) | 0.55 | 0.56 | **0.67** | **1.07** | 12.2 | 11× | 0.341 | — |
+| [XSTest](guardrails/xstest/) | 0.68 | **0.79** | n/a | **0.53** | 5.80 | 11× | 0.111 | Bernoulli **false_refusal_rate = 0.00** |
+| [CLINC150-OOS](triage/clinc150_oos/) | 0.46 | 0.37 | **0.77** | **0.95** | 17.4 | **18×** | 0.267 | BGE+LR oos_auroc 0.75 (best) |
+| [Yelp 1-5 stars](ratings/yelp_stars/) | **0.58** | 0.55 | 0.48 | **0.91** | 12.4 | 14× | 0.196 | Bernoulli **MAE 0.44** (lowest) |
+
+- WildGuardTest: dataset `allenai/wildguardmix` is gated on HF. Needs one-time license acceptance + `HF_TOKEN` on the dev box. Pending.
+- Per-benchmark extras (false-refusal rate, OOS AUROC, MAE / off-by-one) are reported in each benchmark's full `results/<date>.md`.
 
 ### Jev category (M10)
 
@@ -96,6 +103,18 @@ Measured over HTTP against the running server; see each benchmark's `results/lat
 | Qwen2.5-VL-32B-AWQ (M4e, parked)     | TBD       | TBD       | TBD       | TBD              |
 
 (Latency numbers above lifted from [`evals/reports/loadtest.md`](../evals/reports/loadtest.md).)
+
+## Honest caveats
+
+What this snapshot is **not**:
+
+- **N=100 eval examples per benchmark.** Headline numbers in a 5-point band could swing 2–3 points at N=500. Direction holds; precision doesn't. A higher-N pass is pending (hours of GPU, not days).
+- **No DeBERTa-v3-zeroshot column.** The strongest open zero-shot encoder is missing — CPU latency on 4-way+ is pathological (hours per benchmark), and GPU is held by the Bernoulli server. Fix is either shared-GPU scheduling or an overnight CPU batch. The calibration gap between Bernoulli and Generative is unaffected, but it's the biggest hole in the "did we need an LLM?" story.
+- **Banking77 reorder stability = 0.13.** With 77 options we exceed the 26-letter alphabet, so `bernoulli/chunked.py` splits into 3 chunks of ≤26 labels and softmaxes globally. The top-1 therefore shifts when the chunks change — architectural, not a bug. Cross-chunk debias is parked. Any Banking77 citation needs the chunked-stability footnote.
+- **XSTest Bernoulli `unsafe_recall = 0.36`.** The 0% false-refusal is a product-grade property, but it under-flags actually-unsafe prompts. For a complete guardrail, Bernoulli is the first-pass "don't over-refuse" gate paired with an escalation path for the long tail.
+- **CLINC150-OOS Bernoulli `oos_recall ≈ 0.52`.** Coin flip on the "none of these" story. Likely prompt-framing + stem rewording; investigation pending.
+- **Dev-tier backbone.** All numbers are from Qwen2.5-VL-7B-Instruct on an AWS g5.xlarge (A10G 24GB). The production step-up to `Qwen2.5-VL-32B-Instruct-AWQ` on g6e.xlarge (L40S 48GB) is parked on AWS capacity.
+- **WildGuardTest / arXiv post-cutoff** absent from the headline rows pending HF auth and real-data generation respectively (see table footnotes).
 
 ## Methodology
 

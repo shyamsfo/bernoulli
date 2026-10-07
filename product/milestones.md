@@ -198,14 +198,14 @@ Tasks:
   - [x] 12a. `benchmarks/run.py` CLI — load a benchmark, instantiate baselines, predict + compute metrics + stability, write `results/<date>.md`. One benchmark per invocation.
   - [~] 12b. Run the sweep on the dev box for each of the 6 academic benchmarks × the applicable baselines. Commit `results/<date>.md` per benchmark. **First N=100 pass shipped 2026-10-07** across Bernoulli + Generative + BGE-m3+LR (DeBERTa deferred — CPU is pathological beyond 2-way, needs GPU scheduling). See `benchmarks/academic/*/results/2026-10-07.md`. Still pending: DeBERTa column across the suite, higher-N (500+) pass once DeBERTa path is sorted.
   - [x] 12c. **PAWS below-random investigation — resolved 2026-10-07.** Root cause: `reverse` debias on `BinaryQuestion` compounded the model's Yes-token prior instead of canceling position bias (`Yes`/`No` are themselves semantic tokens; reversing them doesn't just swap positions, it inverts meaning). Fix in `bernoulli/debias.py`: short-circuit reverse/cyclic to no-op for `BinaryQuestion` only. Post-fix PAWS N=100: Bernoulli 0.83 (was 0.37), ECE 0.076 (was 0.176). Full writeup + blast-radius analysis: [`product/learnings/paws-below-random.md`](learnings/paws-below-random.md).
-- [ ] First results run: fill `benchmarks/README.md` summary table with Bernoulli vs baselines across the 6 academic tasks + coverage sub-tables + stability column. **Unblocked.** First sweep's numbers (post-fix) are now trustworthy.
+- [x] First results run: `benchmarks/README.md` summary table filled on 2026-10-07 with the first-sweep numbers (post-PAWS-fix). 5 of 6 academic benchmarks have Bernoulli / Generative / BGE-m3+LR rows (arXiv is a placeholder pending 10b). Coverage sub-tables and the full stability column live in each benchmark's `results/<date>.md`; the summary carries headline accuracy + NLL + ECE + stability pair. Honest-caveats section documents the N=100 / no-DeBERTa / Banking77-chunked story.
 
 Exit criteria: `benchmarks/README.md` renders a comparison table with ≥ 5 of the 6 academic tasks × ≥ 3 baselines (us, same-model generative, DeBERTa-zeroshot). Each task's `results/latest.md` has coverage sub-table and stability score. Historical `evals/reports/*.md` left in place as a snapshot of pre-migration numbers.
 
 ---
 
 ## M9 — Benchmarks: use-case coverage
-**Status**: 🔄 in progress
+**Status**: ✅ done (WildGuardTest run deferred — gated on HF)
 **Goal**: Match the landing-page use-case cards (guardrails, support triage, content moderation / rating) with benchmarks whose results we can cite in the pitch. Each use case gets a baseline comparison against the model category that actually competes.
 
 Tasks:
@@ -214,9 +214,9 @@ Tasks:
 - [x] `benchmarks/guardrails/xstest/` — XSTest for over-refusal. Report refusal-rate and accuracy separately; a good guardrail is accurate *without* over-refusing.
 - [x] `benchmarks/triage/clinc150_oos/` — CLINC150 with the out-of-scope split. Report OOS detection AUROC alongside in-domain accuracy — this is the "none of these" probability story in a number.
 - [x] `benchmarks/ratings/yelp_stars/` — Yelp 1-5 star reviews. Tests the rating question type end-to-end. Report MAE and off-by-one accuracy in addition to the standard metrics.
-- [~] **M9 sweep run**: fire `just sweep-usecase` against the live server to produce `results/<date>.md` for each of the five use-case benchmarks. Mirror of M8 task 12b. Needs the generative-via-HTTP endpoint (shipped) and the per-benchmark `extra_metrics` hooks (shipped: OOS AUROC on CLINC150, false-refusal-rate on XSTest, MAE/off-by-one on Yelp). Blocks the two tasks below.
-- [ ] Three use-case domain tables appended to `benchmarks/README.md` (guardrails / triage / ratings).
-- [ ] Cross-reference: each use-case card on `web/index.html` gets a link to the matching `benchmarks/<domain>/<name>/results/latest.md` so the pitch is backed by numbers at a click.
+- [x] **M9 sweep run** — shipped 4 of 5 (ToxicChat, XSTest, CLINC150-OOS, Yelp 1-5) at N=100 on 2026-10-07. WildGuardTest is still gated on HF; see its README for the auth prerequisite. Several loader fixes landed along the way (legacy HF paths namespaced, XSTest split `train` → `prompts`, CLINC load+load_train shuffle for class balance, three `__init__.py` re-exports of `extra_metrics` so the runner's `getattr` picks them up).
+- [x] Summary leaderboard tables in `benchmarks/README.md` filled for all 5 benchmarks (minus WildGuardTest) across M8+M9. Added an "Honest caveats" section documenting what the snapshot is NOT (N=100, no DeBERTa column, Banking77 reorder=0.13 chunked footnote, XSTest unsafe_recall=0.36, CLINC OOS recall ≈0.52, dev-tier backbone).
+- [x] Cross-reference: the three use-case cards on `web/index.html` now carry a `.uc-proof` footer linking to the matching benchmark on `/benchmarks.html#usecase` with specific numbers inline (CLINC150-OOS 18× NLL, XSTest 0.00 false-refusal, Yelp MAE 0.44).
 
 Exit criteria: Each use-case card on the landing page has at least one benchmark result backing it. Guardrails has ≥ 2 of the 3 datasets with ≥ 1 external baseline each. CLINC150 OOS AUROC reported. Yelp stars MAE + off-by-one reported.
 

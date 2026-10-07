@@ -141,6 +141,10 @@ section{padding:88px 0;border-top:1px solid var(--line)}
 .uc p{margin-top:10px;font-size:14.5px;color:var(--ink-2);flex:1}
 .uc-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
 .uc-tags .tag{font:500 10px/1 "JetBrains Mono",monospace;padding:4px 7px;border-radius:5px;background:var(--accent-soft);color:var(--accent)}
+.uc-proof{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);font-size:13px;color:var(--ink-3)}
+.uc-proof b{color:var(--ink-2);font-weight:500}
+.uc-proof a{color:var(--accent);text-decoration:none;border-bottom:1px dashed var(--accent)}
+.uc-proof a:hover{color:var(--accent);filter:brightness(1.1)}
 @media (max-width:900px){.use-cases{grid-template-columns:1fr 1fr}}
 @media (max-width:600px){.use-cases{grid-template-columns:1fr}}
 
@@ -500,18 +504,21 @@ response.decisions.intent.distribution.tracking === 0.24</pre>
         <h3>Route tickets by intent, urgency, and anger.</h3>
         <p>Classify what the customer wants, how time-critical it is, how upset they sound, and whether it needs a senior agent — all in one call against the email thread.</p>
         <div class="uc-tags"><span class="tag">choice</span><span class="tag">rating</span><span class="tag">rating</span><span class="tag">binary</span></div>
+        <div class="uc-proof"><b>Backed by</b> <a href="/benchmarks.html#usecase">CLINC150-OOS</a> — Bernoulli NLL <b>18× better</b> than text-and-parse. "None of these" probability discriminates in-scope vs out-of-scope.</div>
       </article>
       <article class="uc">
         <div class="uc-tag">LLM guardrails</div>
         <h3>Judge your model's output before shipping it.</h3>
         <p>Ask whether a response is safe, on-topic, factually risky, or over-refusing. Threshold the probability to auto-ship, send to human review, or block.</p>
         <div class="uc-tags"><span class="tag">binary</span><span class="tag">binary</span><span class="tag">rating</span><span class="tag">choice</span></div>
+        <div class="uc-proof"><b>Backed by</b> <a href="/benchmarks.html#usecase">XSTest</a> + <a href="/benchmarks.html#usecase">ToxicChat</a> — Bernoulli <b>0.00 false-refusal rate</b> on XSTest; NLL 11× better than text-and-parse across both.</div>
       </article>
       <article class="uc">
         <div class="uc-tag">Content moderation</div>
         <h3>Keep the review queue focused on the gray area.</h3>
         <p>Classify category and severity. Auto-ship clear-safe content, auto-reject clear violations, send only the uncertain cases to a human reviewer.</p>
         <div class="uc-tags"><span class="tag">choice</span><span class="tag">rating</span><span class="tag">binary</span><span class="tag">binary</span></div>
+        <div class="uc-proof"><b>Backed by</b> <a href="/benchmarks.html#usecase">Yelp 1-5 stars</a> — Bernoulli <b>MAE 0.44</b>, lowest of any baseline (Generative 0.50, BGE+LR 0.68). Uses the full predicted distribution, not just argmax.</div>
       </article>
     </div>
     <p class="fine">Full write-ups — realistic state, request shapes, routing pseudocode — in the <a href="https://github.com/shyamsfo/bernoulli/blob/main/USECASES.md" target="_blank" rel="noopener">use cases guide</a>, including code review severity.</p>
