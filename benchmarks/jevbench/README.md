@@ -2,48 +2,48 @@
 
 Thin adapter that lets JevBench's official harness drive Bernoulli's `/v1/decide` endpoint, so our numbers land on their leaderboard under their rules. Getting listed is distribution; being measured on their rules is credibility.
 
-**Current status**: scaffolding only. The adapter needs upstream info we don't have in-repo yet — see "What we don't know" below.
+**Current status**: scaffolding only. The three unknowns were resolved by a short web investigation on 2026-10-07; implementation plan below is now concrete.
 
-## What we know
+## What we know (resolved 2026-10-07)
 
-- Jev lives at [typesafe.ai](https://typesafe.ai/) with System One concept docs at [docs.typesafe.ai/concepts/system-one](https://docs.typesafe.ai/concepts/system-one). This is the category Bernoulli competes in.
-- Our metric conventions already line up with JevBench where published: **10-bin ECE** (headline), **cost per 1k decisions**, **stability** (reorder + reword). All three are already produced by `benchmarks/common/{metrics,stability}.py`.
-- The eventual output is one `benchmarks/jevbench/results/<YYYY-MM-DD>.md` with the JevBench-mapped numbers plus a submission commit SHA.
+- **Upstream.** JevBench is hosted at [benchmarkheaven.com/jev-models](https://benchmarkheaven.com/jev-models) with the Python harness mirrored on GitHub — several identical copies: [`fstandhartinger/jevbench`](https://github.com/fstandhartinger/jevbench), [`architsinghai2/jevbench`](https://github.com/architsinghai2/jevbench), [`wayfind/jevbench`](https://github.com/wayfind/jevbench). All share the "JevBench v1" harness. Pick one as the canonical pin (we lean `fstandhartinger/jevbench` since that's the one surveyed first; swap if there's a reason to prefer another).
+- **Adapter contract.** JevBench ships a Python harness we run ourselves. CLI: `python -m jevbench.cli run --tasks <dataset> --adapter <type> --model <name>`. Four adapter types shipped: `typesafe`, `openai-compatible`, `local`, `gradio`. Dataset is 242 contrastive decisions (v1.0) growing to 534 (v1.2), split into public + held-out cohorts. The harness enforces budget tracking via file-locked ledgers and emits structured JSON.
+- **Submission flow.** [benchmarkheaven.com/submit](https://benchmarkheaven.com/submit) — a web form. Required fields: model name, at least one access method (GitHub / HF / public HTTPS API URL), contact email, benchmark selection (JevBench / ImageJevBench / AudioJevBench). Optional: encrypted API key, description. Free queue runs FIFO; paid 48h fast lane exists.
+- **Scoring axes.** Intelligence, Calibration, Speed, Cost — weighted equally into a Capability Score. Current v1.4.2.2 leaderboard: Imajev-4B > Plumb-4B > Jev 1.13.0 (TypeSafe) at #3 / 63.29.
+- **Our existing metrics line up.** 10-bin ECE, cost per 1k decisions, latency p50 — all produced by `benchmarks/common/{metrics,stability}.py`.
 
-## What we don't know (gating implementation)
+## Our submission approach: self-run first, then submit
 
-1. **Upstream repo URL.** The milestone says "vendor or clone JevBench into `benchmarks/jevbench/upstream/`." We need the actual GitHub (or similar) URL. Once pinned, decide between git submodule vs vendored clone based on their license and release cadence.
-2. **Adapter contract.** JevBench presumably defines an interface (Python class, HTTP endpoint, or CLI protocol) that a model-under-test implements. Shape unknown — could be:
-   - A Python `Model` class with a `predict(prompt, options) -> distribution` method.
-   - An HTTP endpoint JevBench POSTs to (which we already have via Bernoulli's `/v1/decide` — minor shape translation only).
-   - A per-task CLI entry point.
-3. **Submission flow.** Public leaderboard vs. closed submission form vs. PR to a leaderboard file. The method shapes how `benchmarks/jevbench/results/` is laid out and whether submissions are reversible.
+Because the harness is self-runnable, we:
 
-Each of these is a short investigation on `typesafe.ai`, not a research project. Captured in `product/milestones.md` M10 as the next action.
+1. **Pin and vendor the harness** into `benchmarks/jevbench/upstream/` (git submodule — pinned to a specific commit of `fstandhartinger/jevbench`). Lets us reproduce.
+2. **Write a Bernoulli adapter** in `benchmarks/jevbench/adapter.py` that fits one of JevBench's existing adapter slots. Two viable options:
+   - **`local` adapter**: subclass JevBench's local-model adapter and shim calls into Bernoulli's `BernoulliHTTP` baseline (POST `/v1/decide`). Cleanest, zero third-party API dependency.
+   - **`openai-compatible`**: add an OpenAI-chat-completions compatibility endpoint to `bernoulli.server` (text-and-parse path on top of the already-exposed `/v1/generate`). Lets JevBench use its built-in OpenAI adapter unchanged. More work but reusable for any OpenAI-compatible benchmark.
+3. **Run the public 242-decision cohort** locally; capture results in `benchmarks/jevbench/results/<YYYY-MM-DD>.md`. Verify our Capability-Score vector is coherent before submission.
+4. **Submit the web form** at benchmarkheaven.com/submit, pointing to our GitHub release + the committed results folder. "Model name: Bernoulli (Qwen2.5-VL-7B)."
 
-## Implementation plan (once the above are answered)
+The adapter is expected to be a short glue layer (~100 LoC) — our server already produces calibrated distributions and the metric computation lives in JevBench's harness. Most of the work is schema translation (JevBench's task format ↔ our `DecideRequest`) and ensuring the budget-ledger convention matches.
+
+## Divergences to disclose in the submission
+
+- **Backbone**: dev-tier `Qwen2.5-VL-7B-Instruct` (M4e step-up to 32B-AWQ is parked on AWS capacity). Flag so our Capability-Score isn't misread as production-tier.
+- **Our pre-existing N=100 academic + use-case suite** is listed on `bernoulli.live/benchmarks.html` and uses the same metric conventions. JevBench is additive, not a replacement.
+
+## Not here
+
+- Adapter does not re-implement Bernoulli; it calls `/v1/decide` over HTTP.
+- Adapter does not fit any baselines — JevBench is a comparison harness, not a training set.
+- No per-task fine-tuned ceilings here; those stay with the per-benchmark subfolders in `benchmarks/academic/` and `benchmarks/guardrails/`.
+
+## Layout once implemented
 
 ```
 benchmarks/jevbench/
 ├── README.md             # this file
-├── adapter.py            # BernoulliAdapter(JevBenchModel) — one method per JevBench task kind
-├── upstream/             # vendored JevBench (git submodule or pinned clone)
-├── run.py                # thin driver: load JevBench suite, call adapter, write results/
-├── submit.py             # formats + submits results per the JevBench flow
+├── adapter.py            # BernoulliAdapter — glue to JevBench's local or openai-compatible slot
+├── upstream/             # submodule or vendored pin of fstandhartinger/jevbench
+├── run.sh                # one-liner that invokes jevbench.cli with our adapter
 └── results/
-    └── <YYYY-MM-DD>.md   # one per attempted submission; model/revision/commit pinned
+    └── <YYYY-MM-DD>.md   # per-run report; captures model id, revision, Bernoulli commit, submission SHA
 ```
-
-The adapter itself is expected to be short — Bernoulli already produces calibrated distributions at an HTTP endpoint and the metric computation is reusable from `benchmarks/common/metrics.py`. Most of the work is schema translation (JevBench's input/output shape ↔ our `DecideRequest`/`DecideResponse`) and matching their reproducibility fields.
-
-## Divergences to call out in the first submission
-
-- **ECE bin count**: JevBench uses 10 bins (we match for the headline; 15-bin remains for continuity with pre-M8 reports).
-- **Stability protocol**: we test up to 3 hand-authored reword stems per benchmark + full/sampled option permutations. If JevBench's protocol differs (different reword count, different permutation cap), document the gap in the submission footer.
-- **Backbone**: our first attempt is likely on the dev-tier `Qwen2.5-VL-7B-Instruct` since the production-tier `g6e.xlarge` + 32B-AWQ step-up (M4e) is still parked on AWS capacity. Flag this prominently in the submission so numbers aren't misread as production-serving quality.
-
-## Not here
-
-- The adapter does not re-implement Bernoulli; it calls `/v1/decide` over HTTP (same path as the `BernoulliHTTP` baseline).
-- The adapter does not fit any baselines — JevBench is a comparison harness, not a training set.
-- No per-task fine-tuned ceilings here; those stay with the per-benchmark subfolders in `benchmarks/academic/` and `benchmarks/guardrails/`.

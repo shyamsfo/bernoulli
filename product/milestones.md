@@ -228,13 +228,15 @@ Exit criteria: Each use-case card on the landing page has at least one benchmark
 
 Tasks:
 - [x] Scaffold `benchmarks/jevbench/` — package, README, `results/` dir. The README spells out the three unknowns (upstream URL, adapter contract, submission flow) and the implementation plan once they're answered. **No adapter code yet** — writing stubs that might not match the real contract would be worse than a clear "here's what we need" doc.
-- [ ] Resolve the three unknowns from the README. Short investigation on typesafe.ai + docs.typesafe.ai, not a research project. **Next action.**
-- [ ] Vendor or clone JevBench into `benchmarks/jevbench/upstream/` (git submodule or pinned clone — decide based on their license and how often they update).
-- [ ] Write the adapter in `benchmarks/jevbench/adapter.py` so JevBench's harness can call Bernoulli's `/v1/decide`. Honor whatever contract they define for probability output and metric reporting.
-- [ ] Match JevBench conventions exactly: ECE with 10 bins (we already compute this from M8), cost per 1k decisions, their stability protocol (align with M8's where they agree; document any gaps).
-- [ ] Full-suite run on the production backbone (M4e once it lands, or on 7B with a clear note that this is the dev-tier number).
-- [ ] Submit results. Record submission commit + run date + model revision in `benchmarks/jevbench/results/`.
-- [ ] Link the leaderboard entry from `README.md` and the landing page.
+- [x] Resolve the three unknowns — done 2026-10-07 via public-web investigation. Short answers (full detail in `benchmarks/jevbench/README.md`):
+  - **Upstream**: hub at [benchmarkheaven.com/jev-models](https://benchmarkheaven.com/jev-models); Python harness mirrored on GitHub (3 identical copies — pick [`fstandhartinger/jevbench`](https://github.com/fstandhartinger/jevbench) as canonical).
+  - **Contract**: self-runnable harness with `jevbench.cli run --adapter <type> --model <name>`. Adapters shipped: `typesafe` / `openai-compatible` / `local` / `gradio`. We run it, submit the numbers.
+  - **Submission**: web form at [benchmarkheaven.com/submit](https://benchmarkheaven.com/submit). Required: model name, access URL, email, benchmark selection. Free FIFO queue; paid 48h fast lane. **Not an API submission.**
+- [ ] Pin + vendor the harness into `benchmarks/jevbench/upstream/` (git submodule pointing at a specific commit of `fstandhartinger/jevbench`). **Next action.**
+- [ ] Write `benchmarks/jevbench/adapter.py` as a thin glue layer calling our `BernoulliHTTP` baseline. Two viable adapter slots in the harness — `local` (simpler) or `openai-compatible` (requires an OpenAI-chat-completions-shim endpoint in `bernoulli.server`, more reusable). Pick `local` for the first attempt.
+- [ ] Run the public 242-decision cohort against the dev-tier backbone (`Qwen2.5-VL-7B-Instruct`). Write `benchmarks/jevbench/results/<date>.md` with the four axis scores (Intelligence / Calibration / Speed / Cost) and the composite.
+- [ ] Submit via the web form at benchmarkheaven.com/submit, pointing to the GitHub release + the committed results folder. Model name: "Bernoulli (Qwen2.5-VL-7B)". Flag dev-tier backbone in the description so our Capability-Score is contextualised.
+- [ ] Link the leaderboard entry from `README.md` and `web/benchmarks.html` once Benchmark Heaven posts the result.
 
 Exit criteria: Bernoulli listed on the JevBench leaderboard with a reproducible run captured in `benchmarks/jevbench/results/`. The submission references a pinned model revision and a pinned Bernoulli commit.
 
