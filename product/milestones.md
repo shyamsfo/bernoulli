@@ -232,11 +232,21 @@ Tasks:
   - **Upstream**: hub at [benchmarkheaven.com/jev-models](https://benchmarkheaven.com/jev-models); Python harness mirrored on GitHub (3 identical copies — pick [`fstandhartinger/jevbench`](https://github.com/fstandhartinger/jevbench) as canonical).
   - **Contract**: self-runnable harness with `jevbench.cli run --adapter <type> --model <name>`. Adapters shipped: `typesafe` / `openai-compatible` / `local` / `gradio`. We run it, submit the numbers.
   - **Submission**: web form at [benchmarkheaven.com/submit](https://benchmarkheaven.com/submit). Required: model name, access URL, email, benchmark selection. Free FIFO queue; paid 48h fast lane. **Not an API submission.**
-- [ ] Pin + vendor the harness into `benchmarks/jevbench/upstream/` (git submodule pointing at a specific commit of `fstandhartinger/jevbench`). **Next action.**
-- [ ] Write `benchmarks/jevbench/adapter.py` as a thin glue layer calling our `BernoulliHTTP` baseline. Two viable adapter slots in the harness — `local` (simpler) or `openai-compatible` (requires an OpenAI-chat-completions-shim endpoint in `bernoulli.server`, more reusable). Pick `local` for the first attempt.
-- [ ] Run the public 242-decision cohort against the dev-tier backbone (`Qwen2.5-VL-7B-Instruct`). Write `benchmarks/jevbench/results/<date>.md` with the four axis scores (Intelligence / Calibration / Speed / Cost) and the composite.
-- [ ] Submit via the web form at benchmarkheaven.com/submit, pointing to the GitHub release + the committed results folder. Model name: "Bernoulli (Qwen2.5-VL-7B)". Flag dev-tier backbone in the description so our Capability-Score is contextualised.
-- [ ] Link the leaderboard entry from `README.md` and `web/benchmarks.html` once Benchmark Heaven posts the result.
+### M10 execution plan
+
+Five concrete steps, each with inputs/outputs/effort. Steps 1-4 are hands-on code work (~3-5 hours total); step 5 is wall-clock on Benchmark Heaven's FIFO queue (unknown — free queue is "evaluated in the order received").
+
+1. **[ ] Pin + vendor the harness** — `git submodule add https://github.com/fstandhartinger/jevbench benchmarks/jevbench/upstream` at a specific commit SHA. Verify the harness runs with its reference adapter (`typesafe`) first to confirm the vendored copy is intact. If it brings transitive deps, add them to the `eval` extra in `pyproject.toml`. **Effort: 15-30 min.**
+2. **[ ] Write `benchmarks/jevbench/adapter.py`** — a thin glue layer that fits into JevBench's `local` adapter slot. The adapter receives each decision task (state + options + question) and returns a probability distribution. Internally it builds a `DecideRequest` and POSTs to our server's `/v1/decide` (reuse `BernoulliHTTP` from `benchmarks.common.baselines`). **Effort: 1-2 hours** — most of it is reading JevBench's local-adapter contract and matching the schema. Chose `local` over `openai-compatible` because the latter would need an OpenAI-chat-completions shim in `bernoulli.server` (worth doing eventually; not blocking here).
+3. **[ ] Run the public 242-decision cohort locally** — `just serve` + `uv run python -m jevbench.cli run --tasks public --adapter local --model bernoulli-qwen-7b` on bernoulli. Writes a structured JSON that includes Intelligence, Calibration, Speed, Cost per task and composite Capability Score. **Effort: ~15 min of wall-clock + model-load overhead.** Pull back + write a `benchmarks/jevbench/results/<YYYY-MM-DD>.md` with the four axes, the composite score, and the dev-tier-backbone caveat.
+4. **[ ] Sanity-check our Capability Score** against the public leaderboard — are we in the plausible range (open-weights systems currently score 30-80)? If a number is off by orders of magnitude, the adapter's schema translation is probably wrong — debug before submitting. **Effort: 15-30 min.**
+5. **[ ] Submit via the web form** at [benchmarkheaven.com/submit](https://benchmarkheaven.com/submit). Fields: `Model name: Bernoulli (Qwen2.5-VL-7B)` · `GitHub: https://github.com/shyamsfo/bernoulli` · `Benchmarks: JevBench` · `Notes: dev-tier backbone Qwen2.5-VL-7B-Instruct on g5.xlarge/A10G; production step-up to 32B-AWQ parked on AWS capacity. Numbers reproducible from benchmarks/jevbench/results/<date>.md.` **Effort: 10 min + unknown FIFO queue wait.**
+
+Follow-ups once the leaderboard entry posts:
+
+- [ ] Link the entry from the repo `README.md` + `web/benchmarks.html` ("as ranked on JevBench").
+- [ ] Append a benchmark-state snapshot documenting where we rank + what the gap to #1 is.
+- [ ] If the Capability Score is uncompetitive, treat as learning signal — JevBench scoring axes may surface weaknesses our existing suite doesn't (e.g. cost per 1k decisions on dev-tier A10G is probably not favorable vs. the 4B-parameter leaders).
 
 Exit criteria: Bernoulli listed on the JevBench leaderboard with a reproducible run captured in `benchmarks/jevbench/results/`. The submission references a pinned model revision and a pinned Bernoulli commit.
 
