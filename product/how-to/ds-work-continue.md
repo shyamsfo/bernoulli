@@ -10,6 +10,7 @@
 - If `CLAUDE.md` exists, read it for current model choice, config, and any gotchas noted during prior sessions.
 - Note the currently-selected backbone (dev or production) — the project is explicitly backbone-agnostic, so this can change between sessions.
 - Check instance state: `terraform -chdir=deploy output -raw instance_id` + `aws ec2 describe-instances --instance-ids <id> --query 'Reservations[0].Instances[0].State.Name'`. If `stopped` or `stopping`, follow the resume protocol below before any task that needs the dev box.
+- **Scan `product/research/spikes/*.md` for in-progress spikes.** Each spike doc carries a `**Status**: in progress | done | abandoned` marker near the top. If any are `in progress`, surface them in the resume brief **before** the milestone context — spikes are side-tracks that would otherwise be invisible to the active-milestone scan. For an in-progress spike, surface: the spike title, the first unchecked `[ ]` step in its plan, the feeding-milestone it informs, and the path to its doc. The convention: a spike is "in progress" from the moment its plan is written until its findings have been folded back into the feeding milestone's tasks or the spike is explicitly marked `done` / `abandoned`.
 
 ## Additional fields in resume brief
 
