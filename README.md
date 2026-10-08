@@ -7,6 +7,7 @@ Jev takes unstructured state (text or JSON) plus typed questions and returns cal
 - Jev reference: [typesafe.ai](https://typesafe.ai/) · [System One concept docs](https://docs.typesafe.ai/concepts/system-one)
 - Full brief: [`vision_and_roadmap.md`](vision_and_roadmap.md)
 - Usage: [`HTTP.md`](HTTP.md) · [`CLI.md`](CLI.md) · landing: [`USAGE.md`](USAGE.md)
+- **How it works (architecture + code walkthrough)**: [`HOW-IT-WORKS.md`](HOW-IT-WORKS.md) — read this if you're an experienced Python/LLM dev who wants to understand the technique, the code flow, and what it takes to swap backbones.
 - **Design pitch + realistic use cases**: [`USECASES.md`](USECASES.md)
 - Current milestone + task list: [`product/milestones.md`](product/milestones.md)
 - Dev box + model/hardware sizing table: [`deploy/README.md`](deploy/README.md)
