@@ -23,7 +23,7 @@ The active milestone is the first one marked `🔄 in progress`. `/ds-work-conti
 
 **Backbone flexibility (project-wide):** the backbone LLM/VLM is **not pinned**. The vision doc proposes Qwen3.6 family but we may choose a different open-weights model (another Qwen variant, a Llama/Gemma/InternVL VLM, or a smaller dev model) based on availability, licensing, calibration behavior, or hardware. Every milestone that touches the model must preserve `Scorer` as a swappable interface — never hard-code a model id outside `config.py`.
 
-**Dependency ordering vs the written sequence.** Milestones are numbered by the order they were added, not by execution order. The real dependency chain today is: finish **M4** (M4e step-up is parked on capacity) → **M8 → M9 → M10** (benchmarks: foundation, use-case coverage, JevBench) → **M5** (v1.0 hardening, which depends on benchmark baselines being in place for the regression gate) → **M6** (multimodal) → **M7** (LoRA, optional). Do not tag v1.0 before the benchmark suite exists and has a baseline run on record.
+**Dependency ordering vs the written sequence.** Milestones are numbered by the order they were added, not by execution order. The real dependency chain today is: finish **M4** (M4e step-up is parked on capacity) → **M8 → M9 → M10** (benchmarks: foundation, use-case coverage, JevBench) → **M5** (v1.0 hardening, which depends on benchmark baselines being in place for the regression gate) → **M11** (public verification endpoint — depends on M5 hardening since this one takes outside traffic) → **M6** (multimodal) → **M7** (LoRA, optional). Do not tag v1.0 before the benchmark suite exists and has a baseline run on record.
 
 ---
 
@@ -253,6 +253,39 @@ Follow-ups once the leaderboard entry posts:
 - [ ] If the Capability Score is uncompetitive, treat as learning signal — JevBench scoring axes may surface weaknesses our existing suite doesn't (e.g. cost per 1k decisions on dev-tier A10G is probably not favorable vs. the 4B-parameter leaders).
 
 Exit criteria: Bernoulli listed on the JevBench leaderboard with a reproducible run captured in `benchmarks/jevbench/results/`. The submission references a pinned model revision and a pinned Bernoulli commit.
+
+---
+
+## M11 — Public verification endpoint
+**Status**: ⏳ pending
+**Goal**: Stand up a bookable, rate-limited public `/v1/decide` endpoint so third parties (and in particular Benchmark Heaven's JevBench harness) can send decisions directly to Bernoulli without the submitter's hardware mediating. This upgrades our JevBench row from "shown but not ranked" (public-items only, per the v1.4.2 self-hosted-endpoint rule) to a **ranked entry measured on the sealed held-out cohort**.
+
+**Why this matters:** JevBench's v1.4.2 release notes make the rule explicit — *"this round stopped sending held-out items to an endpoint a submitter operates"* — because a submitter can see item text (and thus identify held-out items) when it transits their own server. The only way to earn a ranked row is to make the endpoint operated by someone **not** us; in practice that means a bookable public endpoint on infra Benchmark Heaven can hit directly, with no human in the loop on our side. Same logic applies to any independent audit of our benchmark claims — a public endpoint turns self-reported numbers into verifiable ones.
+
+**Scope boundaries (what this is / isn't):**
+- *Is:* a thin, rate-limited public wrapper around the existing `/v1/decide` server, with auth, abuse controls, and an uptime commitment Benchmark Heaven's harness can rely on. Could be the production serving infra (M4e production backbone on g6e/L40S) exposed publicly, or a separate smaller demo endpoint.
+- *Isn't:* a general public SaaS. The target traffic is benchmark harnesses + occasional evaluators, not production workloads.
+- *Isn't:* a decision we can make before M5 is done — exposing an endpoint before the hardening work (regression gate, request validation, resource caps) would be reckless.
+
+### Tasks
+
+- [ ] **Decide the shape** — public demo endpoint on a bernoulli-hosted subdomain (e.g. `api.bernoulli.live`) vs a sponsored HuggingFace Space vs a shared-with-Benchmark-Heaven test key for an existing provider. Each has different cost/abuse/uptime profiles. Decision should be captured in a short research doc.
+- [ ] **Pick an auth model** — API key per external evaluator vs IP allowlist vs HMAC-signed requests vs no auth + strict per-IP rate limiting. The constraint: Benchmark Heaven's harness needs to call it without a human in the loop on their side either.
+- [ ] **Abuse + cost controls** — token/decision budget per API key, per-IP rate limit (requests/min + burst), timeout per request, max input size, max label-set size. The GPU is finite; one misbehaving caller can starve the sealed re-run.
+- [ ] **Observability** — logs that identify each request's caller + task-shape (not content) so we can tell a benchmark re-run apart from abuse. Dashboard or at least `tail -f` story.
+- [ ] **Uptime SLO** — Benchmark Heaven's harness needs a stable endpoint; occasional spot preemptions on g5/g6e are not acceptable. Either move to on-demand pricing for the public endpoint, run two spot instances behind a load balancer, or accept failed runs and document the retry story.
+- [ ] **Public documentation** — a `HOSTING.md` with the endpoint URL, auth model, rate limits, request/response shape, and the privacy statement (what we log, what we don't). Linked from `README.md` + `web/`.
+- [ ] **Resubmit to JevBench** with the public endpoint URL in the submission form so the harness can hit it directly for the sealed re-run.
+
+**Exit criteria**: Benchmark Heaven's harness has run the full JevBench sealed cohort against our public endpoint and we are listed as a **ranked** entry on [benchmarkheaven.com/jev-models](https://benchmarkheaven.com/jev-models). Public endpoint has survived 30 days without a sustained outage or an abuse incident that required an emergency shutdown.
+
+**Dependencies:**
+- **Blocks on:** M5 (hardening — regression gate + request validation + resource caps before external traffic), M4e (production backbone step-up — if the public endpoint is going to be the ranked system, it should be the 32B-AWQ production backbone, not the dev-tier 7B).
+- **Does not block:** anything downstream. M11 is purely about distribution + verification; the technique itself is proven by M1–M10.
+
+**Open questions parked for when we pick this up:**
+- Pay-per-use SaaS vs free public demo? Free is more inviting; pay-per-use is more sustainable. A middle ground: free with a monthly decision cap per key.
+- Do we expose `/v1/generate` too, or Bernoulli-only? The baselines use it internally — exposing it publicly means we're also hosting a general LLM text endpoint, which is a different liability profile.
 
 ---
 
