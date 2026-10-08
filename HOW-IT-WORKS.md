@@ -249,7 +249,7 @@ What we use from it:
 
 1. **The tokenizer** — `AutoTokenizer.from_pretrained(model_id, revision=rev)`. Qwen's tokenizer is a BPE variant. Space-prefixed letters A-Z are single tokens; space-prefixed digits are two tokens; "Yes" and "No" are single tokens.
 
-2. **The model class** — hard-coded to `Qwen2_5_VLForConditionalGeneration` in `HFScorer.__init__`. See §6 for why this is hard-coded (and when it starts to matter).
+2. **The model class** — dispatched automatically via `_load_backbone()` in `scorer.py`. For Qwen2.5-VL this resolves to `AutoModelForImageTextToText` (which selects `Qwen2_5_VLForConditionalGeneration` under the hood). Swap backbones via env vars; see §6.
 
 3. **The chat template** — baked into the tokenizer. `apply_chat_template(messages, add_generation_prompt=True)` emits the ChatML format with the correct `<|im_start|>`, `<|im_end|>` turn boundaries.
 
@@ -277,53 +277,37 @@ This section is the one you'll return to when you want to swap backbones.
 Want to swap to a different Qwen2.5-VL variant (3B / 32B-AWQ)?
   → BERNOULLI_MODEL_ID + BERNOULLI_MODEL_REVISION env vars. No code change.
 
-Want to swap to a different Qwen VL family (Qwen3-VL)?
-  → Probably same env-var-only change. Qwen2_5_VLForConditionalGeneration class may need to bump.
+Want to swap to a different VL family (Qwen3-VL, Llama-3.2-Vision, Gemma-3-Vision, Pixtral, LLaVA)?
+  → Same env-var-only change. _load_backbone() dispatches to AutoModelForImageTextToText.
 
-Want to swap to a non-VL Qwen (Qwen2.5-7B-Instruct, text-only)?
-  → Need a one-line code change: swap Qwen2_5_VLForConditionalGeneration → AutoModelForCausalLM.
-  → Env vars still carry the config.
+Want to swap to a text-only decoder-only LM (Llama 3, Gemma 2, Mistral, Qwen2.5-text)?
+  → Same env-var-only change. _load_backbone() dispatches to AutoModelForCausalLM.
 
-Want to swap to a non-Qwen (Llama 3, Gemma, Mistral)?
-  → Same as above: swap model class, likely AutoModelForCausalLM covers it.
-  → Verify assert_single_token_labels passes — different BPE merges might split A/B/C differently.
-  → Check the chat template is correct (apply_chat_template handles this if the tokenizer has one).
+In all four cases, the only thing to verify is:
+  (a) The tokenizer encodes letters A-Z and Yes/No as single tokens — checked
+      at scorer construction by assert_single_token_labels(), fails loud if not.
+  (b) The model is registered under one of the two Auto classes above —
+      nearly every modern HF-hosted LM is.
 
 Want to use vLLM instead of transformers?
   → BERNOULLI_SCORER=vllm env var. No code change. Note: VLLMScorer requires a model vLLM supports.
 ```
 
-### What's actually hard-coded
+### How dispatch works
 
-Four things in `bernoulli/scorer.py:HFScorer.__init__`:
-
-```python
-from transformers import AutoTokenizer, Qwen2_5_VLForConditionalGeneration
-
-self.tokenizer = AutoTokenizer.from_pretrained(model_id, revision=revision)
-self._model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-    model_id, revision=revision, torch_dtype=torch_dtype, device_map=device
-)
-```
-
-The decision to hard-code the model class instead of `AutoModelForCausalLM` is deliberate — see the Decisions log in `CLAUDE.md`:
-
-> *"Model class is hard-coded to Qwen2_5_VLForConditionalGeneration. Only one backbone in the picture for M2–M3. When M4 introduces the production backbone, generalize via a small registry (dispatch on `AutoConfig(name_or_path).model_type`). Not worth building the registry for one model."*
-
-That M4 generalization hasn't landed yet because the production step-up to 32B-AWQ (M4e) is parked on AWS capacity. **Right now, swapping to a non-Qwen2.5-VL model requires editing `scorer.py`.** If you want this to be clean, the fix is a 20-line registry function that maps `AutoConfig(name_or_path).model_type` to a model class:
+`bernoulli/scorer.py:_load_backbone()` reads `AutoConfig(model_id)` and routes:
 
 ```python
-_MODEL_CLASS_BY_TYPE = {
-    "qwen2_5_vl": "Qwen2_5_VLForConditionalGeneration",
-    "qwen3_vl": "Qwen3VLForConditionalGeneration",
-    "llama": "LlamaForCausalLM",
-    "mistral": "MistralForCausalLM",
-    "gemma2": "Gemma2ForCausalLM",
-    # ...
-}
+config = AutoConfig.from_pretrained(model_id, revision=revision)
+model_cls = AutoModelForImageTextToText if _is_vl_config(config) else AutoModelForCausalLM
+return model_cls.from_pretrained(model_id, revision=revision, torch_dtype=..., device_map=...)
 ```
 
-...with the fallback being `AutoModelForCausalLM`. If/when you need a second backbone, that's a 30-min change.
+`_is_vl_config(config)` is a one-liner: "does the config have a non-None `vision_config` sub-config?" That signal holds for every VLM in the HF ecosystem (Qwen2.5-VL, Qwen3-VL, Llama-3.2-Vision, Gemma-3-Vision, Pixtral, InternVL, LLaVA, ...) without needing a hard-coded list of model_type strings — if HF adds a new VL family tomorrow, our dispatch picks it up for free.
+
+Both `AutoModelForImageTextToText` and `AutoModelForCausalLM` give us a model whose `forward()` returns a `.logits` tensor shaped `(batch, seq, vocab_size)` — the only interface Bernoulli actually calls.
+
+**Historical note**: an earlier version of this file (and the project) hard-coded `Qwen2_5_VLForConditionalGeneration` because there was only one backbone in play and the generalization wasn't worth building. The config-driven dispatch landed 2026-10-08.
 
 ### Tokenizer gotchas to check on any new backbone
 
@@ -431,7 +415,7 @@ Running list of things that aren't obvious from the architecture, but have shown
 
 Starter prompts for common extensions:
 
-- **"I want to swap in Llama 3.1 8B."** Edit `scorer.py` to swap `Qwen2_5_VLForConditionalGeneration` → `AutoModelForCausalLM`. Set `BERNOULLI_MODEL_ID=meta-llama/Llama-3.1-8B-Instruct` + `BERNOULLI_MODEL_REVISION=<sha>`. Scorer construction will fail if any label isn't single-token; verify by running the test suite (`just test-fast` covers this).
+- **"I want to swap in Llama 3.1 8B."** `BERNOULLI_MODEL_ID=meta-llama/Llama-3.1-8B-Instruct` + `BERNOULLI_MODEL_REVISION=<sha>`. That's it — `_load_backbone()` dispatches to `AutoModelForCausalLM` automatically. Scorer construction will fail if any label isn't single-token; verify by running the test suite (`just test-fast` covers this).
 
 - **"I want to add a fourth question type (e.g., ranked list)."** Add a new `RankedQuestion` to `bernoulli/types.py` (will auto-register in the discriminated union). Add a prompt builder entry in `bernoulli/prompt.py` (`labels_for` + `option_strings_for`). Add decision assembly to `_decide_one` in `bernoulli/decide.py`. Add a result type in `bernoulli/types.py`. ~50 lines total if you follow the pattern of the existing three.
 
