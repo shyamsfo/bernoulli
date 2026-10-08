@@ -362,6 +362,7 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
     <h1 style="margin-top:18px">Skip the chatter.<br><em>Get the verdict.</em></h1>
     <p class="lede">Bernoulli takes unstructured state and typed questions and returns calibrated probabilities you can branch on. One forward pass per question. No generated tokens, no parsing, no JSON repair, no retries.</p>
     <div class="ctas">
+      <a class="btn btn-accent" href="https://shyamsfo-bernoulli-demo.hf.space" target="_blank" rel="noopener">Try it live →</a>
       <a class="btn btn-primary" href="https://github.com/shyamsfo/bernoulli" target="_blank" rel="noopener">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         View on GitHub
@@ -369,6 +370,9 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
       <button class="btn" type="button" data-open-demo>Book a demo</button>
       <a class="btn" href="https://github.com/shyamsfo/bernoulli/blob/main/USAGE.md" target="_blank" rel="noopener">Read the usage guide →</a>
     </div>
+    <p style="margin-top:14px;font-size:13px;color:var(--ink-3);max-width:34em">
+      Live demo runs the dev-tier Qwen2.5-VL-7B backbone on prepaid HF credits — same model as the benchmark numbers. Sleeps when idle, ~45 s to wake on first click. Fair-use session cap applies.
+    </p>
     <div class="facts">
       <div><b>~145 ms</b>p50 per question</div>
       <div><b>0.025</b>ECE on SST-2</div>
@@ -612,6 +616,7 @@ response.decisions.intent.distribution.tracking === 0.24</pre>
     </div>
     <div style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap">
       <a class="btn btn-primary" href="/benchmarks.html">See all 9 benchmarks →</a>
+      <a class="btn btn-accent" href="https://shyamsfo-bernoulli-demo.hf.space" target="_blank" rel="noopener">Try it on your own data →</a>
       <a class="btn" href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks" target="_blank" rel="noopener">Raw results on GitHub</a>
     </div>
   </div>
@@ -714,8 +719,9 @@ curl -s localhost:8000/v1/decide \
 <section class="final">
   <div class="wrap">
     <h2>Stop parsing. Start <em class="serif" style="color:var(--accent)">deciding.</em></h2>
-    <p>Bernoulli is early and moving fast. Star the repo, try the CLI on your own data, and watch it grow.</p>
+    <p>Bernoulli is early and moving fast. Try the live demo, star the repo, run the CLI on your own data, and watch it grow.</p>
     <div class="ctas">
+      <a class="btn btn-accent" href="https://shyamsfo-bernoulli-demo.hf.space" target="_blank" rel="noopener">Try it live →</a>
       <a class="btn btn-primary" href="https://github.com/shyamsfo/bernoulli" target="_blank" rel="noopener">github.com/shyamsfo/bernoulli</a>
       <button class="btn" type="button" data-open-demo>Book a demo</button>
       <a class="btn" href="mailto:contact@deepstore.ai">Contact us</a>
