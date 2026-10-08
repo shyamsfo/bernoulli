@@ -62,7 +62,9 @@ def _oos_label_id(ds: object) -> int:
         ) from exc
 
 
-def _yield_split(split: str, limit: int | None, *, shuffle: bool = False) -> Iterator[BenchmarkExample]:
+def _yield_split(
+    split: str, limit: int | None, *, shuffle: bool = False
+) -> Iterator[BenchmarkExample]:
     """Stream `split`.
 
     The train split is grouped by intent (all 150 in-scope intents in

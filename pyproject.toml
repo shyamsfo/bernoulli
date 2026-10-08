@@ -98,7 +98,7 @@ packages = ["bernoulli", "evals", "benchmarks"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-extend-exclude = ["product", "deploy", "evals/reports"]
+extend-exclude = ["product", "deploy", "evals/reports", "benchmarks/jevbench/upstream"]
 
 [tool.ruff.lint]
 select = [

@@ -137,13 +137,14 @@ def main() -> None:  # pragma: no cover — invoked manually on the dev box, not
     try:
         import arxiv
     except ImportError:
-        sys.exit(
-            "make_dataset: missing `arxiv` package. Install with `uv add arxiv` first."
-        )
+        sys.exit("make_dataset: missing `arxiv` package. Install with `uv add arxiv` first.")
 
     cutoff = datetime.fromisoformat(BACKBONE_CUTOFF).date()
     per_cat = args.target // len(CATEGORIES)
-    print(f"Target: {args.target} papers = {per_cat} per category × {len(CATEGORIES)}", file=sys.stderr)
+    print(
+        f"Target: {args.target} papers = {per_cat} per category x {len(CATEGORIES)}",
+        file=sys.stderr,
+    )
     print(f"Cutoff: publication_date strictly after {cutoff.isoformat()}", file=sys.stderr)
     print(f"Output: {args.out}", file=sys.stderr)
 
@@ -151,9 +152,7 @@ def main() -> None:  # pragma: no cover — invoked manually on the dev box, not
     all_rows: list[dict[str, str]] = []
     for cat in CATEGORIES:
         print(f"[fetch] {cat} → aiming for {per_cat} ...", file=sys.stderr)
-        got = _fetch_category(
-            client, cat, cutoff, needed=per_cat, max_fetch=args.max_fetch_per_cat
-        )
+        got = _fetch_category(client, cat, cutoff, needed=per_cat, max_fetch=args.max_fetch_per_cat)
         print(f"[fetch] {cat} → got {len(got)}", file=sys.stderr)
         if len(got) < per_cat:
             print(

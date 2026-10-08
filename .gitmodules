@@ -1,0 +1,3 @@
+[submodule "benchmarks/jevbench/upstream"]
+	path = benchmarks/jevbench/upstream
+	url = https://github.com/fstandhartinger/jevbench
