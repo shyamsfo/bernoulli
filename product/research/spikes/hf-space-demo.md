@@ -30,7 +30,7 @@ Target hardware: `a10g-small` (24 GB VRAM, A10G — same family as the dev box, 
 
 ## Plan
 
-- [ ] **Step 1 — New Space + stub `app.py`, verify deploy loop on CPU** *(target: 1 h)*. Create a new Space with a trivial Gradio app that returns fake probabilities for a hardcoded prompt. Push, confirm it builds, URL loads, form submits, response renders. Zero model work. Pure "does the HF→Space→URL pipeline work from a cold start" test.
+- [x] **Step 1 — New Space + stub `app.py`, verify deploy loop on CPU** *(done 2026-10-08, ~45 min)*. Space live at [shyamsfo-bernoulli-demo.hf.space](https://shyamsfo-bernoulli-demo.hf.space). Scaffold under `hf-space/` in the parent repo (gradio 5.9.1 pinned, stub `app.py` returning placeholder probabilities, YAML frontmatter in README for HF). Build took ~45 s cold; serves 200 and runs the stub handler via `/gradio_api/call/stub_predict`. See the "Notes as we go" section below for the three friction points we hit (free CPU Basic blocked, HF-auto-generated README conflict, 60-char short_description limit) — not blockers, but documented for the inevitable re-run.
 - [ ] **Step 2 — Swap in a real scorer locally** *(target: 1-2 h)*. Rewrite `app.py` to load `HFScorer` (CPU is fine for structural verification — ignore latency), import `decide` from `bernoulli`, wire the three question types into Gradio inputs. Verify output distributions render correctly in `gr.Label` or `gr.BarPlot`. Run locally (`python app.py`), not on HF yet.
 - [ ] **Step 3 — Push to the Space with A10G Small hardware** *(target: 1 h, mostly wall-clock)*. Change hardware tier in the Space settings, push `app.py` + `requirements.txt`. Watch the build. First time will download the 15 GB Qwen weights; expect 5-10 min for the initial build.
 - [ ] **Step 4 — Deal with model caching** *(target: 1 h, could blow up)*. HF Spaces have a persistent `/data` volume; configure `HF_HOME` to point there so cold-start restarts don't re-download weights. Verify by stopping + starting the Space and timing the warm-up on the second start.
@@ -49,7 +49,11 @@ Target hardware: `a10g-small` (24 GB VRAM, A10G — same family as the dev box, 
 
 ## Notes as we go
 
-<!-- Append observations, surprises, dead-ends here. Short bullets with timestamps. -->
+- **2026-10-08 ~12:30** — Gradio Spaces on free `cpu-basic` now require **HF Pro subscription** (~$9/mo). The research doc assumed free tier worked; it doesn't anymore. Workaround: use `cpu-upgrade` ($0.03/hr while awake, $0 while asleep). Prepaid credits foot the bill. For the spike this costs cents, not dollars. Factor into M11 planning: baseline is "a few bucks a month on cpu-upgrade" not "zero on cpu-basic."
+- **2026-10-08 ~12:40** — HF auto-generates an initial commit on new Spaces with a stub README (emoji, title, sdk_version). First push failed with "fetch first"; `git pull --rebase` surfaced the README conflict. One-time friction per Space.
+- **2026-10-08 ~12:42** — HF enforces `short_description` ≤ 60 chars in Space YAML frontmatter. Not documented at the config-reference page I checked; discovered via pre-receive hook rejection. Trim before pushing.
+- **Build time**: ~45 s cold (gradio 5.9.1 + requests + transitive deps). RUNNING confirmed by polling the API; HTTP 200 served ~3 s after RUNNING.
+- **End-to-end verified**: both the browser-rendered app and the `/gradio_api/call/stub_predict` endpoint return the expected `{"Yes": 0.67, "No": 0.33}` distribution — same output as `python app.py` locally.
 
 ## Assessment (to be filled at the end)
 
