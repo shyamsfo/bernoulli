@@ -96,6 +96,66 @@ Calibration JSON lives at `BERNOULLI_CALIBRATION_PATH`; unset = no calibration. 
 
 Dispatcher: `bernoulli/decide.py` (`_decide_one`). Takes the per-option probability array, maps back to the original option strings, builds the type-specific `Decision` (ChoiceDecision has `.distribution`, BinaryDecision has `.probability` + `.answer`, RatingDecision has `.distribution` + `.expected`).
 
+### The stack at a glance
+
+Our ~1,500 lines sit between an HTTP/CLI entry and PyTorch. transformers (or vLLM) is the one layer we lean on from outside — it packages the model and tokenizer so we don't carry architecture code ourselves.
+
+```
+┌───────────────────────────────────────────────────────────────────┐
+│ Entry points                                                      │
+│   bernoulli/server.py       FastAPI · /v1/decide, /v1/generate    │
+│   bernoulli/cli.py          `bernoulli decide` on stdin           │
+├───────────────────────────────────────────────────────────────────┤
+│ Orchestration                                                     │
+│   bernoulli/decide.py       request → response threading          │
+├───────────────────────────────────────────────────────────────────┤
+│ Primitives (all pure numpy / Python)                              │
+│   bernoulli/prompt.py       chat template + label rendering       │
+│   bernoulli/labels.py       single-token label resolution         │
+│   bernoulli/debias.py       permutation averaging                 │
+│   bernoulli/calibrate.py    temperature scaling                   │
+│   bernoulli/chunked.py      >26-option choice path                │
+├───────────────────────────────────────────────────────────────────┤
+│ Scorer protocol  ← swappable seam, backbone-agnostic              │
+│   bernoulli/scorer.py       Scorer protocol + load_scorer factory │
+├─────────────────────────────────┬─────────────────────────────────┤
+│ HFScorer (dev / test)           │ VLLMScorer (prod / throughput)  │
+│   bernoulli/scorer.py           │   bernoulli/vllm_scorer.py      │
+│                                 │                                 │
+│   • AutoTokenizer               │   • reimplements forward pass   │
+│   • AutoConfig                  │     with continuous batching +  │
+│   • AutoModelForImageTextToText │     paged attention +           │
+│     (VL) or AutoModelForCausalLM│     prefix caching              │
+│     (text) — see _load_backbone │   • loads weights directly;     │
+│   • apply_chat_template         │     doesn't go through          │
+│   • one model(**inputs) per     │     transformers.AutoModel      │
+│     scorer.score() call         │                                 │
+├─────────────────────────────────┴─────────────────────────────────┤
+│ transformers (used only in the HFScorer branch above)             │
+│   model packaging + tokenizers + chat templates — four calls      │
+│   total; see §5 for the full enumeration                          │
+├───────────────────────────────────────────────────────────────────┤
+│ PyTorch — the actual math                                         │
+│   torch.nn.Module forward pass (where the decision happens)       │
+│   torch.no_grad() · bfloat16 · device_map='cuda' · tensor slicing │
+├───────────────────────────────────────────────────────────────────┤
+│ CUDA · cuDNN · cuBLAS · (optional) Triton kernels on the vLLM path│
+├───────────────────────────────────────────────────────────────────┤
+│ NVIDIA GPU                                                        │
+│   dev    · A10G 24 GB on AWS g5.xlarge   (bernoulli AWS)          │
+│   prod   · L40S 48 GB target for 32B-AWQ (parked on capacity)     │
+│   demo   · A10G 24 GB on HF Spaces       (shyamsfo/bernoulli-demo)│
+└───────────────────────────────────────────────────────────────────┘
+```
+
+**How to read it**: a request enters at the top and flows down. The call stack through our code (`server.py → decide.py → debias.py → scorer.py`) stops at the Scorer protocol — the first thing *below* it is either transformers+torch (HFScorer) or vllm+torch (VLLMScorer). The actual decision — the probability for every option — is produced inside PyTorch, one layer above CUDA. Everything else is structure around that one forward pass.
+
+**Rule of thumb for what's where**:
+
+- *Shaping the request*: top four layers (entry → orchestration → primitives → scorer protocol). Pure Python + numpy.
+- *Executing the forward pass*: transformers + PyTorch (HF path) *or* vLLM + PyTorch (prod path). Minutes-to-write-ourselves work that we delegate.
+- *Doing the math*: PyTorch, dispatching to CUDA kernels. Not something we'd write.
+
 ---
 
 ## 4 — End-to-end walkthrough: one `/v1/decide` request
