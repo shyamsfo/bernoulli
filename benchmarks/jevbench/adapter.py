@@ -88,6 +88,12 @@ class BernoulliLocalAdapter:
             self._client = BernoulliHTTP(base_url=self.endpoint, timeout=self.timeout_s)
         return self._client
 
+    def reserve_estimate(self, task: Any) -> float:
+        """No marginal API cost for a self-hosted server; the harness's budget
+        ledger receives 0.0 per decision. Amortised hardware cost is reported
+        separately in the submission description."""
+        return 0.0
+
     def _build_example(self, task: Any) -> tuple[BenchmarkExample, str]:
         """Translate a JevBench task into a `BenchmarkExample` + a label-flavor tag.
 

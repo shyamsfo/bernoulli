@@ -1,0 +1,21 @@
+{"event": "cap", "cap_usd": 1000.0, "ts": 1791462967.949968}
+{"event": "reserve", "reservation_id": "ca3adcff08ed4dd2bce539905e822844", "reserved_usd": 0.02, "ts": 1791462967.9560723, "meta": {"task_id": "original-policy-01-0", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "ca3adcff08ed4dd2bce539905e822844", "charged_usd": 0.02, "ts": 1791462971.7894433, "meta": {"task_id": "original-policy-01-0", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "9ceb69c91526424e9bee900ad9818a3d", "reserved_usd": 0.02, "ts": 1791462971.796039, "meta": {"task_id": "original-policy-01-1", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "9ceb69c91526424e9bee900ad9818a3d", "charged_usd": 0.02, "ts": 1791462971.846072, "meta": {"task_id": "original-policy-01-1", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "a20bebfef7f04118bdf6e0e0e377874f", "reserved_usd": 0.02, "ts": 1791462971.8523817, "meta": {"task_id": "original-policy-02-0", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "a20bebfef7f04118bdf6e0e0e377874f", "charged_usd": 0.02, "ts": 1791462971.9058642, "meta": {"task_id": "original-policy-02-0", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "a7c75076c56c4f3da9912443803a9305", "reserved_usd": 0.02, "ts": 1791462971.91199, "meta": {"task_id": "original-policy-02-1", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "a7c75076c56c4f3da9912443803a9305", "charged_usd": 0.02, "ts": 1791462971.9647381, "meta": {"task_id": "original-policy-02-1", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "725365fc254b4ab695161c765859efa5", "reserved_usd": 0.02, "ts": 1791462971.970848, "meta": {"task_id": "original-policy-03-0", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "725365fc254b4ab695161c765859efa5", "charged_usd": 0.02, "ts": 1791462972.0236728, "meta": {"task_id": "original-policy-03-0", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "c118e1c6956c42d58931019c68763dfa", "reserved_usd": 0.02, "ts": 1791462972.0299335, "meta": {"task_id": "original-policy-03-1", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "c118e1c6956c42d58931019c68763dfa", "charged_usd": 0.02, "ts": 1791462972.0829494, "meta": {"task_id": "original-policy-03-1", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "7b8f632d0887452b85db0d45d8b7abb3", "reserved_usd": 0.02, "ts": 1791462972.089008, "meta": {"task_id": "original-policy-04-0", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "7b8f632d0887452b85db0d45d8b7abb3", "charged_usd": 0.02, "ts": 1791462972.1420267, "meta": {"task_id": "original-policy-04-0", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "bbc9aa46e3304ae6bf797b3e34cabab0", "reserved_usd": 0.02, "ts": 1791462972.148058, "meta": {"task_id": "original-policy-04-1", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "bbc9aa46e3304ae6bf797b3e34cabab0", "charged_usd": 0.02, "ts": 1791462972.2008657, "meta": {"task_id": "original-policy-04-1", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "89178a39a0a24bacb26c946427d91fb0", "reserved_usd": 0.02, "ts": 1791462972.207058, "meta": {"task_id": "original-policy-05-0", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "89178a39a0a24bacb26c946427d91fb0", "charged_usd": 0.02, "ts": 1791462972.2562263, "meta": {"task_id": "original-policy-05-0", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "c512be1317f94e6f9d37b26fd3bf87e1", "reserved_usd": 0.02, "ts": 1791462972.2621062, "meta": {"task_id": "original-policy-05-1", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "c512be1317f94e6f9d37b26fd3bf87e1", "charged_usd": 0.02, "ts": 1791462972.3150296, "meta": {"task_id": "original-policy-05-1", "basis": "local_self_hosted_no_api_tariff"}}

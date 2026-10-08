@@ -68,7 +68,11 @@ def _parse_args() -> argparse.Namespace:
         "--raw-dir",
         type=Path,
         default=None,
-        help="Directory for raw per-task responses (outside the repo in a real submission).",
+        help=(
+            "Directory for raw per-task responses. Required by upstream Runner but "
+            "defaults next to --results in `raw/<basename>/`. Should live outside "
+            "the public repo for a real submission."
+        ),
     )
     p.add_argument(
         "--delay-s",
@@ -98,10 +102,17 @@ def main() -> int:
     adapter = BernoulliLocalAdapter(endpoint=args.endpoint, model=args.model)
     ledger_path = args.ledger or args.results.with_suffix(".ledger.json")
     ledger = Ledger(str(ledger_path), cap_usd=args.cap_usd)
+    # Upstream Runner demands a non-None raw_dir AND refuses to write inside
+    # the vendored upstream/ tree. Default to `raw/<results-basename>/` next
+    # to the results file; this is both outside upstream/ and inside our repo
+    # (ignored via benchmarks/jevbench/.gitignore so raw blobs don't get
+    # committed by accident).
+    raw_dir = args.raw_dir or (args.results.parent / "raw" / args.results.stem)
+    raw_dir.mkdir(parents=True, exist_ok=True)
     runner = Runner(
         adapter,
         ledger,
-        raw_dir=str(args.raw_dir) if args.raw_dir else None,
+        raw_dir=str(raw_dir),
         default_reserve_usd=DEFAULT_RESERVE_USD,
     )
 
