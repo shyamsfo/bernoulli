@@ -263,7 +263,7 @@ What we use from it:
 
 - **No text generation** on the decide path. HFScorer *also* has a `.generate()` method (greedy, `max_new_tokens=10`) but it's for the generative-baseline comparison in `/v1/generate`, not for decisions. VLLMScorer has no `.generate()` at all.
 - **No tool use, no function calling, no structured output modes.** The model's text-generation surface is irrelevant to us — we read logits before any token is emitted.
-- **No image path yet.** Qwen2.5-VL is a VLM but we only use its text path for M2-M5. The AutoProcessor + torchvision deps that image handling needs are deferred to M6. The model class is still VL-aware, which is why §6 matters.
+- **No image path yet.** Qwen2.5-VL is a VLM but we only use its text path for M2-M5. `AutoModelForImageTextToText` happily loads it as a text-only module since we never pass image inputs to `forward()`. The `AutoProcessor` + `torchvision` deps that actual image handling needs are deferred to M6; `HFScorer.score()` raises `NotImplementedError` on any request with images attached.
 
 ---
 
