@@ -96,14 +96,20 @@ class TestBuildExample:
         assert "info: wants an explanation" in ex.question.prompt
 
     def test_score_builds_rating_question_shifted_to_one_based(self) -> None:
-        """RatingQuestion scale is 1-based; _shape_probs shifts back to 0-based."""
+        """RatingQuestion scale is 1-based; the legend MUST also be 1-indexed so it
+        matches the rendered options the server builds (`A) 1`, `B) 2`, ...). The
+        on-wire answer is a letter token, but the model matches the legend's digit
+        to the rendered option's digit when deciding — a mismatched legend caused a
+        systematic off-by-one on the 2026-10-08 ordinal run. `_shape_probs` shifts
+        the server's 1-based response keys back to 0-based for the harness."""
         a = BernoulliLocalAdapter()
         ex, flavor = a._build_example(_task_score())
         assert flavor == "score"
         assert isinstance(ex.question, RatingQuestion)
         assert ex.question.scale == (1, 3)
-        assert "0: minor" in ex.question.prompt
-        assert "2: major" in ex.question.prompt
+        assert "1: minor" in ex.question.prompt
+        assert "3: major" in ex.question.prompt
+        assert "0: minor" not in ex.question.prompt
 
     def test_non_string_state_json_serialised(self) -> None:
         a = BernoulliLocalAdapter()

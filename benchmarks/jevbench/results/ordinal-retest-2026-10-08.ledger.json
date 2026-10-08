@@ -1,0 +1,25 @@
+{"event": "cap", "cap_usd": 1000.0, "ts": 1791470438.2572267}
+{"event": "reserve", "reservation_id": "e610c20eb45a47c2ad0cbe596f776885", "reserved_usd": 0.02, "ts": 1791470438.262844, "meta": {"task_id": "original-ordinal-01-0", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "e610c20eb45a47c2ad0cbe596f776885", "charged_usd": 0.02, "ts": 1791470438.5692081, "meta": {"task_id": "original-ordinal-01-0", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "794eb28fd5f04f509b9c92f69de650cf", "reserved_usd": 0.02, "ts": 1791470438.5755897, "meta": {"task_id": "original-ordinal-01-1", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "794eb28fd5f04f509b9c92f69de650cf", "charged_usd": 0.02, "ts": 1791470438.6721406, "meta": {"task_id": "original-ordinal-01-1", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "7f1c1327914a4e659738cafe0bdc9b41", "reserved_usd": 0.02, "ts": 1791470438.6783452, "meta": {"task_id": "original-ordinal-02-0", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "7f1c1327914a4e659738cafe0bdc9b41", "charged_usd": 0.02, "ts": 1791470438.7756002, "meta": {"task_id": "original-ordinal-02-0", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "5cd8b5a719c545eabd34a0b3845abeca", "reserved_usd": 0.02, "ts": 1791470438.781591, "meta": {"task_id": "original-ordinal-02-1", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "5cd8b5a719c545eabd34a0b3845abeca", "charged_usd": 0.02, "ts": 1791470438.8781505, "meta": {"task_id": "original-ordinal-02-1", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "af398024e22f4655a9e4c81ef6792f9d", "reserved_usd": 0.02, "ts": 1791470438.884232, "meta": {"task_id": "original-ordinal-03-0", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "af398024e22f4655a9e4c81ef6792f9d", "charged_usd": 0.02, "ts": 1791470438.9803386, "meta": {"task_id": "original-ordinal-03-0", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "19ca4b4b26534ba6817ccdde977bbfa3", "reserved_usd": 0.02, "ts": 1791470438.986521, "meta": {"task_id": "original-ordinal-03-1", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "19ca4b4b26534ba6817ccdde977bbfa3", "charged_usd": 0.02, "ts": 1791470439.0828478, "meta": {"task_id": "original-ordinal-03-1", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "e39e102090534469a2a3b33a56f8b70d", "reserved_usd": 0.02, "ts": 1791470439.0891156, "meta": {"task_id": "original-ordinal-04-0", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "e39e102090534469a2a3b33a56f8b70d", "charged_usd": 0.02, "ts": 1791470439.1853817, "meta": {"task_id": "original-ordinal-04-0", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "fcbdeb35e84f4c3f85737d6575235e21", "reserved_usd": 0.02, "ts": 1791470439.191464, "meta": {"task_id": "original-ordinal-04-1", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "fcbdeb35e84f4c3f85737d6575235e21", "charged_usd": 0.02, "ts": 1791470439.2879438, "meta": {"task_id": "original-ordinal-04-1", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "01f1e83f48824904b66dd02c27606bf2", "reserved_usd": 0.02, "ts": 1791470439.2939234, "meta": {"task_id": "original-ordinal-05-0", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "01f1e83f48824904b66dd02c27606bf2", "charged_usd": 0.02, "ts": 1791470439.3906462, "meta": {"task_id": "original-ordinal-05-0", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "30bbf9336db94d318587be7bd115c6bd", "reserved_usd": 0.02, "ts": 1791470439.3968053, "meta": {"task_id": "original-ordinal-05-1", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "30bbf9336db94d318587be7bd115c6bd", "charged_usd": 0.02, "ts": 1791470439.4933417, "meta": {"task_id": "original-ordinal-05-1", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "804dcc3342544ec3b5e5bef5d8b08358", "reserved_usd": 0.02, "ts": 1791470439.499548, "meta": {"task_id": "original-ordinal-06-0", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "804dcc3342544ec3b5e5bef5d8b08358", "charged_usd": 0.02, "ts": 1791470439.5961077, "meta": {"task_id": "original-ordinal-06-0", "basis": "local_self_hosted_no_api_tariff"}}
+{"event": "reserve", "reservation_id": "b53ee9ffe7e7408c84b6fc4fb7b9b136", "reserved_usd": 0.02, "ts": 1791470439.6021063, "meta": {"task_id": "original-ordinal-06-1", "adapter": "bernoulli_local"}}
+{"event": "settle", "reservation_id": "b53ee9ffe7e7408c84b6fc4fb7b9b136", "charged_usd": 0.02, "ts": 1791470439.7322075, "meta": {"task_id": "original-ordinal-06-1", "basis": "local_self_hosted_no_api_tariff"}}

@@ -137,7 +137,14 @@ class BernoulliLocalAdapter:
                 raise TypeError(f"score task {task.id} has non-list criteria")
             n = len(criteria)
             # Pack the level descriptions into the prompt so the model sees them.
-            legend = "\n".join(f"{i}: {d}" for i, d in enumerate(criteria))
+            # Must be 1-indexed to match the rendered option digits (`A) 1`, `B) 2`, ...)
+            # the server builds from `RatingQuestion(scale=(1, n))`. The 2026-10-08 run
+            # had this as 0-indexed, which caused a systematic off-by-one: the model
+            # read "level 1: workaround" in the legend, matched it to rendered option
+            # "A) 1", picked A, and after our `shape_probs` 1→0 shift the answer landed
+            # one below expected. 8/12 ordinal tasks on the standard tier failed this way;
+            # the only correct ones were expected=0 where the shift happened to land right.
+            legend = "\n".join(f"{i + 1}: {d}" for i, d in enumerate(criteria))
             prompt = f"{instructions}\n\nLevels:\n{legend}"
             q = RatingQuestion(id="decision", prompt=prompt, scale=(1, n))
             return (

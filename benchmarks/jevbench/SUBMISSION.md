@@ -49,9 +49,9 @@ Harness: fstandhartinger/jevbench @ bb05a335.
 Adapter: benchmarks/jevbench/adapter.py (BernoulliLocalAdapter).
 
 Public cohort (231 tasks, 0 failures):
-  original  acc 0.833   ECE 0.116   p50 92 ms
+  original  acc 0.944   ECE 0.057   p50 92 ms
   easy      acc 1.000   ECE 0.003   p50 92 ms
-  hard      acc 0.432   ECE 0.264   p50 338 ms
+  hard      acc 0.423   ECE 0.273   p50 338 ms
 ```
 
 For a run other than 2026-10-08, pull the three per-split summary numbers from
