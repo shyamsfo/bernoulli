@@ -305,6 +305,8 @@ Serialized by Pydantic. Sent back over HTTP.
 
 The dev backbone is `Qwen/Qwen2.5-VL-7B-Instruct` pinned at revision `cc594898137f460bfe9f0759e9844b3ce807cfb5`. Pulled with `huggingface_hub` + `hf_transfer` (fast parallel downloader) to `/opt/dlami/nvme/hf-cache` on the dev box.
 
+> **Note**: the config-driven dispatch (§6) has been exercised at **both 7B and 32B scales** — JevBench measurements on 2026-10-10 confirmed that swapping backbones is purely an env-var change, no code touch required. See [`benchmarks/jevbench/results/2026-10-10-32b.md`](benchmarks/jevbench/results/2026-10-10-32b.md). This section walks through the 7B specifics because that's what we serve; the 32B measurement is a staged-but-not-deployed data point until L40S capacity lands.
+
 What we use from it:
 
 1. **The tokenizer** — `AutoTokenizer.from_pretrained(model_id, revision=rev)`. Qwen's tokenizer is a BPE variant. Space-prefixed letters A-Z are single tokens; space-prefixed digits are two tokens; "Yes" and "No" are single tokens.
