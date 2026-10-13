@@ -2,6 +2,8 @@
 
 **An open-source clone of [Jev](https://typesafe.ai/), TypeSafe AI's System One decision model.**
 
+**Live:** [bernoulli.live](https://bernoulli.live) — landing page with the pitch, benchmarks, and architecture overview.
+
 Jev takes unstructured state (text or JSON) plus typed questions and returns calibrated probabilities — no generated prose, no JSON parsing, no retries. Bernoulli replicates this on open-weight VLMs (Qwen2.5-VL-7B for dev, swappable for production) and runs fully on-prem. One forward pass per question.
 
 - Jev reference: [typesafe.ai](https://typesafe.ai/) · [System One concept docs](https://docs.typesafe.ai/concepts/system-one)
