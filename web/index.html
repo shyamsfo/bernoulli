@@ -343,6 +343,7 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
       <a href="#use-cases" class="hide-sm">Use cases</a>
       <a href="#how" class="hide-sm">How it works</a>
       <a href="#benchmarks" class="hide-sm">Benchmarks</a>
+      <a href="#deploy" class="hide-sm">Deploy</a>
       <button type="button" class="btn btn-accent" data-open-demo>Book a demo</button>
       <button id="theme-toggle" class="btn btn-icon" type="button" aria-label="Toggle color theme" title="Switch theme">
         <svg data-icon="light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.07-7.07l-1.42 1.42M6.34 17.66l-1.42 1.42m0-14.14l1.42 1.42m11.31 11.31l1.42 1.42"/></svg>
@@ -361,6 +362,9 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
     <div class="eyebrow">Open-weight decision model</div>
     <h1 style="margin-top:18px">Skip the chatter.<br><em>Get the verdict.</em></h1>
     <p class="lede">Bernoulli takes unstructured state and typed questions and returns calibrated probabilities you can branch on. One forward pass per question. No generated tokens, no parsing, no JSON repair, no retries.</p>
+    <p style="margin-top:14px;font-size:17px;color:var(--ink-2);max-width:34em">
+      <strong>Open source. Self-host it in your VPC</strong> — your data stays on your infra.
+    </p>
     <div class="ctas">
       <a class="btn btn-accent" href="https://shyamsfo-bernoulli-demo.hf.space" target="_blank" rel="noopener">Try it live →</a>
       <a class="btn btn-primary" href="https://github.com/shyamsfo/bernoulli" target="_blank" rel="noopener">
@@ -540,7 +544,7 @@ response.decisions.intent.distribution.tracking === 0.24</pre>
       <div class="feat"><div class="ic">p ≈ 0.9</div><h3>Calibrated probabilities</h3><p>Per-question-type temperature scaling fit on held-out data. When Bernoulli says 0.9, it should be right about 90% of the time.</p></div>
       <div class="feat"><div class="ic">⇄</div><h3>Position debiasing</h3><p>Re-scores with the option order reversed (or all cyclic shifts) and averages, cancelling the model's preference for "the first option".</p></div>
       <div class="feat"><div class="ic">1×</div><h3>One forward pass</h3><p>No decoding loop. State goes first and questions last, so many questions over one state share a cached prefix.</p></div>
-      <div class="feat"><div class="ic">⌂</div><h3>Sovereign by default</h3><p>Open weights, runs fully on your hardware. No outbound network calls at inference time. Offline mode is a first-class target.</p></div>
+      <div class="feat"><div class="ic">⌂</div><h3>Self-host in your VPC</h3><p>Open weights, your hardware, your network. Zero outbound calls at inference time. Offline mode is a first-class target.</p></div>
       <div class="feat"><div class="ic">◫</div><h3>Multimodal state <span class="soon">Soon</span></h3><p>Text plus up to 8 images per state: screenshots, documents, photos. Long context up to the backbone's native window.</p></div>
     </div>
   </div>
@@ -715,11 +719,41 @@ curl -s localhost:8000/v1/decide \
   </div>
 </section>
 
+<section id="deploy">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Deployment</div>
+      <h2>Three ways to run Bernoulli.</h2>
+      <p>Bernoulli is open source, so the model and the code travel with you. Pick the mode that matches your data-residency, ops, and compliance posture.</p>
+    </div>
+    <div class="use-cases">
+      <article class="uc">
+        <div class="uc-tag">Self-host</div>
+        <h3>Run it yourself.</h3>
+        <p>Clone the repo, pull the Docker image, point it at your GPU. Your infra, your network, your data — zero outbound calls at inference time.</p>
+        <div class="uc-proof"><b>Flagship.</b> Apache 2.0 licensed.<br><a href="https://github.com/shyamsfo/bernoulli/blob/main/USAGE.md" target="_blank" rel="noopener">Usage guide on GitHub →</a></div>
+      </article>
+      <article class="uc">
+        <div class="uc-tag">Managed on your cloud</div>
+        <h3>We operate it in your VPC.</h3>
+        <p>You keep data residency; we handle deployment, GPU capacity, upgrades, monitoring, and incident response. Same sovereignty as self-host, without the ops.</p>
+        <div class="uc-proof"><b>For teams that want sovereignty without ops.</b> <a href="#" data-open-demo>Book a call →</a></div>
+      </article>
+      <article class="uc">
+        <div class="uc-tag">Hosted by us</div>
+        <h3>Call our endpoint.</h3>
+        <p>No infra setup — hit our managed <code class="mono">/v1/decide</code> endpoint over HTTPS. Trades data residency for the fastest path to production.</p>
+        <div class="uc-proof"><b>For prototyping and low-sensitivity workloads.</b> <a href="#" data-open-demo>Book a call →</a></div>
+      </article>
+    </div>
+  </div>
+</section>
+
 
 <section class="final">
   <div class="wrap">
     <h2>Stop parsing. Start <em class="serif" style="color:var(--accent)">deciding.</em></h2>
-    <p>Bernoulli is early and moving fast. Try the live demo, star the repo, run the CLI on your own data, and watch it grow.</p>
+    <p><strong><code class="mono">git clone</code> it and run it yourself in minutes</strong> — or <a href="#" data-open-demo style="color:var(--accent)">book a call</a> if you'd rather we operate it for you.</p>
     <div class="ctas">
       <a class="btn btn-accent" href="https://shyamsfo-bernoulli-demo.hf.space" target="_blank" rel="noopener">Try it live →</a>
       <a class="btn btn-primary" href="https://github.com/shyamsfo/bernoulli" target="_blank" rel="noopener">github.com/shyamsfo/bernoulli</a>
