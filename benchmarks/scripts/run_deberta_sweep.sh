@@ -39,11 +39,8 @@ if ! command -v uv >/dev/null 2>&1; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
-echo "[setup] uv sync --python 3.13 --extra eval ..."
-# Pin Python 3.13: PyTorch wheels for cu130 only cover cp311–cp314, and
-# fresh uv installs otherwise pick cpython 3.15.
-rm -rf .venv
-uv sync --python 3.13 --extra eval
+echo "[setup] uv sync --extra eval ..."
+uv sync --extra eval
 
 export HF_HUB_ENABLE_HF_TRANSFER=1
 

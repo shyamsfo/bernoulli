@@ -3,7 +3,7 @@ name = "bernoulli"
 version = "0.0.1"
 description = "Calibrated multimodal decision model: text + images + typed questions → probabilities."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 authors = [{ name = "DeepStore", email = "shyam@deepstore.ai" }]
