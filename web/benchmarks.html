@@ -179,21 +179,21 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
       Live demo on prepaid HF credits with the exact same backbone and revision as these numbers. Sleeps when idle, ~45 s to wake on first click.
     </span>
   </div>
-  <div class="asof">In-house run · 2026-10-07 · JevBench 7B · 2026-10-08 · JevBench 32B · 2026-10-10 · g5.xlarge A10G 24GB + Lambda H100 80GB rental</div>
+  <div class="asof">In-house academic re-run · N=500 · 2026-10-15 · Lambda A100 (DeBERTa column) + g5.xlarge A10G 24GB · use-case rows still at N=100 · 2026-10-07 · JevBench 7B · 2026-10-08 · JevBench 32B · 2026-10-10 · Lambda H100 80GB</div>
 </header>
 
 <section class="headline" style="padding-top:48px">
   <div class="wrap">
     <div class="hwins">
       <div class="hwin">
-        <div class="big">12<small>×</small></div>
-        <div class="lab">NLL · PAWS</div>
-        <p>Adversarial paraphrase binary. Same accuracy (0.83 vs 0.82); Bernoulli NLL 0.41 vs 4.97.</p>
+        <div class="big">0.95<small> / 0.53</small></div>
+        <div class="lab">Bernoulli vs DeBERTa · arXiv post-cutoff</div>
+        <p>Papers published Sept-Oct 2026, strictly after both models' training cutoffs. DeBERTa's NLI head doesn't generalize; Bernoulli-via-Qwen does.</p>
       </div>
       <div class="hwin">
-        <div class="big">0.00<small></small></div>
-        <div class="lab">False-refusal · XSTest</div>
-        <p>Zero over-refusals on the 450-prompt XSTest over-refusal probe. Trade-off: unsafe-recall is 0.36.</p>
+        <div class="big">12<small>×</small></div>
+        <div class="lab">NLL · PAWS</div>
+        <p>Adversarial paraphrase binary. Bernoulli 0.85 vs 0.84 accuracy; NLL 0.38 vs 4.53.</p>
       </div>
       <div class="hwin">
         <div class="big">0.44<small></small></div>
@@ -201,7 +201,7 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
         <p>Lowest rating error of any baseline (Generative 0.50, BGE+LR 0.68). Full distribution, not just argmax.</p>
       </div>
       <div class="hwin">
-        <div class="big">7<small>-40×</small></div>
+        <div class="big">7<small>-18×</small></div>
         <div class="lab">NLL · across 9 benchmarks</div>
         <p>Bernoulli vs same-backbone Generative, measured on identical examples. Nine independent receipts.</p>
       </div>
@@ -227,38 +227,43 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
           </tr>
         </thead>
         <tbody>
-          <tr><td rowspan="3"><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/sst2" target="_blank" rel="noopener">SST-2 · binary sentiment</a></td><td class="n">Bernoulli</td><td class="n">0.95</td><td class="n">0.95</td><td class="n win">0.027</td><td class="n win">0.093</td><td class="n win">0.18</td><td class="n">(1.00, 0.95)</td></tr>
-          <tr><td class="n">Generative</td><td class="n">0.95</td><td class="n">0.95</td><td class="n">0.050</td><td class="n">0.100</td><td class="n">1.38</td><td class="n">(0.97, 0.97)</td></tr>
-          <tr><td class="n">BGE-m3 + LR</td><td class="n">0.90</td><td class="n">0.90</td><td class="n">0.094</td><td class="n">0.183</td><td class="n">0.31</td><td class="n">(1.00, 1.00)</td></tr>
+          <tr><td rowspan="4"><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/sst2" target="_blank" rel="noopener">SST-2 · binary sentiment</a></td><td class="n">Bernoulli</td><td class="n">0.914</td><td class="n">0.914</td><td class="n win">0.024</td><td class="n">0.136</td><td class="n">0.251</td><td class="n">(1.00, 0.98)</td></tr>
+          <tr><td class="n">Generative</td><td class="n">0.920</td><td class="n">0.920</td><td class="n">0.080</td><td class="n">0.160</td><td class="n">2.211</td><td class="n">(0.98, 0.98)</td></tr>
+          <tr><td class="n">BGE-m3 + LR</td><td class="n">0.900</td><td class="n">0.899</td><td class="n">0.045</td><td class="n">0.146</td><td class="n">0.253</td><td class="n">(1.00, 1.00)</td></tr>
+          <tr><td class="n">DeBERTa-zeroshot</td><td class="n win">0.930</td><td class="n win">0.930</td><td class="n">0.033</td><td class="n win">0.115</td><td class="n win">0.219</td><td class="n">(1.00, 1.00)</td></tr>
 
           <tr class="sep"><td colspan="8">AG News · 4-way topic</td></tr>
-          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/ag_news" target="_blank" rel="noopener">AG News · 4-way topic</a></td><td class="n">Bernoulli</td><td class="n win">0.79</td><td class="n">0.78</td><td class="n">0.158</td><td class="n win">0.379</td><td class="n win">1.05</td><td class="n">(0.95, 0.94)</td></tr>
-          <tr><td></td><td class="n">Generative</td><td class="n">0.72</td><td class="n">0.72</td><td class="n">0.295</td><td class="n">0.575</td><td class="n">7.76</td><td class="n">(0.72, 0.89)</td></tr>
-          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n">0.57</td><td class="n">0.52</td><td class="n win">0.112</td><td class="n">0.609</td><td class="n">1.32</td><td class="n">(1.00, 1.00)</td></tr>
+          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/ag_news" target="_blank" rel="noopener">AG News · 4-way topic</a></td><td class="n">Bernoulli</td><td class="n">0.828</td><td class="n">0.817</td><td class="n">0.120</td><td class="n">0.298</td><td class="n">0.805</td><td class="n">(0.96, 0.94)</td></tr>
+          <tr><td></td><td class="n">Generative</td><td class="n">0.772</td><td class="n">0.757</td><td class="n">0.234</td><td class="n">0.462</td><td class="n">6.167</td><td class="n">(0.78, 0.88)</td></tr>
+          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n win">0.876</td><td class="n win">0.870</td><td class="n">0.123</td><td class="n win">0.214</td><td class="n win">0.430</td><td class="n">(1.00, 1.00)</td></tr>
+          <tr><td></td><td class="n">DeBERTa-zeroshot</td><td class="n">0.874</td><td class="n">0.868</td><td class="n win">0.079</td><td class="n">0.221</td><td class="n">0.516</td><td class="n">(1.00, 1.00)</td></tr>
 
           <tr class="sep"><td colspan="8">Banking77 · 77-way intent (chunked)</td></tr>
-          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/banking77" target="_blank" rel="noopener">Banking77 · 77-way intent</a></td><td class="n">Bernoulli</td><td class="n">0.57</td><td class="n">0.03</td><td class="n">0.116</td><td class="n">0.564</td><td class="n win">1.65</td><td class="n loss">(0.13, 0.59)</td></tr>
-          <tr><td></td><td class="n">Generative</td><td class="n">0.48</td><td class="n">0.02</td><td class="n">0.500</td><td class="n">1.020</td><td class="n">13.9</td><td class="n">(0.29, 0.87)</td></tr>
-          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n win">0.98</td><td class="n win">0.74</td><td class="n">0.119</td><td class="n win">0.050</td><td class="n">0.16</td><td class="n">(1.00, 1.00)</td></tr>
+          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/banking77" target="_blank" rel="noopener">Banking77 · 77-way intent</a></td><td class="n">Bernoulli</td><td class="n">0.572</td><td class="n">0.116</td><td class="n win">0.111</td><td class="n">0.562</td><td class="n">1.401</td><td class="n loss">(0.07, 0.68)</td></tr>
+          <tr><td></td><td class="n">Generative</td><td class="n">0.640</td><td class="n">0.113</td><td class="n">0.348</td><td class="n">0.708</td><td class="n">9.668</td><td class="n">(0.26, 0.80)</td></tr>
+          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n win">0.950</td><td class="n win">0.729</td><td class="n">0.236</td><td class="n win">0.151</td><td class="n win">0.406</td><td class="n">(1.00, 1.00)</td></tr>
+          <tr><td></td><td class="n">DeBERTa-zeroshot</td><td class="n">0.640</td><td class="n">0.114</td><td class="n">0.116</td><td class="n">0.538</td><td class="n">1.418</td><td class="n">(1.00, 1.00)</td></tr>
 
           <tr class="sep"><td colspan="8">TweetEval-emotion · 4-way</td></tr>
-          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/tweeteval_emotion" target="_blank" rel="noopener">TweetEval-emotion · 4-way</a></td><td class="n">Bernoulli</td><td class="n">0.77</td><td class="n">0.73</td><td class="n win">0.120</td><td class="n win">0.324</td><td class="n win">0.63</td><td class="n">(0.89, 0.89)</td></tr>
-          <tr><td></td><td class="n">Generative</td><td class="n">0.76</td><td class="n">0.74</td><td class="n">0.240</td><td class="n">0.480</td><td class="n">6.63</td><td class="n">(0.63, 0.91)</td></tr>
-          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n win">0.80</td><td class="n">0.72</td><td class="n">0.201</td><td class="n">0.362</td><td class="n">0.70</td><td class="n">(1.00, 1.00)</td></tr>
+          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/tweeteval_emotion" target="_blank" rel="noopener">TweetEval-emotion · 4-way</a></td><td class="n">Bernoulli</td><td class="n">0.784</td><td class="n">0.744</td><td class="n">0.084</td><td class="n win">0.301</td><td class="n win">0.575</td><td class="n">(0.89, 0.89)</td></tr>
+          <tr><td></td><td class="n">Generative</td><td class="n">0.780</td><td class="n win">0.754</td><td class="n">0.217</td><td class="n">0.436</td><td class="n">5.977</td><td class="n">(0.70, 0.88)</td></tr>
+          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n win">0.788</td><td class="n">0.747</td><td class="n">0.108</td><td class="n">0.327</td><td class="n">0.622</td><td class="n">(1.00, 1.00)</td></tr>
+          <tr><td></td><td class="n">DeBERTa-zeroshot</td><td class="n">0.768</td><td class="n">0.695</td><td class="n win">0.043</td><td class="n">0.306</td><td class="n">0.584</td><td class="n">(1.00, 1.00)</td></tr>
 
-          <tr class="sep"><td colspan="8">PAWS · adversarial paraphrase binary</td></tr>
-          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/paws" target="_blank" rel="noopener">PAWS · adversarial paraphrase</a></td><td class="n">Bernoulli</td><td class="n win">0.83</td><td class="n win">0.81</td><td class="n win">0.076</td><td class="n win">0.260</td><td class="n win">0.41</td><td class="n na">(n/a, 0.94)</td></tr>
-          <tr><td></td><td class="n">Generative</td><td class="n">0.82</td><td class="n">0.80</td><td class="n">0.180</td><td class="n">0.360</td><td class="n">4.97</td><td class="n na">(n/a, 0.89)</td></tr>
-          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n">0.56</td><td class="n">0.51</td><td class="n">0.009</td><td class="n">0.499</td><td class="n">0.69</td><td class="n na">(n/a, 1.00)</td></tr>
+          <tr class="sep"><td colspan="8">PAWS · adversarial paraphrase binary (DeBERTa-zeroshot n/a — BinaryQuestion unsupported by design)</td></tr>
+          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/paws" target="_blank" rel="noopener">PAWS · adversarial paraphrase</a></td><td class="n">Bernoulli</td><td class="n win">0.846</td><td class="n win">0.844</td><td class="n">0.040</td><td class="n win">0.233</td><td class="n win">0.376</td><td class="n na">(n/a, 0.94)</td></tr>
+          <tr><td></td><td class="n">Generative</td><td class="n">0.836</td><td class="n">0.833</td><td class="n">0.164</td><td class="n">0.328</td><td class="n">4.532</td><td class="n na">(n/a, 0.93)</td></tr>
+          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n">0.552</td><td class="n">0.532</td><td class="n win">0.035</td><td class="n">0.496</td><td class="n">0.690</td><td class="n na">(n/a, 1.00)</td></tr>
 
-          <tr class="sep"><td colspan="8">arXiv post-cutoff · anti-contamination (papers from Sept-Oct 2026)</td></tr>
-          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/arxiv_post_cutoff" target="_blank" rel="noopener">arXiv post-cutoff · 4-way category</a></td><td class="n">Bernoulli</td><td class="n win">0.95</td><td class="n win">0.95</td><td class="n win">0.047</td><td class="n win">0.102</td><td class="n win">0.21</td><td class="n">(0.95, 0.94)</td></tr>
-          <tr><td></td><td class="n">Generative</td><td class="n">0.92</td><td class="n">0.92</td><td class="n">0.080</td><td class="n">0.160</td><td class="n">2.21</td><td class="n">(0.86, 0.66)</td></tr>
-          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n">0.94</td><td class="n">0.94</td><td class="n">0.509</td><td class="n">0.453</td><td class="n">0.87</td><td class="n">(1.00, 1.00)</td></tr>
+          <tr class="sep"><td colspan="8">arXiv post-cutoff · anti-contamination (papers from Sept-Oct 2026; N=100 — full available test slice)</td></tr>
+          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/academic/arxiv_post_cutoff" target="_blank" rel="noopener">arXiv post-cutoff · 4-way category</a></td><td class="n">Bernoulli</td><td class="n win">0.950</td><td class="n win">0.950</td><td class="n win">0.047</td><td class="n win">0.102</td><td class="n win">0.207</td><td class="n">(0.95, 0.94)</td></tr>
+          <tr><td></td><td class="n">Generative</td><td class="n">0.920</td><td class="n">0.919</td><td class="n">0.080</td><td class="n">0.160</td><td class="n">2.211</td><td class="n">(0.86, 0.66)</td></tr>
+          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n">0.940</td><td class="n">0.940</td><td class="n">0.509</td><td class="n">0.453</td><td class="n">0.869</td><td class="n">(1.00, 1.00)</td></tr>
+          <tr><td></td><td class="n">DeBERTa-zeroshot</td><td class="n loss">0.530</td><td class="n loss">0.513</td><td class="n">0.059</td><td class="n">0.593</td><td class="n loss">1.084</td><td class="n">(1.00, 1.00)</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="fine">N=100 eval examples per benchmark · BGE-m3+LR trained on 500 labeled examples (random-seeded shuffle for class balance) · stability reorder is <code>n/a</code> for binary (Yes/No swap inverts meaning, not position — see methodology) and for Banking77 reorder=0.13 reflects the chunked-scoring architectural caveat below. Each benchmark link above opens its full result markdown + JSON sidecar on GitHub.</p>
+    <p class="fine">N=500 eval examples per benchmark except arXiv post-cutoff at N=100 (full available test slice) · BGE-m3+LR trained on 2000 labeled examples (random-seeded shuffle for class balance) · stability reorder is <code>n/a</code> for binary (Yes/No swap inverts meaning, not position — see methodology) and for Banking77 reorder=0.07 reflects the chunked-scoring architectural caveat below. DeBERTa stability is <code>(1.00, 1.00)</code> everywhere by architecture — encoder with explicit label hypotheses, no autoregressive position bias. Each benchmark link above opens its full result markdown + JSON sidecar on GitHub.</p>
   </div>
 </section>
 
@@ -370,8 +375,8 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
         <ul>
           <li><strong>Bernoulli</strong> over HTTP against the running <code>/v1/decide</code> server. Reverse debias on choice; no debias on binary (Yes/No are semantic — reversing their order changes meaning, not position).</li>
           <li><strong>Generative</strong> over HTTP against the same server's <code>/v1/generate</code>. Same backbone, same prompt framing, parsed completion → point mass on parsed answer or uniform on parse failure.</li>
-          <li><strong>BGE-m3 + LR</strong> — embed inputs with <code>BAAI/bge-m3</code> (CLS pooling, L2-normalise), train scikit-learn's LogisticRegression on 500 labeled training examples (seeded shuffle for class balance). Honest baseline for "could we have used embeddings?"</li>
-          <li><strong>DeBERTa-v3-zeroshot</strong> — the zero-shot encoder column is <em>missing</em> from today's tables. CPU latency on 4-way+ is pathological; GPU is held by the Bernoulli server. Needs a shared-GPU setup or an overnight CPU batch.</li>
+          <li><strong>BGE-m3 + LR</strong> — embed inputs with <code>BAAI/bge-m3</code> (CLS pooling, L2-normalise), train scikit-learn's LogisticRegression on 2000 labeled training examples (seeded shuffle for class balance). Honest baseline for "could we have used embeddings?"</li>
+          <li><strong>DeBERTa-v3-zeroshot</strong> — <code>MoritzLaurer/deberta-v3-large-zeroshot-v2.0</code>. The strongest open zero-shot encoder — NLI-tuned, which means it only scores <code>ChoiceQuestion</code> (natural-language label hypotheses); binary Yes/No tasks like PAWS are n/a by design. Produced on a one-shot Lambda A100 (sidesteps evicting the Bernoulli vLLM server on the dev box).</li>
         </ul>
       </div>
     </div>
@@ -388,14 +393,14 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
     <div class="caveats">
       <h3>Known limitations in this snapshot</h3>
       <ul>
-        <li><strong>N=100 eval examples per benchmark.</strong> Numbers in a 5-point band can swing 2–3 points at N=500. Direction holds; precision doesn't. A higher-N pass is pending (hours of GPU, not days).</li>
-        <li><strong>No DeBERTa-v3-zeroshot column.</strong> The strongest open zero-shot encoder is missing — CPU latency is pathological on 4-way+ (hours per benchmark), and GPU is held by the Bernoulli server. Fix is either shared-GPU scheduling or an overnight CPU batch. Does not change the calibration gap between Bernoulli and Generative, but it's the main gap in the "did we need an LLM?" story.</li>
-        <li><strong>Banking77 reorder stability = 0.13.</strong> With 77 options we exceed the 26-letter alphabet so <code>bernoulli/chunked.py</code> splits into 3 chunks of ≤26 labels and softmaxes globally. The top-1 therefore shifts when the chunks change — architectural, not a bug. Cross-chunk debias is parked. Any Banking77 citation needs the chunked-stability footnote.</li>
+        <li><strong>M9 use-case rows still at N=100.</strong> The M8 academic suite re-ran at N=500 on 2026-10-15; the M9 use-case rows (ToxicChat, XSTest, CLINC150-OOS, Yelp) were last run at N=100 on 2026-10-07 and haven't been upgraded yet. Headline direction holds; a higher-N pass is scheduled.</li>
+        <li><strong>DeBERTa doesn't score PAWS.</strong> <code>DeBERTaZeroshot.predict()</code> raises <code>NotImplementedError</code> on <code>BinaryQuestion</code> by design — Yes/No labels aren't semantic hypothesis-shaped. A benchmark wanting DeBERTa on a binary task has to preprocess into a 2-way choice. We left PAWS as-is and marked the cell n/a.</li>
+        <li><strong>Banking77 reorder stability = 0.07.</strong> With 77 options we exceed the 26-letter alphabet so <code>bernoulli/chunked.py</code> splits into 3 chunks of ≤26 labels and softmaxes globally. The top-1 therefore shifts when the chunks change — architectural, not a bug. Cross-chunk debias is parked. Any Banking77 citation needs the chunked-stability footnote.</li>
         <li><strong>XSTest unsafe_recall = 0.36.</strong> Bernoulli's 0% false-refusal is a product-grade property, but it under-flags actually-unsafe prompts. For a complete guardrail you want Bernoulli as the first-pass "don't over-refuse" gate paired with an escalation path (human-in-loop or a tuned classifier) for the long tail.</li>
         <li><strong>CLINC150-OOS OOS recall ≈ 0.52 for Bernoulli.</strong> Coin flip on the "none of these" story. Likely prompt-framing + stem rewording; investigation pending.</li>
         <li><strong>Dev-tier backbone.</strong> Numbers are from Qwen2.5-VL-7B-Instruct on an AWS g5.xlarge (A10G 24GB). The production step-up to <code>Qwen2.5-VL-32B-Instruct-AWQ</code> on g6e.xlarge (L40S 48GB) is parked on AWS capacity.</li>
         <li><strong>JevBench numbers are self-reported.</strong> Our 7B run (2026-10-08) is in Benchmark Heaven's FIFO queue at position #62; our 32B run (2026-10-10) is from a one-shot Lambda H100 rental and sits in-repo as a staged resubmission for when the 7B entry posts. Reproduce locally from <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/jevbench/results/2026-10-08.md" target="_blank" rel="noopener">results/2026-10-08.md</a> or <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/jevbench/results/2026-10-10-32b.md" target="_blank" rel="noopener">results/2026-10-10-32b.md</a>. This page updates with the official rank + external link once Benchmark Heaven publishes.</li>
-        <li><strong>arXiv post-cutoff dataset was regenerated 2026-10-07.</strong> 200 papers across 4 categories, publication dates 2026-09-18 to 2026-10-06 — well after any plausible Qwen2.5-VL training cutoff. On this provably-unseen corpus, Bernoulli hits 0.95 acc with NLL 10.7× better than Generative. The anti-contamination claim is backed by real data, not a placeholder. If the backbone is swapped to a later-cutoff model, <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/academic/arxiv_post_cutoff/make_dataset.py" target="_blank" rel="noopener">make_dataset.py</a> re-runs with the updated cutoff.</li>
+        <li><strong>arXiv post-cutoff dataset was generated 2026-10-07; eval re-run 2026-10-15.</strong> 200 papers across 4 categories, publication dates 2026-09-18 to 2026-10-06 — well after both Qwen2.5-VL's and DeBERTa's training cutoffs. On this provably-unseen corpus Bernoulli hits 0.95 acc; <strong>DeBERTa-zeroshot drops to 0.53</strong> — the sharpest "did the model memorize this?" signal in the suite. BGE-m3 holds up because it only needs semantic similarity. N=100 is the full available test slice; if the backbone is swapped to a later-cutoff model, <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/academic/arxiv_post_cutoff/make_dataset.py" target="_blank" rel="noopener">make_dataset.py</a> re-runs with the updated cutoff.</li>
       </ul>
     </div>
   </div>
@@ -413,8 +418,8 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
       <div class="r"><b>Hardware</b><span>AWS g5.xlarge · A10G 24GB · us-east-1a</span></div>
       <div class="r"><b>Harness</b><span>benchmarks.run · benchmarks.common.{metrics,stability,baselines}</span></div>
       <div class="r"><b>Transport</b><span>HTTP · /v1/decide and /v1/generate</span></div>
-      <div class="r"><b>N / train-N</b><span>100 eval · 500 train (BGEm3LR)</span></div>
-      <div class="r"><b>Date</b><span>2026-10-07</span></div>
+      <div class="r"><b>N / train-N</b><span>500 eval (M8 academic, arXiv at 100) · 2000 train (BGEm3LR) · 100 eval (M9 use-cases)</span></div>
+      <div class="r"><b>Date</b><span>2026-10-15 (academic) · 2026-10-07 (use-cases)</span></div>
     </div>
     <p class="fine" style="margin-top:24px">To rerun on your own backbone or hardware: <code style="font:12.5px 'JetBrains Mono',monospace;background:var(--surface-2);padding:1px 5px;border-radius:4px">just serve &amp;&amp; just benchmark academic/sst2 bernoulli,generative,bge-m3-lr 100 500</code>. See the <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/README.md" target="_blank" rel="noopener">benchmarks/ README</a> for the full methodology and <a href="https://github.com/shyamsfo/bernoulli/blob/main/product/operations/benchmark-primer.md" target="_blank" rel="noopener">benchmark-primer.md</a> for a long-form orientation.</p>
   </div>

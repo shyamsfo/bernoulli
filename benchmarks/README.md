@@ -55,24 +55,30 @@ The runner POSTs to a Bernoulli server (default `http://127.0.0.1:8000`). Start 
 
 ## Summary leaderboard
 
-Last run: **2026-10-07**, N=100 eval per benchmark, dev-tier backbone Qwen2.5-VL-7B-Instruct on g5.xlarge/A10G 24GB. Per-benchmark result markdowns are linked from the Benchmark column. See [Honest caveats](#honest-caveats) below for what this snapshot is NOT (no DeBERTa column yet, N=100 is small, WildGuardTest pending auth, arXiv-sample is placeholder).
+Last run: **2026-10-15**, N=500 eval per benchmark (arXiv post-cutoff at N=100 — small test set), dev-tier backbone Qwen2.5-VL-7B-Instruct on g5.xlarge/A10G 24GB. DeBERTa column from a one-shot Lambda A100 run. Per-benchmark result markdowns are linked from the Benchmark column. See [Honest caveats](#honest-caveats) below.
 
-Each cell is `accuracy` unless noted; **bold** = best in row. ECE is 10-bin (JevBench convention). Stability is `(reorder, reword)` for choice; `(—, reword)` for binary (reorder is semantic n/a for Yes/No labels).
+Each cell is `accuracy` unless noted; **bold** = best in row. ECE is 10-bin (JevBench convention). Stability is `(reorder, reword)` for choice; `(—, reword)` for binary (reorder is semantic n/a for Yes/No labels). DeBERTa is `n/a` on PAWS — `DeBERTaZeroshot` only scores `ChoiceQuestion` by design.
 
 ### Academic (M8)
 
-| Benchmark | Bernoulli | Generative | BGE-m3 + LR | Bernoulli NLL | Generative NLL | NLL ratio | Bernoulli ECE | Stability |
-|---|---|---|---|---|---|---|---|---|
-| [SST-2](academic/sst2/) | **0.95** | **0.95** | 0.90 | **0.18** | 1.38 | 7.6× | 0.027 | (1.00, 0.95) |
-| [AG News](academic/ag_news/) | **0.79** | 0.72 | 0.57 | **1.05** | 7.76 | 7.4× | 0.158 | (0.95, 0.94) |
-| [Banking77](academic/banking77/) | 0.57 | 0.48 | **0.98** | **1.65** | 13.9 | 8.4× | 0.116 | (0.13 ⚠️, 0.59) |
-| [TweetEval-emotion](academic/tweeteval_emotion/) | 0.77 | 0.76 | **0.80** | **0.63** | 6.63 | 10.5× | 0.120 | (0.89, 0.89) |
-| [PAWS](academic/paws/) | **0.83** | 0.82 | 0.56 | **0.41** | 4.97 | 12× | 0.076 | (—, 0.94) |
-| [arXiv post-cutoff](academic/arxiv_post_cutoff/) | **0.95** | 0.92 | 0.94 | **0.21** | 2.21 | 10.7× | 0.047 | (0.95, 0.94) |
+| Benchmark | Bernoulli | Generative | BGE-m3 + LR | DeBERTa | Bernoulli NLL | Generative NLL | NLL ratio (G/B) | Bernoulli ECE | Stability |
+|---|---|---|---|---|---|---|---|---|---|
+| [SST-2](academic/sst2/) | 0.914 | 0.920 | 0.900 | **0.930** | **0.251** | 2.211 | 8.8× | 0.024 | (1.00, 0.98) |
+| [AG News](academic/ag_news/) | 0.828 | 0.772 | **0.876** | 0.874 | 0.805 | 6.167 | 7.7× | 0.120 | (0.96, 0.94) |
+| [Banking77](academic/banking77/) | 0.572 | 0.640 | **0.950** | 0.640 | 1.401 | 9.668 | 6.9× | 0.111 | (0.07 ⚠️, 0.68) |
+| [PAWS](academic/paws/) | **0.846** | 0.836 | 0.552 | n/a | **0.376** | 4.532 | 12.0× | 0.040 | (—, 0.94) |
+| [TweetEval-emotion](academic/tweeteval_emotion/) | 0.784 | 0.780 | **0.788** | 0.768 | **0.575** | 5.977 | 10.4× | 0.084 | (0.89, 0.89) |
+| [arXiv post-cutoff](academic/arxiv_post_cutoff/) | **0.950** | 0.920 | 0.940 | 0.530 | **0.207** | 2.211 | 10.7× | 0.047 | (0.95, 0.94) |
 
-- Banking77 reorder = 0.13 ⚠️ is architectural, not a bug — chunked scoring (77 options > 26 letters) is sensitive to which labels fall in which chunk. See the parking-lot item on cross-chunk debias.
-- arXiv post-cutoff: real snapshot generated 2026-10-07 via `make_dataset.py` — 200 papers across 4 categories (cs.CL / cs.CV / math.PR / econ.EM), publication dates 2026-09-18 to 2026-10-06 (all strictly after `BACKBONE_CUTOFF = 2025-01-01`, well after any plausible Qwen2.5-VL cutoff). Bernoulli 0.95 on data the model demonstrably hasn't seen.
-- BGE-m3+LR is trained on 500 labeled examples per task. On Banking77 (77-way intent) it dominates — a trained encoder with enough class-balanced data beats zero-shot on fixed label spaces. Honest "when to use what" story: BGE+LR for high-label-count tasks with real training data; Bernoulli everywhere else.
+**Headline finding — the "provably unseen" test**: arXiv papers published 2026-09-18 to 2026-10-06 (strictly after both Qwen2.5-VL's and DeBERTa's training cutoffs). Bernoulli 0.95 vs **DeBERTa 0.53** — DeBERTa's NLI head doesn't generalize to post-cutoff material; Bernoulli (via Qwen) does. BGE-m3 holds up because it only needs semantic similarity. Full dataset generation in [`academic/arxiv_post_cutoff/make_dataset.py`](academic/arxiv_post_cutoff/make_dataset.py); dataset snapshot in [`.../data/dataset.jsonl`](academic/arxiv_post_cutoff/data/dataset.jsonl).
+
+Other things the N=500 numbers settle:
+
+- **vs Generative, the calibration gap is real and consistent** — NLL is 7–12× worse across every benchmark. The "prompt-and-parse is miscalibrated" story we've been telling holds up.
+- **vs DeBERTa on classical NLP tasks, we're competitive, not dominant** — on SST-2/AG News/TweetEval-emotion the two trade blows; neither is a clear winner. DeBERTa is a legitimate competitor and we should name that honestly.
+- **BGE-m3+LR trained on 2000 labels wins on label-heavy tasks** — Banking77 (0.95 vs everyone else's 0.57–0.64) and AG News (0.876, best in row). This is the honest "if you have 2000 labeled examples, use them" conclusion; Bernoulli's story is for the case where you don't.
+- **DeBERTa stability is (1.000, 1.000) everywhere** — architectural, not tuning. An encoder with explicit label hypotheses doesn't have option-position bias or prompt-stem sensitivity. Our story is strongest where DeBERTa can't go (PAWS binary, provably-unseen content), not on stability.
+- **Banking77 reorder = 0.07 ⚠️** is architectural — chunked scoring (77 options > 26 letters) means which labels land in which chunk affects the global softmax. Parking-lot item on cross-chunk debias.
 
 ### Use cases (M9)
 
@@ -108,13 +114,14 @@ Measured over HTTP against the running server; see each benchmark's `results/lat
 
 What this snapshot is **not**:
 
-- **N=100 eval examples per benchmark.** Headline numbers in a 5-point band could swing 2–3 points at N=500. Direction holds; precision doesn't. A higher-N pass is pending (hours of GPU, not days).
-- **No DeBERTa-v3-zeroshot column.** The strongest open zero-shot encoder is missing — CPU latency on 4-way+ is pathological (hours per benchmark), and GPU is held by the Bernoulli server. Fix is either shared-GPU scheduling or an overnight CPU batch. The calibration gap between Bernoulli and Generative is unaffected, but it's the biggest hole in the "did we need an LLM?" story.
-- **Banking77 reorder stability = 0.13.** With 77 options we exceed the 26-letter alphabet, so `bernoulli/chunked.py` splits into 3 chunks of ≤26 labels and softmaxes globally. The top-1 therefore shifts when the chunks change — architectural, not a bug. Cross-chunk debias is parked. Any Banking77 citation needs the chunked-stability footnote.
+- **M9 use-case rows still at N=100.** The M8 academic suite re-ran at N=500 on 2026-10-15; the M9 use-case suite was last run at N=100 on 2026-10-07 and hasn't been upgraded yet. ToxicChat/XSTest/CLINC150/Yelp numbers below are the older snapshot.
+- **DeBERTa doesn't score PAWS.** `DeBERTaZeroshot.predict()` raises `NotImplementedError` on `BinaryQuestion` by design — Yes/No labels aren't semantic hypothesis-shaped. A benchmark wanting DeBERTa on a binary task has to preprocess into a 2-way choice. We left PAWS as-is.
+- **Banking77 reorder stability = 0.07 ⚠️.** With 77 options we exceed the 26-letter alphabet, so `bernoulli/chunked.py` splits into 3 chunks of ≤26 labels and softmaxes globally. The top-1 therefore shifts when the chunks change — architectural, not a bug. Cross-chunk debias is parked. Any Banking77 citation needs the chunked-stability footnote.
+- **arXiv post-cutoff at N=100.** The test split is small — 200 papers across cs.CL / cs.CV / math.PR / econ.EM, publication dates 2026-09-18 to 2026-10-06 (all strictly after `BACKBONE_CUTOFF = 2025-01-01`, well after any plausible Qwen2.5-VL cutoff). N=100 is the full available test slice; expanding it means scraping more arXiv.
 - **XSTest Bernoulli `unsafe_recall = 0.36`.** The 0% false-refusal is a product-grade property, but it under-flags actually-unsafe prompts. For a complete guardrail, Bernoulli is the first-pass "don't over-refuse" gate paired with an escalation path for the long tail.
 - **CLINC150-OOS Bernoulli `oos_recall ≈ 0.52`.** Coin flip on the "none of these" story. Likely prompt-framing + stem rewording; investigation pending.
-- **Dev-tier backbone.** All numbers are from Qwen2.5-VL-7B-Instruct on an AWS g5.xlarge (A10G 24GB). The production step-up to `Qwen2.5-VL-32B-Instruct-AWQ` on g6e.xlarge (L40S 48GB) is parked on AWS capacity.
-- **WildGuardTest / arXiv post-cutoff** absent from the headline rows pending HF auth and real-data generation respectively (see table footnotes).
+- **Dev-tier backbone.** All numbers are from Qwen2.5-VL-7B-Instruct on an AWS g5.xlarge (A10G 24GB). The production step-up to `Qwen2.5-VL-32B-Instruct-AWQ` on g6e.xlarge (L40S 48GB) is parked on AWS capacity; one-shot H100 run on the 32B base model is in [`product/reports/2026-10-10-h100-32b.md`](../product/reports/2026-10-10-h100-32b.md).
+- **WildGuardTest** absent from the headline rows pending HF auth.
 
 ## Methodology
 

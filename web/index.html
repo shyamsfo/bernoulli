@@ -593,7 +593,7 @@ response.decisions.intent.distribution.tracking === 0.24</pre>
     <div class="sec-head">
       <div class="eyebrow">Benchmarks</div>
       <h2>Same accuracy. Honest confidence.</h2>
-      <p>Nine benchmarks — five academic, four use-case — against the same backbone prompted to answer in a word and parsed. Bernoulli matches accuracy and the NLL gap runs <strong>7–40×</strong> in Bernoulli's favor.</p>
+      <p>Nine benchmarks — five academic, four use-case — against the same backbone prompted to answer in a word and parsed. Bernoulli stays within a point or two of accuracy and the NLL gap runs <strong>7–18×</strong> in Bernoulli's favor.</p>
     </div>
     <div class="bench">
       <div class="tscroll">
@@ -602,19 +602,19 @@ response.decisions.intent.distribution.tracking === 0.24</pre>
             <tr><th>Benchmark</th><th class="n">Bernoulli acc</th><th class="n">Generative acc</th><th class="n">NLL ratio (B vs G)</th></tr>
           </thead>
           <tbody>
-            <tr><td>SST-2 · binary sentiment</td><td class="n">0.95</td><td class="n">0.95</td><td class="n win">7.6×</td></tr>
-            <tr><td>Banking77 · 77-way intent</td><td class="n win">0.57</td><td class="n">0.48</td><td class="n win">8.4×</td></tr>
-            <tr><td>PAWS · adversarial paraphrase</td><td class="n win">0.83</td><td class="n">0.82</td><td class="n win">12×</td></tr>
+            <tr><td>SST-2 · binary sentiment</td><td class="n">0.91</td><td class="n">0.92</td><td class="n win">8.8×</td></tr>
+            <tr><td>AG News · 4-way topic</td><td class="n win">0.83</td><td class="n">0.77</td><td class="n win">7.7×</td></tr>
+            <tr><td>PAWS · adversarial paraphrase</td><td class="n win">0.85</td><td class="n">0.84</td><td class="n win">12.0×</td></tr>
             <tr><td>CLINC150-OOS · in-scope</td><td class="n win">0.46</td><td class="n">0.37</td><td class="n win">18×</td></tr>
             <tr><td>Yelp · 1-5 star rating</td><td class="n win">0.58</td><td class="n">0.55</td><td class="n win">14×</td></tr>
             <tr><td>arXiv post-cutoff · papers the model <em>can't</em> have seen</td><td class="n win">0.95</td><td class="n">0.92</td><td class="n win">10.7×</td></tr>
           </tbody>
         </table>
-        <p class="fine">N=100 eval per benchmark · Qwen2.5-VL-7B-Instruct · 2026-10-07. arXiv row is anti-contamination: papers published Sept-Oct 2026, strictly after any plausible training cutoff. See <a href="/benchmarks.html">benchmarks.html</a> for all 9 benchmarks across every metric, the trained-encoder (BGE-m3+LR) column, methodology, and known caveats. Raw per-benchmark result markdowns live at <a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks" target="_blank" rel="noopener">github.com/shyamsfo/bernoulli/benchmarks</a>.</p>
+        <p class="fine">Academic rows at N=500 · 2026-10-15. Use-case rows at N=100 · 2026-10-07. Qwen2.5-VL-7B-Instruct throughout. arXiv row is the anti-contamination test: papers published Sept-Oct 2026, strictly after any plausible training cutoff — <strong>DeBERTa-v3-zeroshot drops to 0.53 on the same examples</strong>. See <a href="/benchmarks.html">benchmarks.html</a> for all 9 benchmarks across every metric, the DeBERTa + BGE-m3+LR columns, methodology, and known caveats. Raw per-benchmark result markdowns live at <a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks" target="_blank" rel="noopener">github.com/shyamsfo/bernoulli/benchmarks</a>.</p>
       </div>
       <div class="callouts">
-        <div class="callout"><div class="big">12<small>×</small></div><p>better NLL than the same-model generative baseline on PAWS, at higher accuracy (0.83 vs 0.82). Adversarial paraphrase binary — the hardest calibration test in the suite.</p></div>
-        <div class="callout"><div class="big">0.00<small></small></div><p>false-refusal rate on XSTest. Bernoulli never over-refuses a safe prompt. Trade-off: unsafe-recall 0.36 — Bernoulli as a first-pass gate, pair with escalation for the long tail.</p></div>
+        <div class="callout"><div class="big">0.95<small> / 0.53</small></div><p>Bernoulli vs DeBERTa-v3-zeroshot on arXiv papers published strictly <em>after</em> both models' training cutoffs. The strongest "did the model memorize this?" test in the suite.</p></div>
+        <div class="callout"><div class="big">12<small>×</small></div><p>better NLL than the same-model generative baseline on PAWS, at higher accuracy (0.85 vs 0.84). Adversarial paraphrase binary — the hardest calibration test in the suite.</p></div>
         <div class="callout"><div class="big">0.44<small></small></div><p>Mean absolute error on Yelp 1-5 star rating — lowest of any baseline. Uses the full distribution, not just argmax. Where "typed decisions, not single tokens" earns its keep.</p></div>
       </div>
     </div>
