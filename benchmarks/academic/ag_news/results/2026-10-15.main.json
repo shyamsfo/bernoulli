@@ -1,0 +1,89 @@
+{
+  "benchmark": "academic/ag_news",
+  "repro": {
+    "benchmark": "academic/ag_news",
+    "bernoulli_commit": "83b121abf735cb78e9297c1877d24e4eeea5681b",
+    "model_id": "unset",
+    "model_revision": "unset",
+    "hardware": "ip-172-31-84-107",
+    "python": "3.13.16",
+    "source": "ag_news"
+  },
+  "results": [
+    {
+      "name": "bernoulli",
+      "accuracy": 0.828,
+      "macro_f1": 0.8172868247457782,
+      "ece_10": 0.11987677407264709,
+      "ece_15": 0.12157032108306884,
+      "brier": 0.29746609906057503,
+      "nll": 0.8044846033641836,
+      "coverage": {
+        "0.95": 0.8442105263157895,
+        "0.9": 0.8577777777777778,
+        "0.8": 0.8775,
+        "0.5": 0.92
+      },
+      "latency_ms": {
+        "p50_ms": 91.0,
+        "p95_ms": 126.0,
+        "mean_ms": 95.352
+      },
+      "stability_reorder": 0.958,
+      "stability_reword": 0.94,
+      "n_examples": 500,
+      "note": "",
+      "extras": null
+    },
+    {
+      "name": "generative",
+      "accuracy": 0.772,
+      "macro_f1": 0.7569419470818906,
+      "ece_10": 0.23399999999999996,
+      "ece_15": 0.23399999999999996,
+      "brier": 0.462,
+      "nll": 6.167357752403015,
+      "coverage": {
+        "0.95": 0.7684210526315789,
+        "0.9": 0.7666666666666667,
+        "0.8": 0.7675,
+        "0.5": 0.756
+      },
+      "latency_ms": {
+        "p50_ms": 88.0,
+        "p95_ms": 159.0,
+        "mean_ms": 98.226
+      },
+      "stability_reorder": 0.778,
+      "stability_reword": 0.88,
+      "n_examples": 500,
+      "note": "",
+      "extras": null
+    },
+    {
+      "name": "bge-m3-lr",
+      "accuracy": 0.876,
+      "macro_f1": 0.8696923983584559,
+      "ece_10": 0.12274753051996232,
+      "ece_15": 0.1227475305199623,
+      "brier": 0.21416538502585003,
+      "nll": 0.43007609836816435,
+      "coverage": {
+        "0.95": 0.8926315789473684,
+        "0.9": 0.9088888888888889,
+        "0.8": 0.945,
+        "0.5": 0.976
+      },
+      "latency_ms": {
+        "p50_ms": 12.0,
+        "p95_ms": 13.0,
+        "mean_ms": 12.384
+      },
+      "stability_reorder": 1.0,
+      "stability_reword": 1.0,
+      "n_examples": 500,
+      "note": "trained on 2000 examples",
+      "extras": null
+    }
+  ]
+}
