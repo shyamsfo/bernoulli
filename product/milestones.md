@@ -289,6 +289,49 @@ Exit criteria: Bernoulli listed on the JevBench leaderboard with a reproducible 
 
 ---
 
+## M12 — Landing-page visitor analytics (self-hosted Umami on ssd2)
+**Status**: ⏳ pending
+**Goal**: Visitor traffic to [bernoulli.live](https://www.bernoulli.live/) is visible in a self-hosted, cookieless analytics dashboard at `analytics.bernoulli.live`, with no GDPR cookie banner surface and no third-party JS on the landing page.
+
+**Context (already researched, don't redo):**
+- DNS provider: **ClouDNS**, zone `bernoulli.live`. Creds live in `~/.credentials` as `CLOUDNS_AUTH_ID` + `CLOUDNS_AUTH_PASSWORD`. API: `https://api.cloudns.net/dns/add-record.json` (GET, `delete-record.json` to roll back).
+- ssd2 public IP: **208.87.128.216** (= `b2` in `~/.ssh/config` = apex `bernoulli.live` A record). Analytics subdomain mirrors this.
+- Chosen stack: **Umami + Postgres** via `docker-compose`, reverse-proxied by the existing ssd2 nginx with Let's Encrypt (same pattern as the main site).
+
+**Stack rationale (don't relitigate):**
+- Umami over Plausible CE: simpler stack (no ClickHouse), ~300 MB RAM vs ~1.5 GB. UI is less polished but sufficient for a landing page.
+- Self-host over hosted Plausible/Fathom (~$9–15/mo): defer paying until there's a reason.
+- Cookieless (Umami, Plausible, GoatCounter) over cookie-based (Clarity, HubSpot, GA4): no cookie banner, no GDPR consent surface on the landing page.
+- GoatCounter free tier rejected: non-commercial clause is ambiguous once we offer managed hosting (M11-adjacent).
+
+**Tasks:**
+- [ ] Verify ssd2 free RAM/disk headroom (`ssh b2 'free -h && df -h /'`). Target: ≥500 MB free RAM, ≥2 GB free disk.
+- [ ] Add DNS record `analytics.bernoulli.live A 208.87.128.216` (TTL 3600) via ClouDNS API. Verify with `dig +short analytics.bernoulli.live`.
+- [ ] Create `/opt/umami/` on ssd2 with `docker-compose.yml` (Umami + Postgres, Umami bound to `127.0.0.1:3000` only — no public port exposure). Bring up and verify locally with `curl http://127.0.0.1:3000`.
+- [ ] Add nginx server block for `analytics.bernoulli.live` reverse-proxying to `127.0.0.1:3000`; issue cert via existing certbot flow; reload nginx. Verify TLS via `curl -I https://analytics.bernoulli.live`.
+- [ ] First login (default `admin / umami`), rotate admin password, store under a new key in `~/.credentials` (e.g. `UMAMI_ADMIN_PASSWORD`).
+- [ ] Add `bernoulli.live` as a tracked site in Umami; copy the generated `<script>` tag.
+- [ ] Insert the script tag in `web/index.html` before `</body>` and `just deploy`. The script is served from `analytics.bernoulli.live` (first-party, no third-party domain).
+- [ ] Load the live site in an incognito window; verify the pageview lands in the Umami dashboard within a minute.
+
+**Exit criteria**: `https://analytics.bernoulli.live` loads with a valid TLS cert and the Umami dashboard; it shows at least one real pageview from `www.bernoulli.live`; no cookie banner required.
+
+**Scope boundaries (don't scope-creep):**
+- *Is:* traffic counting + referrer + country + device for the landing page.
+- *Isn't:* session replay (that's Clarity + a banner — defer).
+- *Isn't:* CRM-linked lead tracking from the book-a-demo form (that's HubSpot + a banner — defer; the demo form already writes to a Google Sheet).
+
+**Future upgrades (parked, not in this milestone):**
+- Session replay via Microsoft Clarity (would require a GDPR banner — add only if the drop-off story becomes a real question).
+- Form-fill → CRM linkage via HubSpot free CRM (would require a GDPR banner — add once book-a-demo volume justifies it).
+- Postgres backup cron (`pg_dump` nightly to ssd2's existing backup target) — add as a `/ds-work-recurring` item once Umami is live, not as a task here.
+
+**Dependencies:**
+- **Blocks on:** nothing. Fully independent of the core product milestones.
+- **Does not block:** anything.
+
+---
+
 ## Notes
 
 - Milestones are sequential by dependency, not by calendar priority.
