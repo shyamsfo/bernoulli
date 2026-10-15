@@ -1,0 +1,39 @@
+{
+  "benchmark": "academic/tweeteval_emotion",
+  "repro": {
+    "benchmark": "academic/tweeteval_emotion",
+    "bernoulli_commit": "92e301ac2c0ab8121e3832ce1feeddff9f1f21a2",
+    "model_id": "unset",
+    "model_revision": "unset",
+    "hardware": "158-101-121-239",
+    "python": "3.13.16",
+    "source": "tweeteval_emotion"
+  },
+  "results": [
+    {
+      "name": "deberta",
+      "accuracy": 0.768,
+      "macro_f1": 0.6945182294711605,
+      "ece_10": 0.042662189900875114,
+      "ece_15": 0.03574110180139545,
+      "brier": 0.30560715597677746,
+      "nll": 0.5835396438509641,
+      "coverage": {
+        "0.95": 0.791578947368421,
+        "0.9": 0.8088888888888889,
+        "0.8": 0.8625,
+        "0.5": 0.94
+      },
+      "latency_ms": {
+        "p50_ms": 36.0,
+        "p95_ms": 37.0,
+        "mean_ms": 38.078
+      },
+      "stability_reorder": 1.0,
+      "stability_reword": 1.0,
+      "n_examples": 500,
+      "note": "",
+      "extras": null
+    }
+  ]
+}

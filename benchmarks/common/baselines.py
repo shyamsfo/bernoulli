@@ -210,11 +210,25 @@ class DeBERTaZeroshot:
         model_id: str = _DEFAULT_MODEL,
         device: int | str = -1,
         hypothesis_template: str = _DEFAULT_TEMPLATE,
+        batch_size: int = 32,
     ) -> DeBERTaZeroshot:
-        """Build with the default HF zero-shot pipeline on `device` (-1 for CPU, 0 for cuda:0)."""
+        """Build with the default HF zero-shot pipeline on `device` (-1 for CPU, 0 for cuda:0).
+
+        `batch_size` controls how many (text, hypothesis) pairs are run through
+        the model in parallel per forward pass. With `batch_size=1` (HF default),
+        a 77-way classification does 77 sequential forward passes per example —
+        on an A100 this leaves the GPU idle and pushes Banking77's wall-clock
+        from minutes into hours. 32 is a safe default that comfortably fits
+        in a 24 GB GPU alongside DeBERTa-v3-large (~2 GB weights + activations).
+        """
         from transformers import pipeline
 
-        clf = pipeline("zero-shot-classification", model=model_id, device=device)
+        clf = pipeline(
+            "zero-shot-classification",
+            model=model_id,
+            device=device,
+            batch_size=batch_size,
+        )
         return cls(cast(ZeroShotClassifier, clf), hypothesis_template=hypothesis_template)
 
     def predict(self, example: BenchmarkExample) -> Distribution:
