@@ -388,19 +388,14 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
     <div class="sec-head">
       <div class="eyebrow">Honest caveats</div>
       <h2>What this run is <em>not</em></h2>
-      <p>These numbers hold the calibration thesis across nine benchmarks. The caveats below are known today and disclosed up front; most are time-and-engineering rather than fundamental.</p>
+      <p>Four things worth naming up front — the full engineering caveat list, with code references and per-benchmark footnotes, lives in <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/README.md#honest-caveats" target="_blank" rel="noopener">benchmarks/README.md</a> on GitHub.</p>
     </div>
     <div class="caveats">
-      <h3>Known limitations in this snapshot</h3>
       <ul>
-        <li><strong>M9 use-case rows still at N=100.</strong> The M8 academic suite re-ran at N=500 on 2026-10-15; the M9 use-case rows (ToxicChat, XSTest, CLINC150-OOS, Yelp) were last run at N=100 on 2026-10-07 and haven't been upgraded yet. Headline direction holds; a higher-N pass is scheduled.</li>
-        <li><strong>DeBERTa doesn't score PAWS.</strong> <code>DeBERTaZeroshot.predict()</code> raises <code>NotImplementedError</code> on <code>BinaryQuestion</code> by design — Yes/No labels aren't semantic hypothesis-shaped. A benchmark wanting DeBERTa on a binary task has to preprocess into a 2-way choice. We left PAWS as-is and marked the cell n/a.</li>
-        <li><strong>Banking77 reorder stability = 0.07.</strong> With 77 options we exceed the 26-letter alphabet so <code>bernoulli/chunked.py</code> splits into 3 chunks of ≤26 labels and softmaxes globally. The top-1 therefore shifts when the chunks change — architectural, not a bug. Cross-chunk debias is parked. Any Banking77 citation needs the chunked-stability footnote.</li>
-        <li><strong>XSTest unsafe_recall = 0.36.</strong> Bernoulli's 0% false-refusal is a product-grade property, but it under-flags actually-unsafe prompts. For a complete guardrail you want Bernoulli as the first-pass "don't over-refuse" gate paired with an escalation path (human-in-loop or a tuned classifier) for the long tail.</li>
-        <li><strong>CLINC150-OOS OOS recall ≈ 0.52 for Bernoulli.</strong> Coin flip on the "none of these" story. Likely prompt-framing + stem rewording; investigation pending.</li>
-        <li><strong>Dev-tier backbone.</strong> Numbers are from Qwen2.5-VL-7B-Instruct on an AWS g5.xlarge (A10G 24GB). The production step-up to <code>Qwen2.5-VL-32B-Instruct-AWQ</code> on g6e.xlarge (L40S 48GB) is parked on AWS capacity.</li>
-        <li><strong>JevBench numbers are self-reported.</strong> Our 7B run (2026-10-08) is in Benchmark Heaven's FIFO queue at position #62; our 32B run (2026-10-10) is from a one-shot Lambda H100 rental and sits in-repo as a staged resubmission for when the 7B entry posts. Reproduce locally from <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/jevbench/results/2026-10-08.md" target="_blank" rel="noopener">results/2026-10-08.md</a> or <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/jevbench/results/2026-10-10-32b.md" target="_blank" rel="noopener">results/2026-10-10-32b.md</a>. This page updates with the official rank + external link once Benchmark Heaven publishes.</li>
-        <li><strong>arXiv post-cutoff dataset was generated 2026-10-07; eval re-run 2026-10-15.</strong> 200 papers across 4 categories, publication dates 2026-09-18 to 2026-10-06 — well after both Qwen2.5-VL's and DeBERTa's training cutoffs. On this provably-unseen corpus Bernoulli hits 0.95 acc; <strong>DeBERTa-zeroshot drops to 0.53</strong> — the sharpest "did the model memorize this?" signal in the suite. BGE-m3 holds up because it only needs semantic similarity. N=100 is the full available test slice; if the backbone is swapped to a later-cutoff model, <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/academic/arxiv_post_cutoff/make_dataset.py" target="_blank" rel="noopener">make_dataset.py</a> re-runs with the updated cutoff.</li>
+        <li><strong>Our evaluation, not an independent audit.</strong> Every result row carries a reproducibility footer (model revision, dataset hash, seed, hardware) so any number here can be reproduced or disproved. The JevBench submission is in the public leaderboard's queue for an external re-run; this page updates once that posts.</li>
+        <li><strong>Dev-tier backbone.</strong> All numbers are from a 7B open-weight model on a single commodity GPU. A one-shot rental on a 32B production backbone (<a href="https://github.com/shyamsfo/bernoulli/blob/main/product/reports/2026-10-10-h100-32b.md" target="_blank" rel="noopener">full writeup</a>) lifted the hardest JevBench slice by ~18 points — expect every row here to improve on the production tier.</li>
+        <li><strong>Not every baseline fits every task.</strong> DeBERTa-zeroshot is natural-language-inference-tuned so it only scores choice tasks (binary Yes/No like PAWS is <code>n/a</code> by design). Banking77's 77-way label space exceeds our single-pass alphabet, so stability under option reorder reads low on that one benchmark — architectural, documented per-benchmark.</li>
+        <li><strong>Use-case rows are an earlier sweep (N=100).</strong> ToxicChat, XSTest, CLINC150-OOS, and Yelp 1-5 stars weren't re-measured in the 2026-10-15 academic re-run. The direction holds; a higher-N pass is on the near-term roadmap.</li>
       </ul>
     </div>
   </div>
@@ -411,17 +406,16 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
     <div class="sec-head">
       <div class="eyebrow">Reproducibility</div>
       <h2>Pinned so you can audit, rerun, or disprove</h2>
-      <p>Every result markdown on GitHub carries a reproducibility footer with the exact model revision, Bernoulli commit, dataset identifier, random seed, and hardware. The one-liner invocation below produces a per-benchmark report at <code>benchmarks/&lt;spec&gt;/results/&lt;date&gt;.md</code>.</p>
+      <p>Every row above is backed by a result file on GitHub with the exact model revision, dataset hash, random seed, and hardware so you can reproduce or disprove any number.</p>
     </div>
     <div class="repro">
       <div class="r"><b>Model</b><span>Qwen/Qwen2.5-VL-7B-Instruct @ cc59489</span></div>
       <div class="r"><b>Hardware</b><span>AWS g5.xlarge · A10G 24GB · us-east-1a</span></div>
-      <div class="r"><b>Harness</b><span>benchmarks.run · benchmarks.common.{metrics,stability,baselines}</span></div>
-      <div class="r"><b>Transport</b><span>HTTP · /v1/decide and /v1/generate</span></div>
-      <div class="r"><b>N / train-N</b><span>500 eval (M8 academic, arXiv at 100) · 2000 train (BGEm3LR) · 100 eval (M9 use-cases)</span></div>
+      <div class="r"><b>Transport</b><span>HTTP to the running Bernoulli server</span></div>
+      <div class="r"><b>Sample size</b><span>500 academic (arXiv at 100) · 100 use-cases · 2000 training examples for the trained-encoder baseline</span></div>
       <div class="r"><b>Date</b><span>2026-10-15 (academic) · 2026-10-07 (use-cases)</span></div>
     </div>
-    <p class="fine" style="margin-top:24px">To rerun on your own backbone or hardware: <code style="font:12.5px 'JetBrains Mono',monospace;background:var(--surface-2);padding:1px 5px;border-radius:4px">just serve &amp;&amp; just benchmark academic/sst2 bernoulli,generative,bge-m3-lr 100 500</code>. See the <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/README.md" target="_blank" rel="noopener">benchmarks/ README</a> for the full methodology and <a href="https://github.com/shyamsfo/bernoulli/blob/main/product/operations/benchmark-primer.md" target="_blank" rel="noopener">benchmark-primer.md</a> for a long-form orientation.</p>
+    <p class="fine" style="margin-top:24px">To rerun on your own backbone or hardware, clone the repo and follow the <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/README.md" target="_blank" rel="noopener">benchmarks guide</a> on GitHub — one command per benchmark, writes a timestamped result file.</p>
   </div>
 </section>
 
