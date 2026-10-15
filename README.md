@@ -16,7 +16,7 @@ Jev takes unstructured state (text or JSON) plus typed questions and returns cal
 - External benchmark comparisons (M8+): [`benchmarks/`](benchmarks/)
 - Session reports: [`product/reports/`](product/reports/)
 
-**Status.** M1–M3 complete. M4 (text-only production serving) is essentially done: vLLM backend, FastAPI server, Docker image, request batching, load test — only the step-up to the production backbone (M4e) is parked, pending `g6e.xlarge` capacity in `us-east-1`. Next up: M5 hardening (auth, metrics, offline mode, CI regression gate, v1.0 tag).
+**Status.** M1–M4 complete; M8 (benchmarks: foundation + academic suite) closed 2026-10-15 with 6 academic benchmarks × 4 baselines at N=500 — see [`benchmarks/README.md`](benchmarks/README.md) and the live summary at [bernoulli.live/benchmarks](https://www.bernoulli.live/benchmarks.html). M9 (use-case coverage) closed except for WildGuardTest (gated on HF auth). M10 (JevBench adapter + leaderboard submission) submitted 2026-10-10 — Benchmark Heaven FIFO queue, position #62. In-house numbers for the full 231-task public cohort: **7B weighted 0.706** ([results](benchmarks/jevbench/results/2026-10-08.md)); **32B weighted 0.801** on a one-shot Lambda H100 rental (+9.5 pp overall, +18 pp on the hard tier) — [full report](product/reports/2026-10-10-h100-32b.md). This page updates with the external rank once the leaderboard posts. Next up: M5 hardening (auth, metrics, offline mode, CI regression gate, v1.0 tag).
 
 Numbers so far (all zero-shot on Qwen2.5-VL-7B):
 
