@@ -512,21 +512,21 @@ response.decisions.intent.distribution.tracking === 0.24</pre>
         <h3>Route tickets by intent, urgency, and anger.</h3>
         <p>Classify what the customer wants, how time-critical it is, how upset they sound, and whether it needs a senior agent — all in one call against the email thread.</p>
         <div class="uc-tags"><span class="tag">choice</span><span class="tag">rating</span><span class="tag">rating</span><span class="tag">binary</span></div>
-        <div class="uc-proof"><b>Backed by</b> <a href="/benchmarks.html#usecase">CLINC150-OOS</a> — Bernoulli NLL <b>18× better</b> than text-and-parse. "None of these" probability discriminates in-scope vs out-of-scope.</div>
+        <div class="uc-proof"><b>Backed by</b> <a href="/benchmarks.html#usecase">CLINC150-OOS</a> — Bernoulli NLL <b>19× better</b> than text-and-parse. "None of these" probability discriminates in-scope vs out-of-scope.</div>
       </article>
       <article class="uc">
         <div class="uc-tag">LLM guardrails</div>
         <h3>Judge your model's output before shipping it.</h3>
         <p>Ask whether a response is safe, on-topic, factually risky, or over-refusing. Threshold the probability to auto-ship, send to human review, or block.</p>
         <div class="uc-tags"><span class="tag">binary</span><span class="tag">binary</span><span class="tag">rating</span><span class="tag">choice</span></div>
-        <div class="uc-proof"><b>Backed by</b> <a href="/benchmarks.html#usecase">XSTest</a> + <a href="/benchmarks.html#usecase">ToxicChat</a> — Bernoulli <b>0.00 false-refusal rate</b> on XSTest; NLL 11× better than text-and-parse across both.</div>
+        <div class="uc-proof"><b>Backed by</b> <a href="/benchmarks.html#usecase">XSTest</a> + <a href="/benchmarks.html#usecase">ToxicChat</a> — Bernoulli <b>&lt;1% false-refusal rate</b> on XSTest (4 of 500 prompts); NLL 10–15× better than text-and-parse across both.</div>
       </article>
       <article class="uc">
         <div class="uc-tag">Content moderation</div>
         <h3>Keep the review queue focused on the gray area.</h3>
         <p>Classify category and severity. Auto-ship clear-safe content, auto-reject clear violations, send only the uncertain cases to a human reviewer.</p>
         <div class="uc-tags"><span class="tag">choice</span><span class="tag">rating</span><span class="tag">binary</span><span class="tag">binary</span></div>
-        <div class="uc-proof"><b>Backed by</b> <a href="/benchmarks.html#usecase">Yelp 1-5 stars</a> — Bernoulli <b>MAE 0.44</b>, lowest of any baseline (Generative 0.50, BGE+LR 0.68). Uses the full predicted distribution, not just argmax.</div>
+        <div class="uc-proof"><b>Backed by</b> <a href="/benchmarks.html#usecase">Yelp 1-5 stars</a> — Bernoulli <b>MAE 0.42</b>, lowest of any baseline (Generative 0.46, BGE+LR 0.53). Uses the full predicted distribution, not just argmax.</div>
       </article>
     </div>
     <p class="fine">Full write-ups — realistic state, request shapes, routing pseudocode — in the <a href="https://github.com/shyamsfo/bernoulli/blob/main/USECASES.md" target="_blank" rel="noopener">use cases guide</a>, including code review severity.</p>
@@ -605,17 +605,17 @@ response.decisions.intent.distribution.tracking === 0.24</pre>
             <tr><td>SST-2 · binary sentiment</td><td class="n">0.91</td><td class="n">0.92</td><td class="n win">8.8×</td></tr>
             <tr><td>AG News · 4-way topic</td><td class="n win">0.83</td><td class="n">0.77</td><td class="n win">7.7×</td></tr>
             <tr><td>PAWS · adversarial paraphrase</td><td class="n win">0.85</td><td class="n">0.84</td><td class="n win">12.0×</td></tr>
-            <tr><td>CLINC150-OOS · in-scope</td><td class="n win">0.46</td><td class="n">0.37</td><td class="n win">18×</td></tr>
-            <tr><td>Yelp · 1-5 star rating</td><td class="n win">0.58</td><td class="n">0.55</td><td class="n win">14×</td></tr>
+            <tr><td>CLINC150-OOS · in-scope</td><td class="n win">0.45</td><td class="n">0.29</td><td class="n win">19×</td></tr>
+            <tr><td>Yelp · 1-5 star rating</td><td class="n win">0.62</td><td class="n">0.58</td><td class="n win">13×</td></tr>
             <tr><td>arXiv post-cutoff · papers the model <em>can't</em> have seen</td><td class="n win">0.95</td><td class="n">0.92</td><td class="n win">10.7×</td></tr>
           </tbody>
         </table>
-        <p class="fine">Academic rows at N=500 · 2026-10-15. Use-case rows at N=100 · 2026-10-07. Qwen2.5-VL-7B-Instruct throughout. arXiv row is the anti-contamination test: papers published Sept-Oct 2026, strictly after any plausible training cutoff — <strong>DeBERTa-v3-zeroshot drops to 0.53 on the same examples</strong>. See <a href="/benchmarks.html">benchmarks.html</a> for all 9 benchmarks across every metric, the DeBERTa + BGE-m3+LR columns, methodology, and known caveats. Raw per-benchmark result markdowns live at <a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks" target="_blank" rel="noopener">github.com/shyamsfo/bernoulli/benchmarks</a>.</p>
+        <p class="fine">All rows at N=500 · Qwen2.5-VL-7B-Instruct · academic 2026-10-15, use-case 2026-10-16. arXiv row is the anti-contamination test: papers published Sept-Oct 2026, strictly after any plausible training cutoff — <strong>DeBERTa-v3-zeroshot drops to 0.53 on the same examples</strong>. See <a href="/benchmarks.html">benchmarks.html</a> for all 9 benchmarks across every metric, the DeBERTa + BGE-m3+LR columns, methodology, and known caveats. Raw per-benchmark result markdowns live at <a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks" target="_blank" rel="noopener">github.com/shyamsfo/bernoulli/benchmarks</a>.</p>
       </div>
       <div class="callouts">
         <div class="callout"><div class="big">0.95<small> / 0.53</small></div><p>Bernoulli vs DeBERTa-v3-zeroshot on arXiv papers published strictly <em>after</em> both models' training cutoffs. The strongest "did the model memorize this?" test in the suite.</p></div>
         <div class="callout"><div class="big">12<small>×</small></div><p>better NLL than the same-model generative baseline on PAWS, at higher accuracy (0.85 vs 0.84). Adversarial paraphrase binary — the hardest calibration test in the suite.</p></div>
-        <div class="callout"><div class="big">0.44<small></small></div><p>Mean absolute error on Yelp 1-5 star rating — lowest of any baseline. Uses the full distribution, not just argmax. Where "typed decisions, not single tokens" earns its keep.</p></div>
+        <div class="callout"><div class="big">0.42<small></small></div><p>Mean absolute error on Yelp 1-5 star rating — lowest of any baseline (Generative 0.46, BGE+LR 0.53). Uses the full distribution, not just argmax. Where "typed decisions, not single tokens" earns its keep.</p></div>
       </div>
     </div>
     <div style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap">

@@ -179,7 +179,7 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
       Live demo on prepaid HF credits with the exact same backbone and revision as these numbers. Sleeps when idle, ~45 s to wake on first click.
     </span>
   </div>
-  <div class="asof">In-house academic re-run · N=500 · 2026-10-15 · Lambda A100 (DeBERTa column) + g5.xlarge A10G 24GB · use-case rows still at N=100 · 2026-10-07 · JevBench 7B · 2026-10-08 · JevBench 32B · 2026-10-10 · Lambda H100 80GB</div>
+  <div class="asof">In-house re-run · N=500 · academic 2026-10-15 (+ Lambda A100 for DeBERTa column) · use-case 2026-10-16 · g5.xlarge A10G 24GB · JevBench 7B · 2026-10-08 · JevBench 32B · 2026-10-10 · Lambda H100 80GB</div>
 </header>
 
 <section class="headline" style="padding-top:48px">
@@ -196,9 +196,9 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
         <p>Adversarial paraphrase binary. Bernoulli 0.85 vs 0.84 accuracy; NLL 0.38 vs 4.53.</p>
       </div>
       <div class="hwin">
-        <div class="big">0.44<small></small></div>
+        <div class="big">0.42<small></small></div>
         <div class="lab">MAE · Yelp 1-5</div>
-        <p>Lowest rating error of any baseline (Generative 0.50, BGE+LR 0.68). Full distribution, not just argmax.</p>
+        <p>Lowest rating error of any baseline (Generative 0.46, BGE+LR 0.53). Full distribution, not just argmax.</p>
       </div>
       <div class="hwin">
         <div class="big">7<small>-18×</small></div>
@@ -285,24 +285,24 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
           </tr>
         </thead>
         <tbody>
-          <tr><td rowspan="3"><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/guardrails/toxicchat" target="_blank" rel="noopener">ToxicChat · toxicity binary</a></td><td class="n">Bernoulli</td><td class="n">0.55</td><td class="n">0.42</td><td class="n">0.341</td><td class="n">0.667</td><td class="n win">1.07</td><td class="n">0.94</td></tr>
-          <tr><td class="n">Generative</td><td class="n">0.56</td><td class="n">0.43</td><td class="n">0.440</td><td class="n">0.880</td><td class="n">12.2</td><td class="n">0.95</td></tr>
-          <tr><td class="n">BGE-m3 + LR</td><td class="n win">0.67</td><td class="n win">0.66</td><td class="n win">0.062</td><td class="n win">0.383</td><td class="n">0.56</td><td class="n">1.00</td></tr>
+          <tr><td rowspan="3"><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/guardrails/toxicchat" target="_blank" rel="noopener">ToxicChat · toxicity binary</a></td><td class="n">Bernoulli</td><td class="n">0.690</td><td class="n">0.550</td><td class="n">0.221</td><td class="n">0.487</td><td class="n win">0.800</td><td class="n">0.94</td></tr>
+          <tr><td class="n">Generative</td><td class="n">0.694</td><td class="n">0.553</td><td class="n">0.306</td><td class="n">0.612</td><td class="n">8.46</td><td class="n">0.94</td></tr>
+          <tr><td class="n">BGE-m3 + LR</td><td class="n win">0.782</td><td class="n win">0.720</td><td class="n win">0.039</td><td class="n win">0.299</td><td class="n">0.456</td><td class="n">1.00</td></tr>
 
           <tr class="sep"><td colspan="8">XSTest · over-refusal binary</td></tr>
-          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/guardrails/xstest" target="_blank" rel="noopener">XSTest · over-refusal</a></td><td class="n">Bernoulli</td><td class="n">0.68</td><td class="n">0.64</td><td class="n win">0.111</td><td class="n win">0.377</td><td class="n win">0.53</td><td class="n">0.64</td></tr>
-          <tr><td></td><td class="n">Generative</td><td class="n win">0.79</td><td class="n win">0.79</td><td class="n">0.210</td><td class="n">0.420</td><td class="n">5.80</td><td class="n">0.62</td></tr>
+          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/guardrails/xstest" target="_blank" rel="noopener">XSTest · over-refusal</a></td><td class="n">Bernoulli</td><td class="n win">0.676</td><td class="n">0.603</td><td class="n win">0.131</td><td class="n win">0.438</td><td class="n win">0.645</td><td class="n win">0.73</td></tr>
+          <tr><td></td><td class="n">Generative</td><td class="n">0.660</td><td class="n win">0.642</td><td class="n">0.340</td><td class="n">0.680</td><td class="n">9.39</td><td class="n">0.66</td></tr>
           <tr><td></td><td class="n">BGE-m3 + LR</td><td colspan="6" class="na" style="font-size:13px">— no training split in XSTest (dataset is probe-only, 450 prompts); BGE+LR auto-skipped.</td></tr>
 
-          <tr class="sep"><td colspan="8">CLINC150-OOS · in-scope binary (shuffle-sampled)</td></tr>
-          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/triage/clinc150_oos" target="_blank" rel="noopener">CLINC150-OOS · in-scope</a></td><td class="n">Bernoulli</td><td class="n">0.46</td><td class="n">0.43</td><td class="n">0.267</td><td class="n">0.685</td><td class="n win">0.95</td><td class="n">0.62</td></tr>
-          <tr><td></td><td class="n">Generative</td><td class="n">0.37</td><td class="n">0.37</td><td class="n">0.630</td><td class="n">1.260</td><td class="n">17.4</td><td class="n">0.60</td></tr>
-          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n win">0.77</td><td class="n">0.44</td><td class="n win">0.206</td><td class="n win">0.436</td><td class="n">0.85</td><td class="n">1.00</td></tr>
+          <tr class="sep"><td colspan="8">CLINC150-OOS · in-scope accuracy with OOS detection (151-way chunked)</td></tr>
+          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/triage/clinc150_oos" target="_blank" rel="noopener">CLINC150-OOS · in-scope</a></td><td class="n">Bernoulli</td><td class="n">0.448</td><td class="n">0.418</td><td class="n">0.280</td><td class="n">0.728</td><td class="n win">1.028</td><td class="n">0.62</td></tr>
+          <tr><td></td><td class="n">Generative</td><td class="n">0.292</td><td class="n">0.292</td><td class="n">0.708</td><td class="n">1.416</td><td class="n">19.56</td><td class="n">0.64</td></tr>
+          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n win">0.804</td><td class="n win">0.446</td><td class="n win">0.172</td><td class="n win">0.360</td><td class="n">0.686</td><td class="n">1.00</td></tr>
 
           <tr class="sep"><td colspan="8">Yelp 1-5 stars · rating (5-way ordinal)</td></tr>
-          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/ratings/yelp_stars" target="_blank" rel="noopener">Yelp · 1-5 star rating</a></td><td class="n">Bernoulli</td><td class="n win">0.58</td><td class="n win">0.55</td><td class="n">0.196</td><td class="n win">0.544</td><td class="n win">0.91</td><td class="n">0.77</td></tr>
-          <tr><td></td><td class="n">Generative</td><td class="n">0.55</td><td class="n">0.51</td><td class="n">0.450</td><td class="n">0.900</td><td class="n">12.4</td><td class="n">0.64</td></tr>
-          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n">0.48</td><td class="n">0.45</td><td class="n win">0.056</td><td class="n">0.618</td><td class="n">1.14</td><td class="n">1.00</td></tr>
+          <tr><td><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/ratings/yelp_stars" target="_blank" rel="noopener">Yelp · 1-5 star rating</a></td><td class="n">Bernoulli</td><td class="n win">0.624</td><td class="n win">0.619</td><td class="n">0.133</td><td class="n win">0.516</td><td class="n win">0.890</td><td class="n">0.80</td></tr>
+          <tr><td></td><td class="n">Generative</td><td class="n">0.576</td><td class="n">0.566</td><td class="n">0.424</td><td class="n">0.848</td><td class="n">11.72</td><td class="n">0.69</td></tr>
+          <tr><td></td><td class="n">BGE-m3 + LR</td><td class="n">0.572</td><td class="n">0.573</td><td class="n win">0.082</td><td class="n">0.547</td><td class="n">0.972</td><td class="n">1.00</td></tr>
 
           <tr class="sep"><td colspan="8">WildGuardTest · response-harm binary (pending auth)</td></tr>
           <tr><td colspan="8" class="na" style="font-size:13px"><a href="https://github.com/shyamsfo/bernoulli/tree/main/benchmarks/guardrails/wildguard_test" target="_blank" rel="noopener">WildGuardTest loader</a> is shipped. The dataset <code style="font:12.5px 'JetBrains Mono',monospace;background:var(--surface-2);padding:1px 5px;border-radius:4px">allenai/wildguardmix</code> is gated on Hugging Face; the first run will land once the license is accepted and <code style="font:12.5px 'JetBrains Mono',monospace;background:var(--surface-2);padding:1px 5px;border-radius:4px">HF_TOKEN</code> is set on the dev box.</td></tr>
@@ -395,7 +395,7 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
         <li><strong>Our evaluation, not an independent audit.</strong> Every result row carries a reproducibility footer (model revision, dataset hash, seed, hardware) so any number here can be reproduced or disproved. The JevBench submission is in the public leaderboard's queue for an external re-run; this page updates once that posts.</li>
         <li><strong>Dev-tier backbone.</strong> All numbers are from a 7B open-weight model on a single commodity GPU. A one-shot rental on a 32B production backbone (<a href="https://github.com/shyamsfo/bernoulli/blob/main/product/reports/2026-10-10-h100-32b.md" target="_blank" rel="noopener">full writeup</a>) lifted the hardest JevBench slice by ~18 points — expect every row here to improve on the production tier.</li>
         <li><strong>Not every baseline fits every task.</strong> DeBERTa-zeroshot is natural-language-inference-tuned so it only scores choice tasks (binary Yes/No like PAWS is <code>n/a</code> by design). Banking77's 77-way label space exceeds our single-pass alphabet, so stability under option reorder reads low on that one benchmark — architectural, documented per-benchmark.</li>
-        <li><strong>Use-case rows are an earlier sweep (N=100).</strong> ToxicChat, XSTest, CLINC150-OOS, and Yelp 1-5 stars weren't re-measured in the 2026-10-15 academic re-run. The direction holds; a higher-N pass is on the near-term roadmap.</li>
+        <li><strong>CLINC150-OOS <code>oos_auroc ≈ 0.48</code> for us.</strong> On the "none of these" probability story, we're at coin flip. BGE-m3+LR hits 0.78 — not by predicting OOS correctly (it never does, oos_recall 0) but because its softmax over the 150 in-scope classes carries enough signal for a well-ranked threshold. Likely prompt-framing + stem rewording on our side; investigation pending.</li>
       </ul>
     </div>
   </div>
@@ -412,8 +412,8 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
       <div class="r"><b>Model</b><span>Qwen/Qwen2.5-VL-7B-Instruct @ cc59489</span></div>
       <div class="r"><b>Hardware</b><span>AWS g5.xlarge · A10G 24GB · us-east-1a</span></div>
       <div class="r"><b>Transport</b><span>HTTP to the running Bernoulli server</span></div>
-      <div class="r"><b>Sample size</b><span>500 academic (arXiv at 100) · 100 use-cases · 2000 training examples for the trained-encoder baseline</span></div>
-      <div class="r"><b>Date</b><span>2026-10-15 (academic) · 2026-10-07 (use-cases)</span></div>
+      <div class="r"><b>Sample size</b><span>500 eval per benchmark (arXiv at 100 — full available slice) · 2000 training examples for the trained-encoder baseline</span></div>
+      <div class="r"><b>Date</b><span>2026-10-15 (academic) · 2026-10-16 (use-cases)</span></div>
     </div>
     <p class="fine" style="margin-top:24px">To rerun on your own backbone or hardware, clone the repo and follow the <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/README.md" target="_blank" rel="noopener">benchmarks guide</a> on GitHub — one command per benchmark, writes a timestamped result file.</p>
   </div>

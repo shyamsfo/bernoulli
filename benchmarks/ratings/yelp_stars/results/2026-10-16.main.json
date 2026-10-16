@@ -1,0 +1,98 @@
+{
+  "benchmark": "ratings/yelp_stars",
+  "repro": {
+    "benchmark": "ratings/yelp_stars",
+    "bernoulli_commit": "0f3083ade7d954a2d58001198c07fa0ce201859e",
+    "model_id": "unset",
+    "model_revision": "unset",
+    "hardware": "ip-172-31-84-107",
+    "python": "3.13.16",
+    "source": "yelp_stars"
+  },
+  "results": [
+    {
+      "name": "bernoulli",
+      "accuracy": 0.624,
+      "macro_f1": 0.6191997817872946,
+      "ece_10": 0.13284900254011156,
+      "ece_15": 0.13552963346242908,
+      "brier": 0.515648984787286,
+      "nll": 0.890288400653513,
+      "coverage": {
+        "0.95": 0.631578947368421,
+        "0.9": 0.6444444444444445,
+        "0.8": 0.6675,
+        "0.5": 0.708
+      },
+      "latency_ms": {
+        "p50_ms": 156.5,
+        "p95_ms": 342.2499999999998,
+        "mean_ms": 182.902
+      },
+      "stability_reorder": null,
+      "stability_reword": 0.796,
+      "n_examples": 500,
+      "note": "",
+      "extras": {
+        "mae": 0.4187266498587269,
+        "off_by_one_accuracy": 0.972
+      }
+    },
+    {
+      "name": "generative",
+      "accuracy": 0.576,
+      "macro_f1": 0.5654937051308817,
+      "ece_10": 0.42400000000000004,
+      "ece_15": 0.42400000000000004,
+      "brier": 0.848,
+      "nll": 11.715552953153704,
+      "coverage": {
+        "0.95": 0.5789473684210527,
+        "0.9": 0.5777777777777777,
+        "0.8": 0.5675,
+        "0.5": 0.552
+      },
+      "latency_ms": {
+        "p50_ms": 111.0,
+        "p95_ms": 205.14999999999986,
+        "mean_ms": 129.978
+      },
+      "stability_reorder": null,
+      "stability_reword": 0.694,
+      "n_examples": 500,
+      "note": "",
+      "extras": {
+        "mae": 0.464,
+        "off_by_one_accuracy": 0.964
+      }
+    },
+    {
+      "name": "bge-m3-lr",
+      "accuracy": 0.572,
+      "macro_f1": 0.5728070683360501,
+      "ece_10": 0.08176617249846459,
+      "ece_15": 0.06719276747107504,
+      "brier": 0.5467586787037659,
+      "nll": 0.972118181538486,
+      "coverage": {
+        "0.95": 0.5831578947368421,
+        "0.9": 0.5888888888888889,
+        "0.8": 0.615,
+        "0.5": 0.624
+      },
+      "latency_ms": {
+        "p50_ms": 12.0,
+        "p95_ms": 29.0,
+        "mean_ms": 15.488
+      },
+      "stability_reorder": null,
+      "stability_reword": 1.0,
+      "n_examples": 500,
+      "note": "trained on 2000 examples",
+      "extras": {
+        "mae": 0.5277516833486734,
+        "off_by_one_accuracy": 0.962
+      }
+    }
+  ]
+}

@@ -85,11 +85,12 @@ Other things the N=500 numbers settle:
 | Benchmark | Bernoulli | Generative | BGE-m3 + LR | Bernoulli NLL | Generative NLL | NLL ratio | Bernoulli ECE | Headline extra |
 |---|---|---|---|---|---|---|---|---|
 | [WildGuardTest](guardrails/wildguard_test/) | — | — | — | — | — | — | — | pending HF auth |
-| [ToxicChat](guardrails/toxicchat/) | 0.55 | 0.56 | **0.67** | **1.07** | 12.2 | 11× | 0.341 | — |
-| [XSTest](guardrails/xstest/) | 0.68 | **0.79** | n/a | **0.53** | 5.80 | 11× | 0.111 | Bernoulli **false_refusal_rate = 0.00** |
-| [CLINC150-OOS](triage/clinc150_oos/) | 0.46 | 0.37 | **0.77** | **0.95** | 17.4 | **18×** | 0.267 | BGE+LR oos_auroc 0.75 (best) |
-| [Yelp 1-5 stars](ratings/yelp_stars/) | **0.58** | 0.55 | 0.48 | **0.91** | 12.4 | 14× | 0.196 | Bernoulli **MAE 0.44** (lowest) |
+| [ToxicChat](guardrails/toxicchat/) | 0.69 | 0.69 | **0.78** | **0.800** | 8.46 | 10.6× | 0.221 | — |
+| [XSTest](guardrails/xstest/) | **0.68** | 0.66 | n/a | **0.645** | 9.39 | 14.6× | 0.131 | Bernoulli **false_refusal_rate = 0.008** (~0.8%) |
+| [CLINC150-OOS](triage/clinc150_oos/) | 0.45 | 0.29 | **0.80** | **1.028** | 19.56 | **19×** | 0.280 | BGE+LR oos_auroc 0.78 (best); Bernoulli oos_auroc 0.48 (coin flip) |
+| [Yelp 1-5 stars](ratings/yelp_stars/) | **0.62** | 0.58 | 0.57 | **0.890** | 11.72 | 13.2× | 0.133 | Bernoulli **MAE 0.42** (lowest; Generative 0.46, BGE+LR 0.53) |
 
+- Last run: **2026-10-16**, N=500 eval per benchmark. BGE+LR trained on 2000 examples. Previous 2026-10-07 N=100 numbers superseded.
 - WildGuardTest: dataset `allenai/wildguardmix` is gated on HF. Needs one-time license acceptance + `HF_TOKEN` on the dev box. Pending.
 - Per-benchmark extras (false-refusal rate, OOS AUROC, MAE / off-by-one) are reported in each benchmark's full `results/<date>.md`.
 
@@ -114,12 +115,11 @@ Measured over HTTP against the running server; see each benchmark's `results/lat
 
 What this snapshot is **not**:
 
-- **M9 use-case rows still at N=100.** The M8 academic suite re-ran at N=500 on 2026-10-15; the M9 use-case suite was last run at N=100 on 2026-10-07 and hasn't been upgraded yet. ToxicChat/XSTest/CLINC150/Yelp numbers below are the older snapshot.
 - **DeBERTa doesn't score PAWS.** `DeBERTaZeroshot.predict()` raises `NotImplementedError` on `BinaryQuestion` by design — Yes/No labels aren't semantic hypothesis-shaped. A benchmark wanting DeBERTa on a binary task has to preprocess into a 2-way choice. We left PAWS as-is.
 - **Banking77 reorder stability = 0.07 ⚠️.** With 77 options we exceed the 26-letter alphabet, so `bernoulli/chunked.py` splits into 3 chunks of ≤26 labels and softmaxes globally. The top-1 therefore shifts when the chunks change — architectural, not a bug. Cross-chunk debias is parked. Any Banking77 citation needs the chunked-stability footnote.
 - **arXiv post-cutoff at N=100.** The test split is small — 200 papers across cs.CL / cs.CV / math.PR / econ.EM, publication dates 2026-09-18 to 2026-10-06 (all strictly after `BACKBONE_CUTOFF = 2025-01-01`, well after any plausible Qwen2.5-VL cutoff). N=100 is the full available test slice; expanding it means scraping more arXiv.
-- **XSTest Bernoulli `unsafe_recall = 0.36`.** The 0% false-refusal is a product-grade property, but it under-flags actually-unsafe prompts. For a complete guardrail, Bernoulli is the first-pass "don't over-refuse" gate paired with an escalation path for the long tail.
-- **CLINC150-OOS Bernoulli `oos_recall ≈ 0.52`.** Coin flip on the "none of these" story. Likely prompt-framing + stem rewording; investigation pending.
+- **XSTest Bernoulli `unsafe_recall = 0.28`.** The ~0.8% false-refusal rate is a product-grade property, but it under-flags actually-unsafe prompts. For a complete guardrail, Bernoulli is the first-pass "don't over-refuse" gate paired with an escalation path for the long tail.
+- **CLINC150-OOS Bernoulli `oos_auroc ≈ 0.48`.** Coin flip on the "none of these" story — BGE-m3+LR at 0.78 dominates (it never predicts OOS but the softmax over 150 in-scope classes carries enough signal). Likely prompt-framing + stem rewording; investigation pending.
 - **Dev-tier backbone.** All numbers are from Qwen2.5-VL-7B-Instruct on an AWS g5.xlarge (A10G 24GB). The production step-up to `Qwen2.5-VL-32B-Instruct-AWQ` on g6e.xlarge (L40S 48GB) is parked on AWS capacity; one-shot H100 run on the 32B base model is in [`product/reports/2026-10-10-h100-32b.md`](../product/reports/2026-10-10-h100-32b.md).
 - **WildGuardTest** absent from the headline rows pending HF auth.
 
