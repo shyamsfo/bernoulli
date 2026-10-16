@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bernoulli — When to use (and when not to)</title>
+<meta name="description" content="Honest buyer-decision framework for Bernoulli: when it's the right tool, when to pick an alternative instead, with benchmark backing.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f3ee; --surface:#ffffff; --surface-2:#ece9e1;
+  --ink:#15171c; --ink-2:#4a4d55; --ink-3:#7c7f87;
+  --line:#dcd8ce; --accent:#2340d0; --accent-soft:#e3e8fb;
+  --good:#1f7a4d; --warn:#a15c00;
+  --code-bg:#15171c; --code-ink:#e6e4de; --code-dim:#8a8d96;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1014; --surface:#161920; --surface-2:#1d2129;
+    --ink:#ecebe6; --ink-2:#b3b5bb; --ink-3:#7e818a;
+    --line:#2a2e37; --accent:#8098ff; --accent-soft:#1c2340;
+    --good:#5fcf95; --warn:#e3a54f;
+    --code-bg:#0a0c0f; --code-ink:#e6e4de;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1014; --surface:#161920; --surface-2:#1d2129;
+  --ink:#ecebe6; --ink-2:#b3b5bb; --ink-3:#7e818a;
+  --line:#2a2e37; --accent:#8098ff; --accent-soft:#1c2340;
+  --good:#5fcf95; --warn:#e3a54f;
+  --code-bg:#0a0c0f; --code-ink:#e6e4de;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.serif{font-family:"Instrument Serif",Georgia,serif;font-weight:400}
+.eyebrow{font:500 12px/1 "JetBrains Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+
+/* nav (matches index.html + benchmarks.html) */
+nav{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font:400 24px/1 "Instrument Serif",serif}
+.brand-mark{width:22px;height:22px;border-radius:50%;background:conic-gradient(var(--accent) 0 72%,var(--line) 72% 100%)}
+.nav-links{display:flex;gap:28px;align-items:center;font-size:14px;color:var(--ink-2)}
+.nav-links a{text-decoration:none}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a.current{color:var(--ink);font-weight:500}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:8px;font:500 14px/1 Inter,sans-serif;text-decoration:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);transition:transform .15s,border-color .15s}
+.btn:hover{border-color:var(--ink-3);transform:translateY(-1px)}
+.btn-primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn-primary:hover{border-color:var(--ink)}
+.btn svg{width:16px;height:16px;fill:currentColor}
+.btn-accent{background:var(--accent);color:var(--bg);border-color:var(--accent);cursor:pointer;white-space:nowrap}
+.btn-accent:hover{border-color:var(--accent);filter:brightness(1.08)}
+@media (max-width:900px){.nav-links .hide-md{display:none}}
+@media (max-width:760px){.nav-links .hide-sm{display:none}}
+@media (max-width:480px){.nav-links{gap:8px}.nav-links .btn-accent{padding:9px 12px}.nav-links .gh-label{display:none}}
+@media (max-width:380px){.brand{font-size:20px;gap:8px}.nav-links{gap:6px}.nav-links .btn-accent{padding:9px 10px}}
+@media (max-width:340px){#theme-toggle{display:none}}
+
+/* hero */
+.phero{padding:72px 0 48px}
+.phero h1{font:400 clamp(44px,6.4vw,76px)/1.0 "Instrument Serif",serif;letter-spacing:-.01em;max-width:14em}
+.phero h1 em{color:var(--accent)}
+.phero p.lede{margin-top:22px;font:400 19px/1.5 Inter,sans-serif;color:var(--ink-2);max-width:50em}
+
+/* pick/avoid split (hero decision strip) */
+.headline{padding:48px 0 24px;border-top:1px solid var(--line)}
+.pick-split{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.pick-split .pick-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+.pick-split .pick-card.yes{border-left:3px solid var(--accent)}
+.pick-split .pick-card.no{border-left:3px solid var(--warn)}
+.pick-split .pick-card h3{font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-family:"JetBrains Mono",monospace;margin-bottom:14px}
+.pick-split .pick-card.yes h3{color:var(--accent)}
+.pick-split .pick-card.no h3{color:var(--warn)}
+.pick-split .pick-card ul{list-style:none;padding:0}
+.pick-split .pick-card li{padding:8px 0;border-bottom:1px solid var(--line);font-size:14.5px;color:var(--ink-2);display:flex;gap:10px;align-items:flex-start}
+.pick-split .pick-card li:last-child{border-bottom:0;padding-bottom:0}
+.pick-split .pick-card li::before{content:"→";font-family:"JetBrains Mono",monospace;color:var(--ink-3);font-size:14px;flex-shrink:0}
+.pick-split .pick-card.yes li::before{color:var(--accent)}
+.pick-split .pick-card.no li::before{color:var(--warn)}
+.pick-split .pick-card strong{color:var(--ink);font-weight:600}
+.pick-split .pick-card code{font:12.5px "JetBrains Mono",monospace;background:var(--surface-2);padding:1px 5px;border-radius:4px;color:var(--ink)}
+@media (max-width:720px){.pick-split{grid-template-columns:1fr}}
+
+/* sections */
+section{padding:72px 0;border-top:1px solid var(--line)}
+.sec-head{max-width:720px;margin-bottom:36px}
+.sec-head h2{font:400 clamp(32px,4.2vw,46px)/1.08 "Instrument Serif",serif;margin-top:12px}
+.sec-head p{margin-top:14px;color:var(--ink-2);font-size:17px}
+
+/* scenario grid (two columns of cards) */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.scard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;display:flex;flex-direction:column}
+.scard.yes{border-top:3px solid var(--accent)}
+.scard.no{border-top:3px solid var(--warn)}
+.scard .num{font:400 44px/1 "Instrument Serif",serif;color:var(--ink-3);margin-bottom:6px}
+.scard.yes .num{color:var(--accent)}
+.scard.no .num{color:var(--warn)}
+.scard h3{font-size:17px;font-weight:600;margin-bottom:10px}
+.scard p{font-size:14.5px;color:var(--ink-2);margin-bottom:14px;flex-grow:1}
+.scard p strong{color:var(--ink);font-weight:600}
+.scard code{font:12.5px "JetBrains Mono",monospace;background:var(--surface-2);padding:1px 5px;border-radius:4px;color:var(--ink)}
+.scard .pick-this{font:500 13px/1.5 "JetBrains Mono",monospace;background:var(--surface-2);padding:10px 14px;border-radius:6px;color:var(--ink-2)}
+.scard .pick-this strong{color:var(--ink);font-weight:600}
+.scard .proof{font-size:13px;color:var(--ink-3);margin-top:8px}
+.scard .proof a{color:var(--accent);text-decoration:none;border-bottom:1px dashed var(--accent)}
+@media (max-width:720px){.sgrid{grid-template-columns:1fr}}
+
+/* alternatives — 3-column grid of alt cards */
+.agrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.acard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;display:flex;flex-direction:column}
+.acard h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.acard .model-id{font:12.5px "JetBrains Mono",monospace;color:var(--ink-3);margin-bottom:14px}
+.acard p.summary{font-size:14px;color:var(--ink-2);margin-bottom:16px;flex-grow:1}
+.acard .alt-decision{display:flex;flex-direction:column;gap:10px;font-size:13.5px;color:var(--ink-2)}
+.acard .alt-decision .row{padding:10px 12px;border-radius:6px;background:var(--surface-2)}
+.acard .alt-decision .row strong{color:var(--ink);display:block;margin-bottom:4px;font:500 12px/1 "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.06em}
+@media (max-width:900px){.agrid{grid-template-columns:1fr 1fr}}
+@media (max-width:600px){.agrid{grid-template-columns:1fr}}
+
+/* final CTAs */
+.final{padding:72px 0;border-top:1px solid var(--line);text-align:center}
+.final h2{font:400 clamp(32px,4vw,44px)/1.08 "Instrument Serif",serif}
+.final p{margin-top:14px;color:var(--ink-2);font-size:17px}
+.final .ctas{margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* footer */
+footer{border-top:1px solid var(--line);padding:28px 0 40px;font-size:13px;color:var(--ink-3)}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
+</style>
+<script>
+  (function(){try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}})();
+</script>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="/" class="brand"><span class="brand-mark" aria-hidden="true"></span>Bernoulli</a>
+    <div class="nav-links">
+      <a href="/#why" class="hide-md">Why</a>
+      <a href="/#use-cases" class="hide-md">Use cases</a>
+      <a href="/when-to-use.html" class="hide-sm current">When to use</a>
+      <a href="/#how" class="hide-md">How it works</a>
+      <a href="/benchmarks.html" class="hide-sm">Benchmarks</a>
+      <button type="button" class="btn btn-accent" data-open-demo>Book a demo</button>
+      <button id="theme-toggle" class="btn btn-icon" type="button" aria-label="Toggle color theme" title="Switch theme">
+        <svg data-icon="light" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.07-7.07l-1.42 1.42M6.34 17.66l-1.42 1.42m0-14.14l1.42 1.42m11.31 11.31l1.42 1.42"/></svg>
+        <svg data-icon="dark" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <a class="btn" aria-label="GitHub" href="https://github.com/shyamsfo/bernoulli" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" aria-hidden="true" style="fill:currentColor;stroke:none"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span class="gh-label">GitHub</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<header class="wrap phero">
+  <div class="eyebrow">When to use</div>
+  <h1 style="margin-top:16px">Is Bernoulli right for your <em>workload?</em></h1>
+  <p class="lede">A buyer-oriented decision framework. Everything below is backed by the public <a href="/benchmarks.html" style="color:var(--accent)">N=500 benchmarks</a>. If any claim doesn't match your data, the harness is Apache 2.0 — reproduce or disprove it on your corpus. The engineering-grade source lives in <a href="https://github.com/shyamsfo/bernoulli/blob/main/USECASES.md" target="_blank" rel="noopener" style="color:var(--accent)">USECASES.md</a>.</p>
+</header>
+
+<section class="headline" style="padding-top:48px">
+  <div class="wrap">
+    <div class="pick-split">
+      <div class="pick-card yes">
+        <h3>Pick Bernoulli when</h3>
+        <ul>
+          <li>You need <strong>calibrated probabilities</strong> for threshold-based auto-decisions</li>
+          <li>Your content is <strong>novel, recent, or proprietary</strong> (not in public training sets)</li>
+          <li>You ask <strong>binary Yes/No</strong> questions over semantic content</li>
+          <li>You need <strong>multiple questions over the same input</strong> (triage, LLM-as-judge, moderation)</li>
+          <li>You need <strong>on-prem / in-VPC</strong> inference with zero outbound calls</li>
+        </ul>
+      </div>
+      <div class="pick-card no">
+        <h3>Pick something else when</h3>
+        <ul>
+          <li>You have <strong>2000+ labeled examples</strong> and a fixed label space → <strong>BGE-m3 + LR</strong></li>
+          <li>Your task is <strong>classical NLP</strong> (sentiment, topic, no binary) → <strong>DeBERTa-v3-zeroshot</strong></li>
+          <li>You need <strong>production-grade safety</strong> with high unsafe-recall → <strong>Llama Guard / ShieldGemma</strong></li>
+          <li>You need <strong>generated text</strong> alongside the decision → chat LLM</li>
+          <li>Your answers are <strong>open-vocabulary</strong> (not a fixed set) → retrieval / NER</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="when-yes">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">When Bernoulli is the right answer</div>
+      <h2>Five scenarios where the benchmarks give us a clear edge.</h2>
+      <p>All numbers from the public <a href="/benchmarks.html" style="color:var(--accent)">benchmarks</a> runs at N=500 (arXiv at N=100 — full available test slice). Qwen2.5-VL-7B throughout.</p>
+    </div>
+    <div class="sgrid">
+
+      <div class="scard yes">
+        <div class="num">01</div>
+        <h3>Calibrated probabilities for threshold-based decisions</h3>
+        <p>Across <strong>all nine</strong> public benchmarks, Bernoulli's NLL is <strong>7–19× better</strong> than the same backbone used as a text-and-parse classifier. If your code is <code>if confidence > 0.9: auto_approve</code>, a miscalibrated 0.9 is a product bug — your false-positive rate quietly climbs.</p>
+        <div class="proof"><a href="/benchmarks.html">All 9 benchmarks →</a></div>
+      </div>
+
+      <div class="scard yes">
+        <div class="num">02</div>
+        <h3>Data that wasn't in any public pre-training set</h3>
+        <p>arXiv papers published 2026-09-18 to 2026-10-06 — strictly after both Qwen's and DeBERTa's training cutoffs. <strong>Bernoulli 0.95 vs DeBERTa-zeroshot 0.53</strong> — a 42-point gap on content neither model could have memorized. Our architecture generalizes; a zero-shot NLI encoder tuned on fixed data doesn't.</p>
+        <div class="proof"><a href="/benchmarks.html#academic">arXiv post-cutoff benchmark →</a></div>
+      </div>
+
+      <div class="scard yes">
+        <div class="num">03</div>
+        <h3>Binary Yes/No semantic reasoning</h3>
+        <p>Zero-shot NLI encoders like DeBERTa only score natural-language label hypotheses — they don't handle binary Yes/No. On PAWS (adversarial paraphrase binary): <strong>Bernoulli 0.846 / NLL 0.376</strong>; BGE-m3+LR crashes to 0.552; DeBERTa <code>n/a</code> by design. For guardrails, policy checks, is-this-X questions — zero-shot encoders are off the map and prompt-and-parse is poorly calibrated.</p>
+        <div class="proof"><a href="/benchmarks.html#academic">PAWS →</a></div>
+      </div>
+
+      <div class="scard yes">
+        <div class="num">04</div>
+        <h3>Multiple questions over the same input</h3>
+        <p>Triage, LLM-as-judge, moderation, code review — real workloads need several classifications per input. Prompt-and-parse makes one HTTP call per question; Bernoulli processes the state once and shares it across questions via prefix caching. On A10G 24GB: 1 question in 76 ms, 5 questions in 368 ms, 20 questions in 1466 ms — roughly <strong>~70 ms per additional question</strong>.</p>
+        <div class="proof"><a href="https://github.com/shyamsfo/bernoulli/blob/main/evals/reports/loadtest.md" target="_blank" rel="noopener">Load test numbers →</a></div>
+      </div>
+
+      <div class="scard yes">
+        <div class="num">05</div>
+        <h3>On your own hardware, no API lock-in</h3>
+        <p>Apache 2.0 code, open-weight model, backbone-agnostic (any VL model with a <code>BERNOULLI_MODEL_ID</code> swap). Three deployment modes: self-host in your VPC (flagship), managed-by-us-on-your-cloud (BYOC), or hosted-by-us. The self-host path is <strong>zero outbound calls at inference time</strong>. If data residency is a hard requirement, we're in a different category from any hosted API.</p>
+        <div class="proof"><a href="/#deploy">Deployment options →</a></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="when-no">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">When Bernoulli is NOT the right answer</div>
+      <h2>Honest: here's where someone else beats us, with the specific alternative to pick.</h2>
+      <p>If you recognize your workload in any of these, pick the named alternative — Bernoulli isn't the right tool for the job.</p>
+    </div>
+    <div class="sgrid">
+
+      <div class="scard no">
+        <div class="num">01</div>
+        <h3>You have 2000+ labeled examples and a fixed label space</h3>
+        <p>Train a classifier. On tasks with labeled data: Banking77 (77-way) <strong>BGE+LR 0.95 vs us 0.57</strong>, CLINC150-OOS (151-way) <strong>BGE+LR 0.80 vs us 0.45</strong>, ToxicChat <strong>BGE+LR 0.78 vs us 0.69</strong>. A trained classifier has fundamentally better signal than any zero-shot approach.</p>
+        <div class="pick-this">Pick: <strong>BGE-m3 + logistic regression</strong></div>
+      </div>
+
+      <div class="scard no">
+        <div class="num">02</div>
+        <h3>Your task is classical NLP where DeBERTa was effectively trained near</h3>
+        <p>DeBERTa-v3-zeroshot was NLI-tuned on datasets covering a lot of academic benchmark content. SST-2 <strong>+1.6 pt</strong>, AG News <strong>+4.6 pt</strong>, Banking77 accuracy <strong>+6.8 pt</strong>. The arXiv post-cutoff crash (0.53) tells you this is training-overlap, not generalization — but if your task is similar, it works.</p>
+        <div class="pick-this">Pick: <strong>DeBERTa-v3-zeroshot</strong></div>
+      </div>
+
+      <div class="scard no">
+        <div class="num">03</div>
+        <h3>Production-grade safety classification</h3>
+        <p>For "flag unsafe prompts" at scale where unsafe-recall is the top metric, specialist safety models are tuned specifically for this. Our XSTest numbers tell the honest story: &lt;1% false-refusal (safe-by-default) but unsafe-recall only 0.28 — we're a first-pass gate, not a final answer.</p>
+        <div class="pick-this">Pick: <strong>Llama Guard 3 / ShieldGemma / WildGuard-7B</strong></div>
+      </div>
+
+      <div class="scard no">
+        <div class="num">04</div>
+        <h3>You need to detect "none of these" on long-tail intent sets</h3>
+        <p>CLINC150-OOS tests OOS detection in a 150-intent space. Our <strong><code>oos_auroc = 0.48</code> — essentially coin flip.</strong> BGE-m3+LR hits 0.78 (not by predicting OOS, but by ranking in-scope confidences well enough that a threshold works). Real limitation of our prompt framing today.</p>
+        <div class="pick-this">Pick: <strong>Embedding classifier + calibrated threshold</strong></div>
+      </div>
+
+      <div class="scard no">
+        <div class="num">05</div>
+        <h3>You need stability over option reorder on &gt;50 options</h3>
+        <p>Our chunked scoring (for choice tasks with &gt;26 options) splits labels into chunks of ≤26 and softmaxes globally. Banking77 reorder stability: <strong>0.07</strong> (DeBERTa and BGE+LR hit 1.00). Architectural, not a bug — cross-chunk debias is parked.</p>
+        <div class="pick-this">Pick: <strong>DeBERTa or BGE+LR</strong> for &gt;50 options</div>
+      </div>
+
+      <div class="scard no">
+        <div class="num">06</div>
+        <h3>You need generated text, not just a decision</h3>
+        <p>Summaries, explanations, rewritten emails, code suggestions. Bernoulli is for decisions, not content. Use a generative LLM. If you want <em>both</em> a decision and an explanation, run them as two separate calls — one Bernoulli, one chat — and keep the clean separation.</p>
+        <div class="pick-this">Pick: <strong>Generative chat LLM</strong></div>
+      </div>
+
+      <div class="scard no">
+        <div class="num">07</div>
+        <h3>Open-vocabulary answers</h3>
+        <p>Bernoulli assumes your decision has a fixed enumeration of possible answers. If the right answer is "any of these 10,000 product SKUs" or "generate a new SKU name," that's a different tool.</p>
+        <div class="pick-this">Pick: <strong>Retrieval, NER, or text generation</strong></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="alternatives">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">The alternatives</div>
+      <h2>The right tool for each workload, in detail.</h2>
+      <p>If one of these fits better than Bernoulli, use it. We'd rather you solve your problem than use our thing.</p>
+    </div>
+    <div class="agrid">
+
+      <div class="acard">
+        <h3>DeBERTa-v3-zeroshot</h3>
+        <div class="model-id">MoritzLaurer/deberta-v3-large-zeroshot-v2.0 · 435M params</div>
+        <p class="summary">NLI-tuned encoder. Treats classification as "entailment of a hypothesis." Choice tasks only; binary Yes/No is unsupported by design.</p>
+        <div class="alt-decision">
+          <div class="row">
+            <strong>Pick when</strong>
+            Zero-shot classical NLP (sentiment, topic). Choice-only. Single-input-at-a-time. ~37 ms per label on warm GPU.
+          </div>
+          <div class="row">
+            <strong>Skip when</strong>
+            Binary Yes/No needed. Post-cutoff content. Multiple questions per input.
+          </div>
+        </div>
+      </div>
+
+      <div class="acard">
+        <h3>BGE-m3 + logistic regression</h3>
+        <div class="model-id">BAAI/bge-m3 + sklearn.LogisticRegression · ~2.3B params</div>
+        <p class="summary">Sentence embedder + classical ML on top. Needs 500–2000+ labeled examples per task. Wins decisively on long-tail labeled tasks.</p>
+        <div class="alt-decision">
+          <div class="row">
+            <strong>Pick when</strong>
+            You have labels. Fixed label space. 10+ classes. Latency matters (~12 ms per call on CPU).
+          </div>
+          <div class="row">
+            <strong>Skip when</strong>
+            No labels. Changing label space. Limited training data (ECE goes bad fast).
+          </div>
+        </div>
+      </div>
+
+      <div class="acard">
+        <h3>Prompt-and-parse LLM</h3>
+        <div class="model-id">ChatGPT · Claude · open-weight chat</div>
+        <p class="summary">Ask an LLM in natural language, parse the completion. Current default for "add intelligence to this backend." Terrible calibration (7–19× worse NLL than us).</p>
+        <div class="alt-decision">
+          <div class="row">
+            <strong>Pick when</strong>
+            You also need generated text (explanation, rewrite, summary). "Right 85% of the time" is enough.
+          </div>
+          <div class="row">
+            <strong>Skip when</strong>
+            You need calibrated probabilities. Many questions per input. Can't tolerate parse failures.
+          </div>
+        </div>
+      </div>
+
+      <div class="acard">
+        <h3>Fine-tuned task-specific encoder</h3>
+        <div class="model-id">BERT · DeBERTa · RoBERTa — your own training</div>
+        <p class="summary">Fine-tune a classifier on your labeled data. Highest accuracy ceiling, biggest ops cost. The "if money and data are no object" answer.</p>
+        <div class="alt-decision">
+          <div class="row">
+            <strong>Pick when</strong>
+            10,000+ labeled examples. Stable production task. Accuracy difference matters more than training + maintenance cost.
+          </div>
+          <div class="row">
+            <strong>Skip when</strong>
+            Label space shifts. Less data. Training pipeline would be more code than inference.
+          </div>
+        </div>
+      </div>
+
+      <div class="acard">
+        <h3>Specialist safety models</h3>
+        <div class="model-id">Llama Guard 3 · ShieldGemma · WildGuard-7B</div>
+        <p class="summary">Open-weight models fine-tuned specifically for safety classification. Report token probabilities over safe/unsafe labels — apples-to-apples with Bernoulli when safety is the <em>only</em> question.</p>
+        <div class="alt-decision">
+          <div class="row">
+            <strong>Pick when</strong>
+            Production safety is the top metric. Training distribution matches your traffic. High unsafe-recall required.
+          </div>
+          <div class="row">
+            <strong>Skip when</strong>
+            Safety is one of five questions per input. "Safe-by-default + low over-refusal" matters more than "catch every unsafe case."
+          </div>
+        </div>
+      </div>
+
+      <div class="acard">
+        <h3>Classical ML on hand-engineered features</h3>
+        <div class="model-id">VADER · regex · lexicons · gradient-boosted trees</div>
+        <p class="summary">Still legitimate in 2026. If your decision reduces to counting words from a known lexicon or matching regex patterns, that's often faster, cheaper, and more auditable than any ML approach.</p>
+        <div class="alt-decision">
+          <div class="row">
+            <strong>Pick when</strong>
+            Decision reduces to features you can enumerate. Audit trail matters. Latency has to be &lt; 1 ms.
+          </div>
+          <div class="row">
+            <strong>Skip when</strong>
+            The semantic distinction is the point (sarcasm, nuance, context).
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="honest">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Honest limitations</div>
+      <h2>What our own benchmarks don't show in our favor.</h2>
+      <p>Equal time to the downsides. Everything here is published in the per-benchmark result files and in the <a href="https://github.com/shyamsfo/bernoulli/blob/main/benchmarks/README.md#honest-caveats" target="_blank" rel="noopener" style="color:var(--accent)">benchmarks README caveats</a>.</p>
+    </div>
+    <div class="sgrid">
+      <div class="scard no">
+        <h3>Dev-tier backbone throughout</h3>
+        <p>All public numbers are from Qwen2.5-VL-7B. A one-shot H100 rental of the 32B variant lifted the hardest JevBench slice by ~18 points — see <a href="https://github.com/shyamsfo/bernoulli/blob/main/product/reports/2026-10-10-h100-32b.md" target="_blank" rel="noopener">the H100 writeup</a>. Expect every row here to improve on the production tier.</p>
+      </div>
+      <div class="scard no">
+        <h3>Our evaluation, not an independent audit</h3>
+        <p>Every result row carries a reproducibility footer (model revision, dataset hash, seed, hardware) — any number is reproducible or disprovable. The JevBench submission is in the public leaderboard's queue for an external re-run; this page updates once that posts.</p>
+      </div>
+      <div class="scard no">
+        <h3>No comparison against specialist safety models</h3>
+        <p>WildGuardTest is HF-gated; a Llama Guard 3 vs Bernoulli comparison hasn't shipped. If your workload is production safety where unsafe-recall dominates, we're honestly not pretending to compete with the specialists.</p>
+      </div>
+      <div class="scard no">
+        <h3>CLINC150-OOS "none of these" is coin flip</h3>
+        <p><code>oos_auroc = 0.48</code> at N=500. On long-tail intent sets with an OOS category, our prompt framing doesn't carry enough signal. Investigation-pending, not shipped.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="final">
+  <div class="wrap">
+    <h2>Still not sure if we fit?</h2>
+    <p>Three ways forward: try the live demo, run the benchmarks on your own data, or book a 20-minute fit review with us.</p>
+    <div class="ctas">
+      <a class="btn btn-accent" href="https://shyamsfo-bernoulli-demo.hf.space" target="_blank" rel="noopener">Try it live →</a>
+      <a class="btn btn-primary" href="https://github.com/shyamsfo/bernoulli/blob/main/USECASES.md" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        Full USECASES.md
+      </a>
+      <button class="btn btn-accent" data-open-demo type="button">Book a demo</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>Bernoulli · an open-weight decision model · <a href="mailto:contact@deepstore.ai">contact@deepstore.ai</a></span>
+    <span>© 2026 DeepStore · <a href="https://github.com/shyamsfo/bernoulli/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0 License</a></span>
+    <span class="foot-disclaimer">Inspired by TypeSafe AI's Jev. Independent project, not affiliated.</span>
+  </div>
+</footer>
+
+<script>
+  // Theme toggle — two-state, matches index.html + benchmarks.html.
+  (function(){
+    var html=document.documentElement;
+    var btn=document.getElementById("theme-toggle");
+    var light=btn && btn.querySelector('[data-icon="light"]');
+    var dark=btn && btn.querySelector('[data-icon="dark"]');
+    function sysDark(){try{return matchMedia("(prefers-color-scheme: dark)").matches;}catch(e){return false;}}
+    function applied(){var t=html.getAttribute("data-theme"); return t ? t : (sysDark() ? "dark" : "light");}
+    function render(){
+      var cur=applied();
+      if(light) light.style.display = cur === "dark" ? "" : "none";
+      if(dark)  dark.style.display  = cur === "dark" ? "none" : "";
+    }
+    if(btn){
+      btn.addEventListener("click",function(){
+        var cur=applied();
+        var next=cur==="dark"?"light":"dark";
+        html.setAttribute("data-theme",next);
+        try{localStorage.setItem("theme",next);}catch(e){}
+        render();
+      });
+    }
+    try{if(!localStorage.getItem("theme") && matchMedia){matchMedia("(prefers-color-scheme: dark)").addEventListener("change",render);}}catch(e){}
+    render();
+  })();
+
+  // Book-a-demo stub — jump to the landing page dialog.
+  (function(){
+    document.querySelectorAll("[data-open-demo]").forEach(function(b){
+      b.addEventListener("click",function(e){
+        e.preventDefault();
+        window.location.href = "/#demo-dialog";
+      });
+    });
+  })();
+</script>
+</body>
+</html>

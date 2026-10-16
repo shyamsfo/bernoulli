@@ -341,6 +341,7 @@ footer .foot-disclaimer{flex-basis:100%;font-size:12px;opacity:.85}
     <div class="nav-links">
       <a href="#why" class="hide-sm">Why</a>
       <a href="#use-cases" class="hide-sm">Use cases</a>
+      <a href="/when-to-use.html" class="hide-sm">When to use</a>
       <a href="#how" class="hide-sm">How it works</a>
       <a href="#benchmarks" class="hide-sm">Benchmarks</a>
       <a href="#deploy" class="hide-sm">Deploy</a>
@@ -532,6 +533,41 @@ response.decisions.intent.distribution.tracking === 0.24</pre>
     <p class="fine">Full write-ups — realistic state, request shapes, routing pseudocode — in the <a href="https://github.com/shyamsfo/bernoulli/blob/main/USECASES.md" target="_blank" rel="noopener">use cases guide</a>, including code review severity.</p>
   </div>
 </section>
+
+<section id="fit">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Is this right for you?</div>
+      <h2>A quick fit check — honest, benchmark-backed.</h2>
+      <p>Four reasons to pick us, four reasons to pick something else. If any "pick something else" row matches your workload, use the named alternative — we'd rather you solve your problem than use our thing.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" class="fit-split">
+      <div style="background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:22px">
+        <div class="eyebrow" style="color:var(--accent);margin-bottom:14px">Pick Bernoulli when</div>
+        <ul style="list-style:none;padding:0;margin:0">
+          <li style="padding:8px 0;border-bottom:1px solid var(--line);font-size:14.5px;color:var(--ink-2)">You need <strong style="color:var(--ink)">calibrated probabilities</strong> for threshold-based auto-decisions</li>
+          <li style="padding:8px 0;border-bottom:1px solid var(--line);font-size:14.5px;color:var(--ink-2)">Your content is <strong style="color:var(--ink)">novel / recent / proprietary</strong> (not in public training sets)</li>
+          <li style="padding:8px 0;border-bottom:1px solid var(--line);font-size:14.5px;color:var(--ink-2)">You ask <strong style="color:var(--ink)">binary Yes/No</strong> questions over semantic content</li>
+          <li style="padding:8px 0;font-size:14.5px;color:var(--ink-2)">You need <strong style="color:var(--ink)">multiple questions</strong> over the same input</li>
+        </ul>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:10px;padding:22px">
+        <div class="eyebrow" style="color:var(--warn);margin-bottom:14px">Pick something else when</div>
+        <ul style="list-style:none;padding:0;margin:0">
+          <li style="padding:8px 0;border-bottom:1px solid var(--line);font-size:14.5px;color:var(--ink-2)">You have <strong style="color:var(--ink)">2000+ labels</strong> & fixed label space → <strong style="color:var(--ink)">BGE-m3 + LR</strong></li>
+          <li style="padding:8px 0;border-bottom:1px solid var(--line);font-size:14.5px;color:var(--ink-2)">Classical NLP (<strong style="color:var(--ink)">sentiment, topic</strong>) → <strong style="color:var(--ink)">DeBERTa-v3-zeroshot</strong></li>
+          <li style="padding:8px 0;border-bottom:1px solid var(--line);font-size:14.5px;color:var(--ink-2)">Production safety priority → <strong style="color:var(--ink)">Llama Guard / ShieldGemma</strong></li>
+          <li style="padding:8px 0;font-size:14.5px;color:var(--ink-2)">You need <strong style="color:var(--ink)">generated text</strong> → chat LLM</li>
+        </ul>
+      </div>
+    </div>
+    <div style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <a class="btn btn-primary" href="/when-to-use.html">See the full fit assessment →</a>
+      <a class="btn" href="https://github.com/shyamsfo/bernoulli/blob/main/USECASES.md" target="_blank" rel="noopener">Full USECASES.md on GitHub</a>
+    </div>
+  </div>
+</section>
+<style>@media (max-width:720px){section#fit .fit-split{grid-template-columns:1fr !important}}</style>
 
 <section id="features">
   <div class="wrap">
