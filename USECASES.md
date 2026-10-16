@@ -1,38 +1,69 @@
-# Bernoulli — use cases
+# Bernoulli — use cases & honest comparison
 
-Real-world patterns, with the state sizes and question mixes you'd actually see in production. Each use case is interface-neutral — the request shape works verbatim as an HTTP POST body or as a `--request` JSON for the CLI. See [`HTTP.md`](HTTP.md) or [`CLI.md`](CLI.md) for the mechanics of calling the engine.
+A single document to help you decide whether Bernoulli fits your workload. It covers:
+
+- the TL;DR decision tree
+- when Bernoulli is the right answer, with benchmark backing
+- when it's NOT the right answer, with the alternative you should pick instead
+- what the benchmarks show in our favor
+- what the benchmarks don't show in our favor
+- four realistic use cases with request/response shapes you can copy-paste
+
+Every claim here is backed by a public benchmark run under [`benchmarks/`](benchmarks/). Each result file ships a reproducibility footer (model revision, dataset hash, seed, hardware) so any number can be reproduced or disproved.
 
 **Contents**
 
-- [Why Bernoulli instead of a prompt + parse pipeline?](#why-bernoulli-instead-of-a-prompt--parse-pipeline)
-- [Use case: Support ticket triage](#use-case-support-ticket-triage)
-- [Use case: LLM output guardrail](#use-case-llm-output-guardrail)
-- [Use case: Content moderation](#use-case-content-moderation)
-- [Use case: Code review severity](#use-case-code-review-severity)
+- [TL;DR — should I use Bernoulli?](#tldr--should-i-use-bernoulli)
+- [What Bernoulli is (one minute)](#what-bernoulli-is-one-minute)
+- [When Bernoulli is the right answer](#when-bernoulli-is-the-right-answer)
+- [When Bernoulli is NOT the right answer](#when-bernoulli-is-not-the-right-answer)
+- [What the benchmarks show in our favor](#what-the-benchmarks-show-in-our-favor)
+- [What the benchmarks don't show in our favor](#what-the-benchmarks-dont-show-in-our-favor)
+- [The alternatives, in detail](#the-alternatives-in-detail)
+- [Four realistic use cases](#four-realistic-use-cases)
+  - [Support ticket triage](#use-case-support-ticket-triage)
+  - [LLM output guardrail](#use-case-llm-output-guardrail)
+  - [Content moderation](#use-case-content-moderation)
+  - [Code review severity](#use-case-code-review-severity)
+- [Patterns across use cases](#patterns-across-use-cases)
+- [How to validate on your own data](#how-to-validate-on-your-own-data)
 
 ---
 
-## Why Bernoulli instead of a prompt + parse pipeline?
+## TL;DR — should I use Bernoulli?
 
-The usual way to use an LLM for a decision looks like this:
+A fast triage. Answer these in order; stop at the first "no":
 
-```
-POST /chat/completions
-{
-  "messages": [
-    {"role": "system", "content": "You are a classifier. Reply with one word: refund, exchange, tracking, other."},
-    {"role": "user", "content": "Here's a customer email: <...the email...>\n\nWhat does the customer want? Reply with one word."}
-  ]
-}
-```
+1. **Do I need to make a decision from a fixed set of answers** (choice / binary / rating)? No → use a generative LLM for free text.
+2. **Do I need a calibrated probability**, not just the top answer? No → use whatever's cheapest; prompt-and-parse works fine if "right 85% of the time" is enough.
+3. **Is my label space small (≤26 options) OR do I lack ≥2000 labeled training examples**? If you have 2000+ labels AND a fixed label space with many classes, **BGE-m3 + logistic regression beats us** on those tasks — go train it instead.
+4. **Is at least one of these true**:
+   - My data is novel / recent / proprietary (not in any public pre-training set), OR
+   - I need a binary Yes/No question against semantic content, OR
+   - I need multiple questions over the same input (support triage, LLM-as-judge, moderation), OR
+   - I need calibration to run thresholds and auto-decide at scale, OR
+   - I need on-prem / in-VPC inference with zero outbound calls?
 
-Then your code parses the response text (`"refund"` or `"The customer wants refund."` or `"refund."` or whatever the model felt like saying today), handles the parse failures, maybe retries. You can't ask three questions at once — each needs its own call. You get no probability — the model said "refund", you have no idea whether it was close between refund and tracking.
+   Yes → Bernoulli. No → DeBERTa-v3-zeroshot or a prompt-and-parse LLM might be simpler.
 
-Bernoulli splits that into **state + questions**:
+### The 10-second version
+
+- **Pick BGE-m3 + LR** if you have 2000+ labels and a fixed label space.
+- **Pick DeBERTa-v3-zeroshot** if your task is classical NLP (sentiment, topic) and single-choice.
+- **Pick a prompt-and-parse LLM** if you don't care about calibration or need generated text alongside the decision.
+- **Pick a specialist safety model** (Llama Guard 3, ShieldGemma, WildGuard) for production-grade safety classification.
+- **Pick Bernoulli** when you need calibrated probabilities over typed decisions, you don't have labels, your content is novel, or you need multiple questions per input.
+
+---
+
+## What Bernoulli is (one minute)
+
+Bernoulli reads an LLM's probability distribution over your answer options directly — no decoding loop, no parsing, no retries. Same backbone as a generative LLM; different reading mechanism.
 
 ```json
+POST /v1/decide
 {
-  "state": {"text": "<the email>"},
+  "state": {"text": "<the input>"},
   "questions": [
     {"id": "intent", "type": "choice", "prompt": "What does the customer want?",
      "options": ["refund", "exchange", "tracking", "other"]}
@@ -40,50 +71,229 @@ Bernoulli splits that into **state + questions**:
 }
 ```
 
-And returns:
+Returns:
 
 ```json
-{
-  "decisions": {
-    "intent": {
-      "type": "choice",
-      "answer": "refund",
-      "confidence": 0.72,
-      "distribution": {"refund": 0.72, "exchange": 0.03, "tracking": 0.24, "other": 0.01}
-    }
-  }
-}
+{"decisions": {"intent": {
+  "answer": "tracking",
+  "confidence": 0.942,
+  "distribution": {"tracking": 0.942, "other": 0.041, "refund": 0.015, "exchange": 0.001}
+}}}
 ```
 
-Same backbone under the hood. Different reading mechanism — Bernoulli reads the model's probability over your option tokens directly at the answer position instead of asking it to generate text.
+Three question types: **choice** (2–26+ options), **binary** (Yes/No), **rating** (integer scale with expected value). One forward pass per question. Multiple questions share one state tokenization (prefix caching).
 
-### What that split buys you
-
-1. **Many questions, one state, one engine call.** The expensive part of running an LLM is processing the input tokens — not generating the output. In Bernoulli, the state tokens are processed once, and all your questions share that work via prefix caching. Our load test on a 7B model shows **~70 ms per added question** on a single A10G 24GB (versus a fresh HTTP call per question for a traditional LLM, each paying full token-processing cost).
-
-2. **Typed answers meant for machines, not people.** You get a calibrated probability distribution, not a string to parse. Code can branch on `confidence > 0.9` or `expected >= 4.0` directly — no regex, no "did the model say 'yes' or 'Yes' or 'Yes.' or 'The answer is yes'?" If `confidence` is 0.52, your code *knows* the model is barely more sure than a coin flip, and it can escalate to a human. A naive LLM would just say "refund" and you'd never know how close it was.
-
-3. **Composable.** Same state → different question configs → different outputs. You can A/B test the question wording, swap in a calibrated temperature per question type, add a new question without re-engineering the pipeline. The state is the data; the questions are the queries; both evolve independently.
-
-4. **One output token.** API pricing is weighted toward output: a classification call that generates `"yes"` or `"refund"` still pays 3–5× the input rate on each of those tokens. Bernoulli generates exactly one token per forward pass (`max_tokens=1`) — the output-token line item drops to a floor regardless of how your provider prices it. Self-hosting changes this calculus (you're paying GPU time instead of per-token), but the output-token observation generalizes: in a decision workload, output tokens are a weird thing to charge for.
-
-### When Bernoulli is wrong for the job
-
-If you need generated text — a summary, an explanation, a rewritten email, a code suggestion — use a generative LLM. Bernoulli is for decisions, not content.
-
-Also: Bernoulli assumes your decision has a fixed enumeration of possible answers (choice/binary/rating). If the right answer is "any of these 10,000 product SKUs" or "generate a new SKU label," that's a different tool.
-
-The sweet spot is any decision you'd code as `if-elif-else` or a scoring threshold today — classification, prioritization, routing, policy checks, grading, moderation.
+For the deep version of how this works + how it compares to a prompt-and-parse pipeline, see [`HOW-IT-WORKS.md`](HOW-IT-WORKS.md).
 
 ---
 
-## Use case: Support ticket triage
+## When Bernoulli is the right answer
 
-### The problem
+Five scenarios where the benchmarks + architecture give us a clear edge. All numbers are from the public [`benchmarks/`](benchmarks/) runs at N=500 (arXiv at N=100 — full available test slice).
+
+### 1. You need calibrated probabilities for threshold-based decisions
+
+The product claim: "when Bernoulli says 0.9, it's right about 90% of the time." The benchmark proof: across **all nine** public benchmarks, Bernoulli's NLL is **7–19× better than the same backbone used as a text-and-parse classifier**. That ratio is what "miscalibration gap" looks like as a number — a prompt-and-parse pipeline is confident when it shouldn't be.
+
+Why this matters in practice: if your code is `if confidence > 0.9: auto_approve`, a miscalibrated 0.9 is a product bug. You'll auto-approve things the model doesn't actually know, and your false-positive rate quietly climbs.
+
+### 2. Your data wasn't in any public pre-training set
+
+The arXiv post-cutoff benchmark samples 100 papers published 2026-09-18 to 2026-10-06 — strictly after both Qwen2.5-VL's and DeBERTa's training cutoffs. On classifying them into cs.CL / cs.CV / math.PR / econ.EM:
+
+| | accuracy | NLL |
+|---|---|---|
+| **Bernoulli (Qwen 7B)** | **0.950** | **0.207** |
+| BGE-m3 + LR | 0.940 | 0.869 |
+| Generative (same Qwen) | 0.920 | 2.211 |
+| DeBERTa-zeroshot | 0.530 | 1.084 |
+
+DeBERTa drops 42 points on content it couldn't have memorized. Bernoulli-via-Qwen generalizes to novel semantic content; a zero-shot NLI encoder tuned on fixed data doesn't. If your corpus is **recent news, proprietary tickets, internal docs, scientific papers past 2024, or any domain that isn't ancient-web-text**, this is the regime where our architecture earns its keep.
+
+### 3. You need Yes/No semantic reasoning (binary questions)
+
+Zero-shot NLI encoders like DeBERTa can only score natural-language label hypotheses — they don't handle binary Yes/No questions ("is this urgent?", "is this a paraphrase?", "should this be flagged?"). On PAWS (adversarial paraphrase binary, N=500):
+
+| | accuracy | NLL |
+|---|---|---|
+| **Bernoulli** | **0.846** | **0.376** |
+| Generative | 0.836 | 4.532 |
+| BGE-m3 + LR | 0.552 | 0.690 |
+| DeBERTa-zeroshot | *n/a (BinaryQuestion unsupported)* | — |
+
+If your product asks binary questions over semantic content (guardrails, moderation yes/no gates, policy checks), zero-shot encoders are off the map and prompt-and-parse is poorly calibrated. We're the natural fit.
+
+### 4. You need to ask several questions about the same input
+
+Real workloads often need multiple classifications per input: support triage asks "intent + urgency + anger + escalate"; LLM-as-judge asks "safe + on-topic + factual + refusal-appropriate"; code review asks "severity + area + reviewer-tier + deploy-risk". Prompt-and-parse makes one HTTP call per question; Bernoulli processes the state once and shares it across questions via prefix caching.
+
+Numbers from [`evals/reports/loadtest.md`](evals/reports/loadtest.md) on A10G 24GB:
+
+| questions / request | p50 latency |
+|---|---|
+| 1 | 76 ms |
+| 5 | 368 ms |
+| 20 | 1466 ms |
+
+Roughly **70 ms per additional question** on the dev-tier backbone — vs the full tokenization cost per call for a prompt-and-parse pipeline.
+
+### 5. You want to run on your own hardware without API lock-in
+
+Bernoulli is Apache 2.0 and backbone-agnostic (any open-weights VL model with a swap of `BERNOULLI_MODEL_ID`). Three deployment modes: self-host in your VPC (flagship), managed-by-us-on-your-cloud (BYOC), or hosted-by-us. **The flagship self-host path is zero outbound calls at inference time** — nothing leaves your network. If data residency is a hard requirement, this is in a different category from any hosted API.
+
+---
+
+## When Bernoulli is NOT the right answer
+
+Honest: here are the cases where someone else beats us, with the specific alternative to pick.
+
+### 1. You have 2000+ labeled examples and a fixed label space
+
+Train a classifier. On tasks where this is available, a BGE-m3 embedding + sklearn logistic regression (2000 training examples) crushes everything zero-shot:
+
+| benchmark | BGE+LR | Bernoulli | gap |
+|---|---|---|---|
+| **Banking77** (77-way intent) | **0.950** | 0.572 | **+38 pt** |
+| **CLINC150-OOS** (151-way) | **0.804** | 0.448 | **+35 pt** |
+| ToxicChat (binary) | **0.782** | 0.690 | +9 pt |
+| AG News (4-way topic) | **0.876** | 0.828 | +5 pt |
+
+A trained classifier with that much labeled data has fundamentally better signal than any zero-shot approach. For production classification with a fixed label space, **this is the right choice if you have the labels**.
+
+Our story is for the case you *don't* have labels, or your label space changes (think: swapping policy categories, adding new product SKUs, bootstrapping a new domain).
+
+### 2. Your task is classical NLP where DeBERTa was effectively trained near
+
+DeBERTa-v3-zeroshot (`MoritzLaurer/deberta-v3-large-zeroshot-v2.0`) was fine-tuned on NLI datasets covering a lot of academic benchmark content. On tasks that look like its training distribution:
+
+| benchmark | DeBERTa | Bernoulli | gap |
+|---|---|---|---|
+| SST-2 (binary sentiment) | **0.930** | 0.914 | +1.6 pt |
+| AG News (4-way topic) | **0.874** | 0.828 | +4.6 pt |
+| Banking77 (accuracy) | **0.640** | 0.572 | +6.8 pt |
+
+The arXiv post-cutoff crash (0.53) is the diagnostic: DeBERTa's wins look like training-data overlap, not generalization. **If your task is similar to published NLP benchmarks and you don't need binary Yes/No**, DeBERTa is a legitimate pick — faster per-call (~37 ms per label), simpler stack, no LLM required.
+
+### 3. Your task is production-grade safety classification
+
+For "flag unsafe prompts" at scale with high unsafe-recall, specialist safety models (Llama Guard 3, ShieldGemma, WildGuard-7B) are tuned specifically for this and will outperform our general zero-shot pass. WildGuardTest is HF-gated so we haven't published that column; the direction is clear anyway.
+
+Bernoulli's XSTest numbers tell the honest story: we have **<1% false-refusal rate** (4 of 500 prompts) with maintained accuracy — a "safe-by-default" posture suitable as a first-pass gate. Our unsafe-recall of 0.28 (vs Generative's 0.49 at a 20% false-refusal cost) means we miss some actually-unsafe prompts.
+
+**The right architecture for a real guardrail**: Bernoulli as the "don't over-refuse the user" first pass, paired with a specialist safety model as an escalation path for the uncertain cases. We're not a drop-in replacement for Llama Guard.
+
+### 4. You need to detect "none of these" on long-tail intent sets
+
+CLINC150-OOS tests whether a system can identify out-of-scope prompts in a 150-intent space. **Our `oos_auroc = 0.48` — essentially a coin flip.** BGE-m3+LR hits 0.78 (not by predicting OOS correctly — it never does, `oos_recall = 0.000` — but by ranking in-scope confidences well enough that a threshold works). This is a real limitation of our prompt framing today.
+
+If your product needs the "I don't know" probability to actually mean something on 100+ class intent sets, use an embedding classifier with a calibrated threshold. We'd like to fix this; investigation-pending but not shipped.
+
+### 5. You need stability over option reorder on >50 options
+
+Our chunked scoring (for choice tasks with >26 options) splits labels into chunks of ≤26 and softmaxes globally. The top-1 can shift based on which labels landed in which chunk — Banking77 reorder stability is **0.07** (DeBERTa and BGE+LR hit 1.00). Architectural, not a bug.
+
+**If your workflow requires option-reorder invariance on >50 options, DeBERTa or BGE+LR are the honest picks today.** For ≤26 options, Bernoulli is reorder-stable (reverse debias is the default).
+
+### 6. You need generated text, not just a decision
+
+Summaries, explanations, rewritten emails, code suggestions. Bernoulli is for decisions, not content. Use a generative LLM. If you want *both* a decision and an explanation, run them as two separate calls — one Bernoulli, one chat — and keep the clean separation.
+
+### 7. Open-vocabulary answers
+
+Bernoulli assumes your decision has a fixed enumeration of possible answers. If the right answer is "any of these 10,000 product SKUs" or "generate a new SKU name," that's a different tool (retrieval, NER, text generation).
+
+---
+
+## What the benchmarks show in our favor
+
+Every number is at N=500 (arXiv at N=100 — the full available test slice). Numbers link to per-benchmark result files.
+
+1. **Calibration gap vs the same backbone used as text-and-parse.** NLL is 7–19× better than the Generative baseline across all 9 benchmarks. Not a sample artifact — consistent across sentiment, topic, intent, emotion, paraphrase, moderation, safety, OOS detection, and rating. [Full comparison](benchmarks/README.md).
+2. **arXiv post-cutoff — provably unseen content.** 0.95 (us) vs 0.53 (DeBERTa) vs 0.92 (Generative) vs 0.94 (BGE+LR). The anti-contamination test. [`benchmarks/academic/arxiv_post_cutoff/`](benchmarks/academic/arxiv_post_cutoff/).
+3. **PAWS binary paraphrase.** 0.846 accuracy with 0.376 NLL. DeBERTa can't score it; BGE+LR crashes to 0.55 (near-random). [`benchmarks/academic/paws/`](benchmarks/academic/paws/).
+4. **Yelp 1-5 star rating.** MAE of 0.42 is the lowest of any baseline (Generative 0.46, BGE+LR 0.53). Uses the full predicted distribution for the expected-value calculation, not just argmax. [`benchmarks/ratings/yelp_stars/`](benchmarks/ratings/yelp_stars/).
+5. **XSTest low over-refusal.** <1% false-refusal rate with maintained accuracy — a "safe-by-default" posture other models trade away for higher unsafe-recall. [`benchmarks/guardrails/xstest/`](benchmarks/guardrails/xstest/).
+6. **Latency with multiple questions.** ~70 ms per additional question (vs full HTTP call per question for prompt-and-parse). Natural fit when the same input needs several classifications. [`evals/reports/loadtest.md`](evals/reports/loadtest.md).
+7. **One output token, bounded cost.** `max_tokens=1` means output-token line items don't scale with answer length. Useful when self-hosting (one forward pass per question) or when per-token pricing is bad.
+8. **Open weights, no API lock-in.** Apache 2.0, swappable backbone. Three deployment modes (self-host, managed-on-your-cloud, hosted-by-us). Zero outbound calls at inference time on the self-host path.
+9. **Production backbone step-up looks promising.** A one-shot H100 rental of Qwen2.5-VL-32B lifted the hardest JevBench slice by ~18 points — see [`product/reports/2026-10-10-h100-32b.md`](product/reports/2026-10-10-h100-32b.md). The dev-tier numbers you see here are a floor, not a ceiling.
+
+---
+
+## What the benchmarks don't show in our favor
+
+Equal time to the honest downsides.
+
+1. **BGE-m3 + LR with 2000 labels crushes us on label-heavy tasks.** +38 pt on Banking77 (77-way), +35 pt on CLINC150-OOS (151-way), +9 pt on ToxicChat, +5 pt on AG News. If labeled data is available, train the classifier.
+2. **DeBERTa-zeroshot ties or edges us on classical NLP.** +1.6 pt on SST-2, +4.6 pt on AG News, +6.8 pt on Banking77 accuracy. Not a disaster, but not domination either. If your task is similar to published NLP benchmarks and you don't need binary Yes/No, DeBERTa is competitive.
+3. **CLINC150-OOS `oos_auroc = 0.48`.** Coin flip on the "none of these" probability story. Real limitation on long-tail intent + OOS detection; investigation-pending.
+4. **Banking77 reorder stability = 0.07.** Chunked scoring architectural limitation on >26 options. Reorder-invariance is a win for DeBERTa / BGE+LR here.
+5. **XSTest `unsafe_recall = 0.28`.** We miss some actually-unsafe prompts in exchange for the <1% false-refusal rate. For a complete production guardrail, pair with a specialist safety model.
+6. **Dev-tier backbone throughout.** All numbers are Qwen2.5-VL-7B. Production tier (32B) is a one-off H100 story so far, not shipped as a serving config.
+7. **JevBench ranking is still pending.** Our submission is in Benchmark Heaven's FIFO queue; this remains self-reported until that posts. [`benchmarks/jevbench/`](benchmarks/jevbench/).
+8. **No comparison yet against specialist safety models** (Llama Guard 3, ShieldGemma, WildGuard-7B). WildGuardTest is HF-gated and parked.
+9. **No external audit.** Every number here is reproducibility-footer-backed, so any claim is reproducible or disprovable — but not yet independently reproduced.
+
+---
+
+## The alternatives, in detail
+
+### DeBERTa-v3-zeroshot (`MoritzLaurer/deberta-v3-large-zeroshot-v2.0`)
+
+435M-parameter encoder, NLI-tuned so it treats classification as "entailment of a hypothesis." Choice tasks only — binary Yes/No is unsupported by design.
+
+- **Pick it when**: zero-shot text classification on classical NLP (sentiment, topic), choice-only, single-input-at-a-time. Fast per-call once GPU is warm (~37 ms per label). No LLM dependency.
+- **Skip it when**: your task is binary Yes/No, your content is post-cutoff / proprietary, or you need multiple questions over the same input.
+- **Reference**: [`huggingface.co/MoritzLaurer/deberta-v3-large-zeroshot-v2.0`](https://huggingface.co/MoritzLaurer/deberta-v3-large-zeroshot-v2.0). Our implementation lives in [`benchmarks/common/baselines.py`](benchmarks/common/baselines.py).
+
+### BGE-m3 + logistic regression
+
+~2.3B sentence embedder + sklearn LogisticRegression trained on your labels. Needs 500–2000+ labeled examples per task.
+
+- **Pick it when**: you have labeled training data, your label space is fixed, you have many classes (10+), and inference latency matters (~12 ms per call on CPU for the LR head once embeddings are cached).
+- **Skip it when**: you don't have labels, the label space changes per workflow, or you need calibrated probabilities with limited training data (its ECE on arXiv at 100 training examples was pathological — 0.509).
+- **Reference**: [`huggingface.co/BAAI/bge-m3`](https://huggingface.co/BAAI/bge-m3) + any sklearn LR.
+
+### Prompt-and-parse (ChatGPT / Claude / open-weight chat)
+
+Ask an LLM in natural language, parse the completion. The current default for "add intelligence to this backend."
+
+- **Pick it when**: you also need generated text alongside the decision (explanation, rewritten message, summary); or when being right 85% of the time is enough and calibration doesn't matter.
+- **Skip it when**: you need calibrated probabilities (NLL will be 7–19× worse than Bernoulli), you need many decisions per input (pay full tokenization cost per question), or you can't tolerate parse failures / retries.
+- **Reference**: whatever your API provider is.
+
+### Fine-tuned task-specific encoder
+
+Fine-tune a BERT / DeBERTa / RoBERTa on your labeled data. Highest accuracy ceiling, biggest ops cost.
+
+- **Pick it when**: you have 10,000+ labeled examples, a stable production task, and the accuracy difference between zero-shot and fine-tuned matters to the business more than the training + maintenance cost.
+- **Skip it when**: your label space shifts, you have less data, or the training pipeline would be more code than the inference pipeline.
+
+### Specialist safety models (Llama Guard 3, ShieldGemma, WildGuard-7B)
+
+Open-weight models fine-tuned specifically for safety classification. Report token probabilities over safe/unsafe/category labels, so the comparison with Bernoulli is apples-to-apples when it matters.
+
+- **Pick it when**: your workload is production-grade safety classification where unsafe-recall is the top metric and the training distribution is well-aligned with your traffic.
+- **Skip it when**: safety is one of many questions you need to answer about the same input (triage, moderation, grading), or when "safe-by-default" with low over-refusal is more important than "catch every unsafe case."
+- **Reference**: Llama Guard 3 ([`meta-llama/Llama-Guard-3-8B`](https://huggingface.co/meta-llama/Llama-Guard-3-8B)), ShieldGemma, WildGuard-7B.
+
+### Classical ML on hand-engineered features
+
+Still legitimate in 2026. If your decision reduces to counting words from a known lexicon, scoring sentiment with VADER, matching regex patterns against a policy — that'll be faster, cheaper, and more auditable than any of the above. Don't let the LLM renaissance talk you out of a solution that already works.
+
+---
+
+## Four realistic use cases
+
+Each is interface-neutral — the request shape works verbatim as an HTTP POST body or as a `--request` JSON for the CLI. See [`HTTP.md`](HTTP.md) or [`CLI.md`](CLI.md) for the mechanics of calling the engine.
+
+### Use case: Support ticket triage
+
+#### The problem
 
 A customer email arrives. You need to route it to the right queue, flag it for an escalation if the customer is unhappy, and surface the key facts (what they want, what product they're referring to) before a human looks at it. Doing this with a generative LLM means one call per question or one giant parsed JSON blob — brittle either way.
 
-### What state looks like
+#### What state looks like
 
 Real support emails are 100–2000 words, often with the thread of prior exchanges included. Something like:
 
@@ -119,7 +329,7 @@ Reply within the hour or I'm filing a chargeback.
 > > Where is my order? It's been 9 days...
 ```
 
-### The questions
+#### The questions
 
 ```json
 {
@@ -165,7 +375,7 @@ Reply within the hour or I'm filing a chargeback.
 
 Six questions in one call. On the 7B dev model, the whole thing comes back in roughly 500 ms (state tokens processed once, six questions × ~70 ms each).
 
-### How to use the answers
+#### How to use the answers
 
 ```python
 decisions = response["decisions"]
@@ -198,13 +408,13 @@ summary = {
 
 ---
 
-## Use case: LLM output guardrail
+### Use case: LLM output guardrail
 
-### The problem
+#### The problem
 
-You're building a chatbot powered by a generative LLM. Before showing a response to the user, you want to catch unsafe outputs, policy violations, and factual claims that need human verification. "LLM as a judge" — but you want calibrated probabilities so you can set your own thresholds for auto-ship vs. auto-block vs. send-to-human.
+You're building a chatbot powered by a generative LLM. Before showing a response to the user, you want to catch unsafe outputs, policy violations, and factual claims that need human verification. "LLM as a judge" — but you want calibrated probabilities so you can set your own thresholds for auto-ship vs auto-block vs send-to-human.
 
-### What state looks like
+#### What state looks like
 
 The state here is the user's prompt + the LLM's response, together. You're asking Bernoulli to judge what the LLM just produced:
 
@@ -243,7 +453,7 @@ your character to pick a lock, I'd suggest leaving the mechanics vague
 step-by-step instructions.
 ```
 
-### The questions
+#### The questions
 
 ```json
 {
@@ -281,7 +491,7 @@ step-by-step instructions.
 }
 ```
 
-### How to use the answers
+#### How to use the answers
 
 ```python
 d = response["decisions"]
@@ -308,19 +518,21 @@ if d["refusal_appropriate"]["answer"] == "refused_too_cautiously":
 
 The thresholds are **yours to set**. 0.9 is paranoid; 0.5 is permissive. Bernoulli gives you the number — you decide what it means for your product.
 
-> **Why not a generative LLM here?** You could absolutely ask a generative LLM to judge another LLM's output. But then you'd be asking it to produce text like "The response is safe. Confidence: high" and parsing that out. With Bernoulli, you get a probability directly — one number, machine-ready. You can route on 0.73 vs. 0.91 without a second LLM-as-judge call.
+> **Why not a generative LLM here?** You could absolutely ask a generative LLM to judge another LLM's output. But then you'd be asking it to produce text like "The response is safe. Confidence: high" and parsing that out. With Bernoulli, you get a probability directly — one number, machine-ready. You can route on 0.73 vs 0.91 without a second LLM-as-judge call.
+>
+> **Why not Llama Guard 3?** For raw safety classification with high unsafe-recall, pick it. The Bernoulli pattern wins when safety is one of five or six questions you need per response — the five-question request above shares one state tokenization. A pure safety call that only asks "is this unsafe?" is where a specialist model is competitive.
 
 ---
 
-## Use case: Content moderation
+### Use case: Content moderation
 
-### The problem
+#### The problem
 
 You're running a forum, marketplace, or chat platform. Every user-submitted post needs a moderation decision in <100 ms: ship, send to a review queue, or auto-reject. You want a calibrated probability so the review queue only gets the genuinely-uncertain cases.
 
-### What state looks like
+#### What state looks like
 
-A user post. Length varies — a short review might be 20 words, a long rant 1000 words. State = the post text, maybe with context about the user (new vs. established, posting rate, etc.).
+A user post. Length varies — a short review might be 20 words, a long rant 1000 words. State = the post text, maybe with context about the user (new vs established, posting rate, etc.).
 
 ```
 Post title: Why do we even have mods on this subreddit??
@@ -335,7 +547,7 @@ Body:
     This sub has gone completely downhill, I'm done.
 ```
 
-### The questions
+#### The questions
 
 ```json
 {
@@ -373,7 +585,7 @@ Body:
 }
 ```
 
-### How to use the answers
+#### How to use the answers
 
 ```python
 d = response["decisions"]
@@ -397,16 +609,18 @@ log_moderation_signal(
 The full `distribution` for each decision — not just the winner — is the data flywheel. Over time you can plot how severity shifts by category, catch calibration drift, retrain thresholds. A pipeline that only logs "the model said: incivility" throws away the signal you'd need for any of that.
 
 > **Why not a generative LLM here?** At scale (thousands of posts per second), paying LLM-call latency per post is a non-starter. Bernoulli reads the probability in a single forward pass; a batched request against 20 posts shares the model load. Plus: you need calibrated probabilities to tune ship/queue/block thresholds against your false-positive and false-negative budgets, which text generation doesn't give you.
+>
+> **Why not BGE-m3+LR here?** If you have 2000+ labeled historical moderation decisions in your category space, train it. Our ToxicChat numbers put BGE+LR at 0.78 vs us at 0.69 — a real gap. If your category space is fixed and labels exist, that's the right choice. Bernoulli wins when policies shift, when the category space is bespoke to your product, or when you want to add a new question without re-training.
 
 ---
 
-## Use case: Code review severity
+### Use case: Code review severity
 
-### The problem
+#### The problem
 
 Someone opens a PR. Before a human reviewer looks at it, you want a signal: is this a trivial typo fix, a normal change, or a security-critical / correctness-critical change that deserves senior-engineer eyes? You also want a quick "which areas does this touch" classification for routing to the right domain expert.
 
-### What state looks like
+#### What state looks like
 
 The diff plus a few hundred lines of surrounding context (function bodies, class defs, callers of the changed functions). Can be large — code review states commonly run 1000-5000 tokens.
 
@@ -440,7 +654,7 @@ class AuthService:
 side-channel reported in SEC-2234."
 ```
 
-### The questions
+#### The questions
 
 ```json
 {
@@ -484,7 +698,7 @@ side-channel reported in SEC-2234."
 }
 ```
 
-### How to use the answers
+#### How to use the answers
 
 ```python
 d = response["decisions"]
@@ -533,3 +747,16 @@ A few things repeat across the four:
 - **Thresholds, not label-matching.** Code branches on `confidence > 0.9` or `expected >= 4.0`, not on `answer == "..."`. The probability is the product.
 - **Log the full distribution.** Not just the winner. The distribution across all options is the signal you'll need for calibration audits, drift detection, and retraining your thresholds later. If your data pipeline collapses it to one label at the write stage, you've thrown away the thing that makes Bernoulli more useful than a classifier.
 - **Scale granularity matches your action space.** 1–3 rating when you have three actions; 1–5 when you have five. Don't ask for 1–10 if `expected >= 7.5` is the only threshold you'll use.
+
+---
+
+## How to validate on your own data
+
+The best way to know if Bernoulli fits is to run the benchmark harness against your own labeled sample.
+
+1. **Pick a shape**: find the benchmark in [`benchmarks/academic/`](benchmarks/academic/) or [`benchmarks/guardrails/`](benchmarks/guardrails/) that most looks like your workload (SST-2 for binary sentiment, Banking77 for high-cardinality intent, PAWS for binary semantic, Yelp for ordinal rating, ToxicChat for binary moderation, etc.).
+2. **Write a loader**: follow [`benchmarks/academic/sst2/loader.py`](benchmarks/academic/sst2/loader.py) — it's one function that yields `BenchmarkExample(state, question, gold, source, meta)` from a JSONL of your examples.
+3. **Run the harness**: one command per benchmark produces a `results/<date>.main.md` + JSON sidecar in the same shape as our public runs. Full methodology in [`benchmarks/README.md`](benchmarks/README.md).
+4. **Compare**: the result file has Bernoulli, Generative (same backbone, text-and-parse), BGE-m3+LR columns side by side. If Bernoulli's NLL and ECE beat the alternatives on your data, you have your answer. If not, the file is still useful — it tells you which specific alternative to pick instead.
+
+If after reading this doc you'd like help running the comparison on your corpus, [get in touch](mailto:contact@deepstore.ai) — we'll walk through what it would mean to use Bernoulli (or not) with your specific data.
