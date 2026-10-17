@@ -11,7 +11,7 @@ If you want to just run it, read [`USAGE.md`](USAGE.md).
 
 Bernoulli is **a thin orchestration layer around a single HuggingFace model that turns typed questions into calibrated probability distributions**. For every question it runs **exactly one forward pass**, reads the logits at the "answer" position (where the model would start generating), restricts them to a known set of label tokens (A..Z for multi-way choice, Yes/No for binary, A..I for rating scales), softmaxes those into probabilities, and returns them. No text is generated. No JSON is parsed. No retries, no repair. The "LLM part" of the system is one `model(**inputs)` call per forward pass; everything else is prompt construction, token-ID bookkeeping, debiasing, and calibration — all pure NumPy and Python.
 
-If that paragraph already makes sense: skim §2 for terminology, then jump to §4 for the end-to-end walkthrough.
+If that paragraph already makes sense: skim §2 for terminology, §3 for how our stack differs from a vanilla `vllm serve`, then jump to §5 for the end-to-end walkthrough.
 
 ---
 
@@ -19,7 +19,7 @@ If that paragraph already makes sense: skim §2 for terminology, then jump to §
 
 An LLM's forward pass produces, at every token position, a `(vocab_size,)` vector of logits — unnormalized log-probabilities over the vocabulary of "what the next token should be." Normal LLM use selects a token (via sampling, argmax, beam, etc.) and continues. **Bernoulli stops right there.**
 
-Given a prompt that ends with `Answer:` (we deliberately end the assistant turn there — see §3), the logits at the final position tell you *for every token in the vocabulary, how likely the model thinks it is to appear next*. Most of those tokens are irrelevant — "cat", "the", "<|endoftext|>". But a tiny subset — the single tokens corresponding to our answer labels (` A`, ` B`, ` C`, ` Yes`, ` No`, etc.) — are what the model is actually "choosing between."
+Given a prompt that ends with `Answer:` (we deliberately end the assistant turn there — see §4), the logits at the final position tell you *for every token in the vocabulary, how likely the model thinks it is to appear next*. Most of those tokens are irrelevant — "cat", "the", "<|endoftext|>". But a tiny subset — the single tokens corresponding to our answer labels (` A`, ` B`, ` C`, ` Yes`, ` No`, etc.) — are what the model is actually "choosing between."
 
 So the whole technique is:
 
@@ -42,11 +42,72 @@ The forward pass of a decoder-only LLM computes `P(next_token | context)` for ev
 
 The caveat is that we need the labels to **each be a single token** on the backbone's tokenizer. "A", "B", "C" are usually single tokens on modern tokenizers (BPE with a space prefix: ` A`, ` B`, ` C`). "Yes" and "No" also are. **Digits 1-9 with a space prefix are two tokens on Qwen2.5's tokenizer** (" " + "1"), which is why we use letters A-I for rating scales instead of digits (see `bernoulli/labels.py`'s module docstring).
 
-This single-token requirement is the thing that constrains which models work out of the box. More on that in §6.
+This single-token requirement is the thing that constrains which models work out of the box. More on that in §7.
 
 ---
 
-## 3 — Everything else is bookkeeping
+## 3 — How this differs from a standard LLM serving stack
+
+If you've served open-weight models before, your mental model is probably:
+
+> Download HF weights → `vllm serve <model-id>` → `/v1/chat/completions` → client posts chat messages → server returns generated text.
+
+**That's not what we do** — but you're closer than you'd think. We use the same vLLM, the same model weights, the same CUDA + PyTorch stack. We just talk to vLLM differently.
+
+### The twist in one sentence
+
+We import vLLM as a **Python library** and drive it ourselves. The OpenAI-compatible HTTP server (`vllm serve`) and the `/v1/chat/completions` endpoint are not in our path.
+
+### The stack we actually run
+
+| Layer | What it does | CPU or GPU? |
+|---|---|---|
+| **FastAPI + uvicorn** | Our HTTP server exposing `/v1/decide` (not OpenAI-compat) | CPU |
+| `bernoulli/decide.py` | Dispatches a request to the scorer and shapes the response | CPU |
+| `bernoulli/prompt.py` | Builds a chat-formatted prompt that ends at the answer position | CPU |
+| **`bernoulli/scorer.py`** | **The one real piece of magic.** See §2 and §5. | CPU control, GPU math |
+| vLLM Python API (prod) or `transformers` (dev) | LLM runtime | GPU-bound |
+| PyTorch + CUDA | Tensor ops, kernels | GPU |
+| **Model weights (Qwen2.5-VL-7B)** | ~14 GB bf16, standard HF snapshot | GPU |
+
+The weights are **unmodified**. If you download `Qwen/Qwen2.5-VL-7B-Instruct @ cc59489...` yourself, you have identical bytes. There's no fine-tune, no distillation, no custom checkpoint. The decision-model-ness of Bernoulli lives entirely in the ~400 lines around that pretrained model, not in the weights themselves.
+
+### Why not `vllm serve`'s `/v1/chat/completions`?
+
+The OpenAI chat endpoint is purpose-built for text generation and doesn't expose three things we need:
+
+1. **Restricting output to specific tokens.** Our forward pass should only consider the 4 label tokens (`A`, `B`, `C`, `D`) — or `Yes`/`No`, or `A`..`I` for rating scales. vLLM supports this via `SamplingParams(allowed_token_ids=[...])` in its Python API, but there's no equivalent on the chat endpoint.
+2. **Reading raw logits over the label tokens.** `/v1/chat/completions` returns top-N logprobs *of the generated token*, with inconsistent coverage. We want a **softmax over exactly our chosen tokens**, computed from the logit vector directly, with no actual generation happening.
+3. **Prefix caching under our control.** For "6 questions about the same email," we want vLLM to tokenize + process the state once and share the KV cache across questions. vLLM has `enable_prefix_caching=True` built in — but driving it programmatically means our scorer owns batching and reuse. The chat endpoint doesn't give us that control.
+
+So we call `vllm.LLM.generate(prompt, SamplingParams(max_tokens=1, logprobs=128, allowed_token_ids=label_ids, enable_prefix_caching=True))` directly from Python. The model does **one forward pass**, we read the logprobs over our chosen tokens, softmax, and return the distribution. See §5 for the full code path.
+
+### What our `/v1/decide` endpoint is instead
+
+Not OpenAI-compatible. It takes a **state** (the input text) and a list of **typed questions** (`choice` / `binary` / `rating`) and returns typed decisions with `distribution`, `confidence`, `expected` fields. The schema is our invention: pydantic v2 discriminated unions with `extra='forbid'`, so invalid input returns a 422 rather than being silently coerced. See [`HTTP.md`](HTTP.md) for the exact wire format.
+
+### A note about Docker
+
+Our Dockerfile uses `vllm/vllm-openai:v0.31.0-cu129-ubuntu2404` as the **base image**. The name is misleading — we use that image because it has vLLM + CUDA + PyTorch pre-installed and version-matched, which saves us a yak shave on compatibility. We override the entrypoint to run our FastAPI server, not vLLM's OpenAI-compat server.
+
+### The "+ debiasing + calibration" wrapper
+
+Around every scoring call we add two things on top of the raw softmax:
+
+- **Reverse debias** (default on): run the same question a second time with options in reversed order, average the probability distributions in canonical option order. Cancels the model's left-position bias. Doubles the forward passes per question; worth it. For >2 options we also support `cyclic` (all N shifts) for small N.
+- **Temperature calibration** (optional): divide logits by a fitted `T` before softmax. We fit `T` once per question type on a held-out dev set and persist it to `calibration/qwen2.5-vl-7b.json`. ECE drops noticeably — e.g. 0.028 → 0.024 on SST-2.
+
+Both are implemented as thin wrappers around the scorer call, not inside the model. The scorer itself stays "one forward pass, return logits over N tokens."
+
+### What this means if you're coming from `vllm serve`
+
+- **The runtime is familiar** — same vLLM, same CUDA, same torch, same weights. The novel piece is a ~400-line Python scorer that reads logits at the answer position, plus a FastAPI endpoint that exposes typed questions instead of chat messages.
+- **Our Docker image is turnkey.** `just docker-run` gets you from zero to serving in ~5 minutes. We don't rebuild the CUDA/torch/vLLM compatibility matrix — we inherit it from vLLM's base image.
+- **Swapping the backbone** is an env-var change: set `BERNOULLI_MODEL_ID` + `BERNOULLI_MODEL_REVISION` to any open-weight model whose tokenizer gives you single-token labels for A-Z + Yes/No. The scorer auto-detects whether the backbone is text-only or vision-text and routes accordingly (see `_load_backbone()` in `scorer.py`). This has been exercised at both 7B and 32B scales.
+
+---
+
+## 4 — Everything else is bookkeeping
 
 The forward pass is simple. Everything *around* the forward pass is where the actual care lives:
 
@@ -133,7 +194,7 @@ Our ~1,500 lines sit between an HTTP/CLI entry and PyTorch. transformers (or vLL
 ├─────────────────────────────────┴─────────────────────────────────┤
 │ transformers (used only in the HFScorer branch above)             │
 │   model packaging + tokenizers + chat templates — four calls      │
-│   total; see §5 for the full enumeration                          │
+│   total; see §6 for the full enumeration                          │
 ├───────────────────────────────────────────────────────────────────┤
 │ PyTorch — the actual math                                         │
 │   torch.nn.Module forward pass (where the decision happens)       │
@@ -158,7 +219,7 @@ Our ~1,500 lines sit between an HTTP/CLI entry and PyTorch. transformers (or vLL
 
 ---
 
-## 4 — End-to-end walkthrough: one `/v1/decide` request
+## 5 — End-to-end walkthrough: one `/v1/decide` request
 
 Let's follow a concrete choice-question request through the stack. The ticket:
 
@@ -301,17 +362,17 @@ Serialized by Pydantic. Sent back over HTTP.
 
 ---
 
-## 5 — How we're using Qwen2.5-VL-7B specifically
+## 6 — How we're using Qwen2.5-VL-7B specifically
 
 The dev backbone is `Qwen/Qwen2.5-VL-7B-Instruct` pinned at revision `cc594898137f460bfe9f0759e9844b3ce807cfb5`. Pulled with `huggingface_hub` + `hf_transfer` (fast parallel downloader) to `/opt/dlami/nvme/hf-cache` on the dev box.
 
-> **Note**: the config-driven dispatch (§6) has been exercised at **both 7B and 32B scales** — JevBench measurements on 2026-10-10 confirmed that swapping backbones is purely an env-var change, no code touch required. See [`benchmarks/jevbench/results/2026-10-10-32b.md`](benchmarks/jevbench/results/2026-10-10-32b.md). This section walks through the 7B specifics because that's what we serve; the 32B measurement is a staged-but-not-deployed data point until L40S capacity lands.
+> **Note**: the config-driven dispatch (§7) has been exercised at **both 7B and 32B scales** — JevBench measurements on 2026-10-10 confirmed that swapping backbones is purely an env-var change, no code touch required. See [`benchmarks/jevbench/results/2026-10-10-32b.md`](benchmarks/jevbench/results/2026-10-10-32b.md). This section walks through the 7B specifics because that's what we serve; the 32B measurement is a staged-but-not-deployed data point until L40S capacity lands.
 
 What we use from it:
 
 1. **The tokenizer** — `AutoTokenizer.from_pretrained(model_id, revision=rev)`. Qwen's tokenizer is a BPE variant. Space-prefixed letters A-Z are single tokens; space-prefixed digits are two tokens; "Yes" and "No" are single tokens.
 
-2. **The model class** — dispatched automatically via `_load_backbone()` in `scorer.py`. For Qwen2.5-VL this resolves to `AutoModelForImageTextToText` (which selects `Qwen2_5_VLForConditionalGeneration` under the hood). Swap backbones via env vars; see §6.
+2. **The model class** — dispatched automatically via `_load_backbone()` in `scorer.py`. For Qwen2.5-VL this resolves to `AutoModelForImageTextToText` (which selects `Qwen2_5_VLForConditionalGeneration` under the hood). Swap backbones via env vars; see §7.
 
 3. **The chat template** — baked into the tokenizer. `apply_chat_template(messages, add_generation_prompt=True)` emits the ChatML format with the correct `<|im_start|>`, `<|im_end|>` turn boundaries.
 
@@ -329,7 +390,7 @@ What we use from it:
 
 ---
 
-## 6 — Working with a different model
+## 7 — Working with a different model
 
 This section is the one you'll return to when you want to swap backbones.
 
@@ -400,7 +461,7 @@ Only matters for `VLLMScorer`. `BERNOULLI_MAX_MODEL_LEN=8192` on 24GB cards; vLL
 
 ---
 
-## 7 — How Bernoulli differs from LiteLLM / LangChain / Instructor
+## 8 — How Bernoulli differs from LiteLLM / LangChain / Instructor
 
 If you're coming from the LLM-tooling ecosystem, the mental shift is: **Bernoulli replaces the LLM call primitive, not the orchestration around it.**
 
@@ -451,7 +512,7 @@ If your use case is "I want one decision from one prompt and I'm fine without de
 
 ---
 
-## 8 — Non-obvious things that bit us during development
+## 9 — Non-obvious things that bit us during development
 
 Running list of things that aren't obvious from the architecture, but have shown up as bugs or performance issues. Documented here so you don't rediscover them:
 
@@ -473,7 +534,7 @@ Running list of things that aren't obvious from the architecture, but have shown
 
 ---
 
-## 9 — If you want to extend this
+## 10 — If you want to extend this
 
 Starter prompts for common extensions:
 
@@ -489,7 +550,7 @@ Starter prompts for common extensions:
 
 ---
 
-## 10 — Where everything lives
+## 11 — Where everything lives
 
 ```
 bernoulli/
