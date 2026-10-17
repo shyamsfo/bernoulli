@@ -394,6 +394,48 @@ What we use from it:
 
 This section is the one you'll return to when you want to swap backbones.
 
+### Which model families work?
+
+Beyond architecture, the "will this work" question has two more axes: **is the model chat-tuned without an always-on reasoning head**, and **does the tokenizer give us single-token labels?** The scorer handles the tokenizer check with a startup assertion; the rest is up to you.
+
+| Family | Known-good variants | Verified? | Notes |
+|---|---|---|---|
+| **Qwen2.5 / Qwen2.5-VL** | 0.5B / 1.5B / 3B / 7B / 14B / 32B / 72B (text + VL) | ✅ 7B + 32B | Our default. Everything else is extrapolation from the shared architecture. |
+| **Llama 3 / 3.1 / 3.2** | 8B, 70B (text); 3.2-Vision 11B / 90B | 🧪 not run | Architecturally compatible. VL variants dispatch via `AutoModelForImageTextToText`. |
+| **Mistral / Mixtral / Codestral** | 7B, 8×7B, 8×22B | 🧪 not run | Verify tokenizer — some Mistral tokenizers split certain capital letters. |
+| **Gemma 2 / 3** | 2B, 9B, 27B; Gemma-3-Vision | 🧪 not run | Single-token labels verified on Gemma-2-9B. |
+| **Phi 3 / 3.5 / 4** | 3.8B, 7B, 14B | 🧪 not run | Compatible. |
+| **Yi** | 6B, 34B | 🧪 not run | Compatible. |
+| **Command R / R+** (Cohere) | 35B, 104B | 🧪 not run | Compatible. CC-BY-NC license — check your use case. |
+
+**Works with care — reasoning mode must be disabled:**
+
+- **Qwen3 / Qwen3-VL** — set `enable_thinking=False` in the chat template or via a system-prompt directive.
+- **GLM 4.5 / 4.6** — same pattern, disable reasoning.
+- **DeepSeek V3** — reasoning is optional, keep it off.
+
+**Doesn't work out of the box:**
+
+- **DeepSeek R1 / R1-Zero** — reasoning is always on; the model always emits `<think>...</think>` before the answer, breaking the next-token read. A prompt-builder change could in principle let us read logits after the `</think>` close token, but we haven't done that work.
+- **Encoder-only models (BERT, RoBERTa, DeBERTa)** — no causal next-token position to read logits at. Different architecture; our scorer doesn't dispatch to them. (DeBERTa shows up as a baseline *in our benchmarks*, but via its own `pipeline("zero-shot-classification")` NLI path — not as a Bernoulli backbone.)
+- **Encoder-decoder models (T5, BART, Flan-T5)** — the "answer" position lives on the decoder side; would need a seq2seq-specific code path we don't have.
+- **Base models (not chat-tuned)** — mechanically load but calibrate poorly. The "Answer:" prefill pattern assumes a model that's seen that pattern during instruction tuning.
+
+**Untested but should work architecturally**: Phi 4, Yi 2, Nemotron, Granite, DeepSeek V3 (with reasoning off), any new decoder-only chat-tuned open model with a standard HF chat template. The config-driven dispatch picks these up for free; verify tokenizer + chat template on first run.
+
+### If you want to actually swap and measure
+
+The cleanest validation is a single benchmark run:
+
+```bash
+export BERNOULLI_MODEL_ID=meta-llama/Llama-3.1-8B-Instruct
+export BERNOULLI_MODEL_REVISION=<pinned-sha>
+just serve &
+uv run python -m benchmarks.run academic/sst2 --baselines bernoulli --limit 100 --device cuda
+```
+
+If startup doesn't fail with "letter X isn't single-token" and the SST-2 result file has sane numbers (not random coin-flip), you're ~90% there. Then re-fit the temperature calibration for the new backbone and run the full benchmark suite to compare.
+
 ### The dispatch flowchart
 
 ```
