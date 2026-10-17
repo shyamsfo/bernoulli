@@ -242,3 +242,60 @@ class TestGenerate:
         )
         assert r.status_code == 501
         assert "generate" in r.json()["detail"].lower()
+
+
+class TestAuth:
+    """API key middleware behavior.
+
+    Default `client` fixture constructs the app with no api_keys env var, so
+    auth is disabled — all other tests in this file exercise that path. These
+    tests explicitly inject a key set to exercise the auth path.
+    """
+
+    @staticmethod
+    def _client_with_keys(*keys: str) -> TestClient:
+        app = create_app(scorer=_ConstantScorer(), api_keys=frozenset(keys))
+        return TestClient(app)
+
+    def test_healthz_bypasses_auth(self) -> None:
+        c = self._client_with_keys("secret")
+        r = c.get("/healthz")
+        assert r.status_code == 200
+
+    def test_missing_token_401(self) -> None:
+        c = self._client_with_keys("secret")
+        r = c.get("/v1/models")
+        assert r.status_code == 401
+        assert "missing bearer token" in r.json()["detail"]
+
+    def test_malformed_header_401(self) -> None:
+        c = self._client_with_keys("secret")
+        r = c.get("/v1/models", headers={"authorization": "secret"})  # no "Bearer "
+        assert r.status_code == 401
+
+    def test_wrong_token_401(self) -> None:
+        c = self._client_with_keys("secret")
+        r = c.get("/v1/models", headers={"authorization": "Bearer wrong"})
+        assert r.status_code == 401
+        assert "invalid api key" in r.json()["detail"]
+
+    def test_valid_token_200(self) -> None:
+        c = self._client_with_keys("secret")
+        r = c.get("/v1/models", headers={"authorization": "Bearer secret"})
+        assert r.status_code == 200
+
+    def test_multiple_keys_accepted(self) -> None:
+        c = self._client_with_keys("key1", "key2", "key3")
+        for key in ("key1", "key2", "key3"):
+            r = c.get("/v1/models", headers={"authorization": f"Bearer {key}"})
+            assert r.status_code == 200, f"key {key} should be accepted"
+
+    def test_empty_keyset_disables_auth(self) -> None:
+        c = self._client_with_keys()  # no keys
+        r = c.get("/v1/models")  # no auth header
+        assert r.status_code == 200
+
+    def test_auth_applies_to_decide_endpoint(self) -> None:
+        c = self._client_with_keys("secret")
+        r = c.post("/v1/decide", json={"state": {"text": "x"}, "questions": []})
+        assert r.status_code == 401

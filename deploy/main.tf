@@ -115,6 +115,14 @@ resource "aws_security_group" "dev" {
     cidr_blocks = [local.ssh_cidr]
   }
 
+  ingress {
+    description = "Bernoulli API from ssd2 TLS terminator (bernoulli-api.nuwire.dev reverse-proxies here)"
+    from_port   = 8000
+    to_port     = 8000
+    protocol    = "tcp"
+    cidr_blocks = [var.api_ingress_cidr]
+  }
+
   egress {
     description = "All egress"
     from_port   = 0

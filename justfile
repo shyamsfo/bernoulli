@@ -202,3 +202,99 @@ loadtest url="http://127.0.0.1:8000":
 # deploy the bernoulli.live landing page (delegates to web/justfile)
 deploy-web:
     cd web && just deploy
+
+# ---------- public-endpoint lifecycle (dev-tier Salesforce-callable) ----------
+# These recipes operate the g5.xlarge as a reverse-proxied public endpoint at
+# https://bernoulli-api.nuwire.dev — TLS terminated on ssd2, forwarded to the
+# EC2 box's ephemeral public IP (tracked via `bernoulli-internal.nuwire.dev`
+# in ClouDNS, updated on each `serve-up`).
+#
+# Flow: `just up` (once) → `just serve-provision` (once) → `just serve-up`
+# (daily) ... `just serve-down` (end of day). The Docker container has
+# --restart=unless-stopped so it survives EC2 start/stop cycles automatically.
+
+# One-time: sync code, pull model, build image, start Docker container with
+# the API-key env var and --restart=unless-stopped. Run after `just up` or
+# `terraform destroy && apply`.
+# Requires BERNOULLI_API_KEYS in ~/.credentials (comma-separated).
+serve-provision:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    source ~/.credentials
+    : "${BERNOULLI_API_KEYS:?set BERNOULLI_API_KEYS in ~/.credentials (comma-separated 64-char hex tokens)}"
+    just sync-mirror
+    ssh {{host}} 'cd ~/bernoulli && just model-pull'
+    ssh {{host}} 'cd ~/bernoulli && just docker-build'
+    # Replace any existing container (name conflict otherwise)
+    ssh {{host}} 'docker rm -f bernoulli 2>/dev/null || true'
+    ssh {{host}} "docker run -d --restart=unless-stopped --gpus all -p 8000:8000 \
+        -v \$HOME/.cache/huggingface:/data/hf-cache \
+        -e BERNOULLI_SCORER=vllm \
+        -e BERNOULLI_MAX_MODEL_LEN=8192 \
+        -e BERNOULLI_API_KEYS='$BERNOULLI_API_KEYS' \
+        --name bernoulli \
+        bernoulli:latest"
+    echo "container up; waiting for model load (vLLM init ~90s)..."
+    for i in $(seq 1 60); do
+        if ssh {{host}} 'curl -sf http://127.0.0.1:8000/healthz' >/dev/null 2>&1; then
+            echo "healthz ok on the box"
+            exit 0
+        fi
+        sleep 5
+    done
+    echo "WARN: healthz didn't come up in 5 min"
+    exit 1
+
+# Start the EC2 box, update ClouDNS A record, wait for the public endpoint
+# to be reachable. Daily "come online" command.
+serve-up:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    INSTANCE_ID=$(terraform -chdir=deploy output -raw instance_id)
+    echo "[1/4] starting ec2 $INSTANCE_ID ..."
+    aws ec2 start-instances --instance-ids $INSTANCE_ID > /dev/null
+    aws ec2 wait instance-running --instance-ids $INSTANCE_ID
+    IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID \
+        --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
+    echo "[2/4] got ip $IP"
+    echo "[3/4] updating cloudns: bernoulli-internal.nuwire.dev -> $IP"
+    source ~/.credentials
+    ~/bin/cloudns_mgr set bernoulli-internal nuwire.dev $IP
+    # keep local ssh config in sync so `just shell` etc. still work
+    python3 -c "import re,os; p=os.path.expanduser('~/.ssh/config'); c=open(p).read(); open(p,'w').write(re.sub(r'(Host bernoulli\s*\n\s*HostName )\S+', r'\g<1>$IP', c, count=1))"
+    echo "[4/4] waiting for public endpoint to come up (nginx re-resolves DNS every 30s + container restarts via docker policy)..."
+    for i in $(seq 1 60); do
+        if curl -sf https://bernoulli-api.nuwire.dev/healthz >/dev/null 2>&1; then
+            echo "ready: https://bernoulli-api.nuwire.dev"
+            exit 0
+        fi
+        sleep 5
+    done
+    echo "WARN: public endpoint didn't come up in 5 min; try 'just serve-status'"
+    exit 1
+
+# Stop the EC2 box. The ClouDNS record stays stale (no need to clean up —
+# nothing can reach a dead backend anyway). Next `serve-up` overwrites it.
+serve-down:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    INSTANCE_ID=$(terraform -chdir=deploy output -raw instance_id)
+    aws ec2 stop-instances --instance-ids $INSTANCE_ID > /dev/null
+    echo "stopped; run 'just serve-up' to bring back"
+
+# EC2 state + current DNS value + endpoint health in one command.
+serve-status:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    INSTANCE_ID=$(terraform -chdir=deploy output -raw instance_id)
+    STATE=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID \
+        --query 'Reservations[0].Instances[0].State.Name' --output text)
+    echo "ec2:       $STATE"
+    source ~/.credentials 2>/dev/null || true
+    DNS=$(~/bin/cloudns_mgr get bernoulli-internal nuwire.dev 2>/dev/null | head -1 || echo "none")
+    echo "dns:       bernoulli-internal.nuwire.dev -> $DNS"
+    if curl -sf https://bernoulli-api.nuwire.dev/healthz >/dev/null 2>&1; then
+        echo "healthz:   ok (https://bernoulli-api.nuwire.dev)"
+    else
+        echo "healthz:   unreachable"
+    fi

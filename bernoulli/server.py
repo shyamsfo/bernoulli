@@ -31,7 +31,8 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.responses import JSONResponse
 
 from bernoulli.calibrate import Calibration, load_calibration
 from bernoulli.config import load_settings
@@ -41,7 +42,7 @@ from bernoulli.scorer import Scorer, load_scorer
 from bernoulli.types import DecideRequest, DecideResponse
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator
+    from collections.abc import AsyncIterator, Awaitable, Callable
 
 
 def _load_calibration_if_configured() -> Calibration | None:
@@ -49,6 +50,12 @@ def _load_calibration_if_configured() -> Calibration | None:
     if not path:
         return None
     return load_calibration(Path(path))
+
+
+def _load_api_keys() -> frozenset[str]:
+    """Parse BERNOULLI_API_KEYS as comma-separated tokens. Empty set = auth disabled."""
+    raw = os.environ.get("BERNOULLI_API_KEYS", "")
+    return frozenset(k.strip() for k in raw.split(",") if k.strip())
 
 
 @asynccontextmanager
@@ -65,13 +72,23 @@ def create_app(
     *,
     scorer: Scorer | None = None,
     calibration: Calibration | None = None,
+    api_keys: frozenset[str] | None = None,
 ) -> FastAPI:
     """Build the FastAPI app.
 
     If `scorer` is provided, skip the lifespan model-load and inject it
     directly (used by tests to pass a mock scorer; production call-sites
     omit this and let lifespan handle it).
+
+    `api_keys`: when non-empty, every request except /healthz must carry
+    `Authorization: Bearer <key>` where <key> is one of the configured
+    tokens. If None, keys are read from the BERNOULLI_API_KEYS env var at
+    construction time (comma-separated). An empty set disables auth —
+    appropriate for local dev and tests, never for a public endpoint.
     """
+    if api_keys is None:
+        api_keys = _load_api_keys()
+
     if scorer is not None:
         app = FastAPI(title="Bernoulli", version="0.0.1")
         app.state.scorer = scorer
@@ -79,6 +96,31 @@ def create_app(
         app.state.settings = None
     else:
         app = FastAPI(title="Bernoulli", version="0.0.1", lifespan=lifespan)
+
+    @app.middleware("http")
+    async def _api_key_auth(
+        request: Request,
+        call_next: Callable[[Request], Awaitable[Response]],
+    ) -> Response:
+        # /healthz is intentionally unauthenticated so load balancers,
+        # uptime monitors, and the serve-up wait-loop can probe without
+        # a key.
+        if request.url.path == "/healthz":
+            return await call_next(request)
+        # No keys configured = auth disabled. Dev / test only.
+        if not api_keys:
+            return await call_next(request)
+        auth = request.headers.get("authorization", "")
+        if not auth.startswith("Bearer "):
+            return JSONResponse(
+                status_code=401, content={"detail": "missing bearer token"}
+            )
+        token = auth[len("Bearer ") :]
+        if token not in api_keys:
+            return JSONResponse(
+                status_code=401, content={"detail": "invalid api key"}
+            )
+        return await call_next(request)
 
     @app.get("/healthz")
     def healthz() -> dict[str, str]:

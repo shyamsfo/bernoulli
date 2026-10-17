@@ -40,6 +40,12 @@ variable "ssh_cidr" {
   default     = ""
 }
 
+variable "api_ingress_cidr" {
+  description = "CIDR allowed to hit the Bernoulli API on port 8000. Defaults to ssd2 (the TLS termination box that reverse-proxies bernoulli-api.nuwire.dev). Set to '0.0.0.0/0' only if exposing the raw HTTP port publicly, which also requires setting BERNOULLI_API_KEYS on the server."
+  type        = string
+  default     = "208.87.128.216/32"
+}
+
 variable "availability_zone" {
   description = "AZ to launch in. Override if the default hits InsufficientInstanceCapacity. g6e.xlarge is offered in us-east-1{a,b,c,d}; not in 1e/1f."
   type        = string
