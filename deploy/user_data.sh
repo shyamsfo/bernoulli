@@ -11,8 +11,13 @@ apt-get update
 apt-get install -y git tmux htop build-essential rsync jq curl ca-certificates pkg-config
 
 # -- uv (for the ubuntu user) ----------------------------------------------
-# Installs into ~/.local/bin which is already on PATH for Ubuntu 24.04 non-login shells.
+# Installs into ~/.local/bin. Earlier version of this file assumed that's on
+# PATH for non-interactive SSH; it is NOT on Ubuntu 24.04 (only interactive
+# login shells source the profile that adds it). Symlink into /usr/local/bin
+# so `ssh <host> 'uv ...'` works without profile shenanigans.
 sudo -u ubuntu bash -lc 'curl -LsSf https://astral.sh/uv/install.sh | sh'
+ln -sf /home/ubuntu/.local/bin/uv /usr/local/bin/uv
+ln -sf /home/ubuntu/.local/bin/uvx /usr/local/bin/uvx
 
 # -- HF cache on instance-store NVMe ---------------------------------------
 # The NVIDIA GPU Base AMI already mounts the g6.xlarge's 232GB NVMe at
