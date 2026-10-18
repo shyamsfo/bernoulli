@@ -250,15 +250,13 @@ serve-start:
     SSH_OPTS="-o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=2"
     echo "[1/3] stopping any existing uvicorn on $HOST..."
     timeout 15 ssh $SSH_OPTS "$HOST" 'pkill -f "uvicorn bernoulli.server" 2>/dev/null; sleep 1' || true
-    echo "[2/3] launching uvicorn (setsid --fork detaches so ssh returns immediately)..."
-    # Env vars passed to the setsid'd bash; bash's exec replaces with uvicorn,
-    # so the keys never appear in uvicorn's /proc/<pid>/cmdline (only env).
-    # setsid --fork creates a new session + forks so ssh closes right away.
-    timeout 15 ssh $SSH_OPTS "$HOST" "env \
-        BERNOULLI_SCORER=hf \
-        BERNOULLI_MAX_MODEL_LEN=8192 \
-        BERNOULLI_API_KEYS='$BERNOULLI_API_KEYS' \
-        setsid --fork bash /home/ubuntu/bernoulli/deploy/start-serve.sh"
+    echo "[2/3] seeding ~/.bernoulli.env + launching uvicorn..."
+    # Write env file on the box (chmod 600) so start-serve.sh can source it.
+    # Updated on every serve-start so key rotation flows through naturally.
+    # start-serve.sh handles the setsid --fork + exec pattern for clean detach.
+    printf 'BERNOULLI_SCORER=hf\nBERNOULLI_MAX_MODEL_LEN=8192\nBERNOULLI_API_KEYS=%s\n' "$BERNOULLI_API_KEYS" \
+        | timeout 10 ssh $SSH_OPTS "$HOST" 'cat > ~/.bernoulli.env && chmod 600 ~/.bernoulli.env'
+    timeout 15 ssh $SSH_OPTS "$HOST" "setsid --fork bash /home/ubuntu/bernoulli/deploy/start-serve.sh"
     sleep 2
     echo "[3/3] waiting for /healthz on the box (HFScorer loads ~729 weight shards; 4-5 min cold)..."
     for i in $(seq 1 60); do

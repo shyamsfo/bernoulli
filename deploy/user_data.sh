@@ -8,7 +8,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 # -- base packages ----------------------------------------------------------
 apt-get update
-apt-get install -y git tmux htop build-essential rsync jq curl ca-certificates pkg-config
+apt-get install -y git tmux htop build-essential rsync jq curl ca-certificates pkg-config just
 
 # -- uv (for the ubuntu user) ----------------------------------------------
 # Installs into ~/.local/bin. Earlier version of this file assumed that's on

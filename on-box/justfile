@@ -1,0 +1,109 @@
+# On-box operations — recipes to run FROM the EC2 serving box, not from
+# a developer laptop. Rsynced to ~/bernoulli/on-box/ by `just sync-mirror`.
+#
+# Usage after SSH into the box:
+#   cd ~/bernoulli/on-box
+#   just                # list recipes
+#   just status         # uvicorn pid + /healthz + GPU + uptime
+#   just start          # launch uvicorn (reads ~/.bernoulli.env)
+#   just stop           # pkill uvicorn
+#   just restart        # stop + start
+#   just health         # one-shot curl /healthz with timing
+#   just logs           # tail -n 100 ~/serve.log
+#   just logs-follow    # tail -f ~/serve.log
+#   just gpu            # nvidia-smi one-liner
+#   just info           # /v1/models response (needs API key)
+#
+# Env source: ~/.bernoulli.env (chmod 600; written by Mac-side `just
+# serve-start`). If missing, `start` and `info` will fail with a clear
+# message pointing you back to the Mac side.
+
+default:
+    @just --list
+
+# Server status: process + healthz + GPU + box uptime, in one shot.
+status:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    pid=$(pgrep -f "uvicorn bernoulli.server" | head -1 || true)
+    if [ -z "$pid" ]; then
+        echo "server:   DOWN"
+    else
+        etime=$(ps -o etime= -p $pid | tr -d ' ')
+        echo "server:   UP (pid=$pid, uptime=$etime)"
+    fi
+    if curl -sf -m 2 http://127.0.0.1:8000/healthz > /dev/null 2>&1; then
+        echo "healthz:  ok"
+    else
+        echo "healthz:  not responding"
+    fi
+    echo "gpu:      $(nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total --format=csv,noheader)"
+    echo "box:      $(uptime -p)"
+
+# Start uvicorn, detached. Fails if already running (use restart to swap).
+start:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if pgrep -f "uvicorn bernoulli.server" > /dev/null; then
+        echo "already running — use 'just restart' to kill + relaunch"
+        exit 1
+    fi
+    if [ ! -f ~/.bernoulli.env ]; then
+        echo "ERROR: ~/.bernoulli.env missing on this box."
+        echo "       Seed it by running 'just serve-start' from your Mac."
+        exit 1
+    fi
+    setsid --fork bash /home/ubuntu/bernoulli/deploy/start-serve.sh
+    echo "launched; healthz comes up in ~90 s (vllm) or ~4-5 min (hf). Watch with:"
+    echo "  just logs-follow"
+
+# Stop the server process. Idempotent.
+stop:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    pid=$(pgrep -f "uvicorn bernoulli.server" | head -1 || true)
+    if [ -z "$pid" ]; then
+        echo "nothing to stop"
+    else
+        pkill -f "uvicorn bernoulli.server"
+        for i in $(seq 1 10); do
+            pgrep -f "uvicorn bernoulli.server" > /dev/null || break
+            sleep 1
+        done
+        echo "stopped (was pid=$pid)"
+    fi
+
+# stop + start. Doesn't wait for /healthz (use `just logs-follow` for that).
+restart:
+    @just stop
+    @just start
+
+# One-shot /healthz probe with timing.
+health:
+    @curl -sS -w "\n  http %{http_code} · %{time_total}s\n" \
+        http://127.0.0.1:8000/healthz || echo "  unreachable"
+
+# Last N lines of the uvicorn log (default 100).
+logs lines="100":
+    @tail -n {{lines}} ~/serve.log 2>/dev/null || echo "no log yet"
+
+# Follow the uvicorn log live. Ctrl-C to exit.
+logs-follow:
+    @tail -f ~/serve.log
+
+# GPU quick status.
+gpu:
+    @nvidia-smi --query-gpu=name,memory.used,memory.total,utilization.gpu --format=csv
+
+# Hit /v1/models with the first API key from ~/.bernoulli.env.
+info:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ ! -f ~/.bernoulli.env ]; then
+        echo "ERROR: ~/.bernoulli.env missing on this box"
+        exit 1
+    fi
+    set -a; source ~/.bernoulli.env; set +a
+    KEY=$(echo "$BERNOULLI_API_KEYS" | cut -d, -f1)
+    curl -sS -H "Authorization: Bearer $KEY" http://127.0.0.1:8000/v1/models \
+        | python3 -m json.tool
