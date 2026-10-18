@@ -220,18 +220,17 @@ deploy-web:
 # auto-start, add a systemd unit later (see M11 in product/milestones.md).
 # The Dockerfile + `just docker-*` recipes stay for future production use.
 
-# One-time per EC2 instance: sync code, uv sync, pull model.
-# Fast enough to re-run safely (uv sync + hf download are both idempotent).
-# After a `terraform destroy && apply` or a fresh instance, run this again.
+# Stepwise, resumable bring-up for the serving box. Does the work of what
+# used to be `serve-provision` + `serve-start`, with explicit short timeouts
+# on each step so the UEFI-boot-loop class of failures (see
+# product/reports/2026-10-18.md) fails loudly instead of silently hanging.
+# Delegates to deploy/bringup.sh. Idempotent — safe to re-run on any step
+# failure. BERNOULLI_API_KEYS must be in ~/.credentials.
 serve-provision:
     #!/usr/bin/env bash
     set -euo pipefail
-    just sync-mirror
-    echo "---uv sync (installs torch + transformers etc.)---"
-    ssh {{host}} 'cd ~/bernoulli && uv sync --extra scorer-hf'
-    echo "---model-pull (Qwen2.5-VL-7B, ~15 GB, ~90s via hf_transfer)---"
-    ssh {{host}} 'cd ~/bernoulli && just model-pull'
-    echo "---done. run 'just serve-start' to launch the server.---"
+    source ~/.credentials
+    ./deploy/bringup.sh
 
 # Launch uvicorn on the box via nohup, with API keys from ~/.credentials.
 # Idempotent: kills any existing uvicorn first. Returns when /healthz on the
@@ -281,27 +280,20 @@ serve-up:
     #!/usr/bin/env bash
     set -euo pipefail
     INSTANCE_ID=$(terraform -chdir=deploy output -raw instance_id)
-    echo "[1/4] starting ec2 $INSTANCE_ID ..."
+    echo "[1/5] starting ec2 $INSTANCE_ID ..."
     aws ec2 start-instances --instance-ids $INSTANCE_ID > /dev/null
     aws ec2 wait instance-running --instance-ids $INSTANCE_ID
+    echo "[2/5] waiting for AWS health checks (both system + instance; this is what catches UEFI boot loops) ..."
+    aws ec2 wait instance-status-ok --instance-ids $INSTANCE_ID
     IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID \
         --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
-    echo "[2/4] got ip $IP"
-    echo "[3/4] updating cloudns: bernoulli-internal.nuwire.dev -> $IP"
+    echo "[3/5] got ip $IP (both AWS health checks passed)"
+    echo "[4/5] updating cloudns: bernoulli-internal.nuwire.dev -> $IP"
     source ~/.credentials
-    ~/bin/cloudns_mgr set bernoulli-internal nuwire.dev $IP
-    # keep local ssh config in sync so `just shell` etc. still work
+    ~/bin/cloudns_mgr set bernoulli-internal nuwire.dev $IP > /dev/null
+    # keep local ssh config in sync so `just shell` + bringup.sh work
     python3 -c "import re,os; p=os.path.expanduser('~/.ssh/config'); c=open(p).read(); open(p,'w').write(re.sub(r'(Host bernoulli\s*\n\s*HostName )\S+', r'\g<1>$IP', c, count=1))"
-    echo "[4/4] waiting for public endpoint to come up (nginx re-resolves DNS every 30s + container restarts via docker policy)..."
-    for i in $(seq 1 60); do
-        if curl -sf https://bernoulli-api.nuwire.dev/healthz >/dev/null 2>&1; then
-            echo "ready: https://bernoulli-api.nuwire.dev"
-            exit 0
-        fi
-        sleep 5
-    done
-    echo "WARN: public endpoint didn't come up in 5 min; try 'just serve-status'"
-    exit 1
+    echo "[5/5] box is up and healthy. Run 'just serve-provision' (first time per instance) or 'just serve-start' (if already provisioned)."
 
 # Stop the EC2 box. The ClouDNS record stays stale (no need to clean up —
 # nothing can reach a dead backend anyway). Next `serve-up` overwrites it.
