@@ -211,41 +211,69 @@ deploy-web:
 # EC2 box's ephemeral public IP (tracked via `bernoulli-internal.nuwire.dev`
 # in ClouDNS, updated on each `serve-up`).
 #
-# Flow: `just up` (once) → `just serve-provision` (once) → `just serve-up`
-# (daily) ... `just serve-down` (end of day). The Docker container has
-# --restart=unless-stopped so it survives EC2 start/stop cycles automatically.
+# Flow: `just up` (once) → `just serve-provision` (once per EC2 instance) →
+# `just serve-up` (daily) → `just serve-start` (daily, launches uvicorn) ...
+# `just serve-down` (end of day; stop also kills the process).
+#
+# No Docker, no systemd — minimum ceremony. The uvicorn process runs under
+# nohup; if it crashes, re-run `serve-start`. For restart-on-crash + boot
+# auto-start, add a systemd unit later (see M11 in product/milestones.md).
+# The Dockerfile + `just docker-*` recipes stay for future production use.
 
-# One-time: sync code, pull model, build image, start Docker container with
-# the API-key env var and --restart=unless-stopped. Run after `just up` or
-# `terraform destroy && apply`.
-# Requires BERNOULLI_API_KEYS in ~/.credentials (comma-separated).
+# One-time per EC2 instance: sync code, uv sync, pull model.
+# Fast enough to re-run safely (uv sync + hf download are both idempotent).
+# After a `terraform destroy && apply` or a fresh instance, run this again.
 serve-provision:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    just sync-mirror
+    echo "---uv sync (installs torch + transformers etc.)---"
+    ssh {{host}} 'cd ~/bernoulli && uv sync --extra scorer-hf'
+    echo "---model-pull (Qwen2.5-VL-7B, ~15 GB, ~90s via hf_transfer)---"
+    ssh {{host}} 'cd ~/bernoulli && just model-pull'
+    echo "---done. run 'just serve-start' to launch the server.---"
+
+# Launch uvicorn on the box via nohup, with API keys from ~/.credentials.
+# Idempotent: kills any existing uvicorn first. Returns when /healthz on the
+# box responds locally (which means the model is loaded in VRAM).
+# Supports BERNOULLI_HOST=<ip> override for debugging; defaults to the
+# `bernoulli` ssh alias (updated by `serve-up`).
+serve-start:
     #!/usr/bin/env bash
     set -euo pipefail
     source ~/.credentials
     : "${BERNOULLI_API_KEYS:?set BERNOULLI_API_KEYS in ~/.credentials (comma-separated 64-char hex tokens)}"
-    just sync-mirror
-    ssh {{host}} 'cd ~/bernoulli && just model-pull'
-    ssh {{host}} 'cd ~/bernoulli && just docker-build'
-    # Replace any existing container (name conflict otherwise)
-    ssh {{host}} 'docker rm -f bernoulli 2>/dev/null || true'
-    ssh {{host}} "docker run -d --restart=unless-stopped --gpus all -p 8000:8000 \
-        -v \$HOME/.cache/huggingface:/data/hf-cache \
-        -e BERNOULLI_SCORER=vllm \
-        -e BERNOULLI_MAX_MODEL_LEN=8192 \
-        -e BERNOULLI_API_KEYS='$BERNOULLI_API_KEYS' \
-        --name bernoulli \
-        bernoulli:latest"
-    echo "container up; waiting for model load (vLLM init ~90s)..."
+    HOST="${BERNOULLI_HOST:-{{host}}}"
+    echo "[1/3] stopping any existing uvicorn on $HOST..."
+    ssh "$HOST" 'pkill -f "uvicorn bernoulli.server" 2>/dev/null; sleep 1; echo stopped' || true
+    echo "[2/3] starting uvicorn via nohup..."
+    # Env vars inline so BERNOULLI_API_KEYS never lands on disk on the box.
+    # Logs go to ~/serve.log on the box.
+    ssh "$HOST" "cd ~/bernoulli && \
+        BERNOULLI_SCORER=hf \
+        BERNOULLI_MAX_MODEL_LEN=8192 \
+        BERNOULLI_API_KEYS='$BERNOULLI_API_KEYS' \
+        nohup uv run uvicorn bernoulli.server:app --host 0.0.0.0 --port 8000 \
+            > ~/serve.log 2>&1 </dev/null &
+        disown
+        echo 'uvicorn backgrounded; PID follows:'
+        pgrep -f 'uvicorn bernoulli.server' | head -1"
+    echo "[3/3] waiting for /healthz on the box (model load takes ~90s)..."
     for i in $(seq 1 60); do
-        if ssh {{host}} 'curl -sf http://127.0.0.1:8000/healthz' >/dev/null 2>&1; then
-            echo "healthz ok on the box"
+        if ssh "$HOST" 'curl -sf http://127.0.0.1:8000/healthz' >/dev/null 2>&1; then
+            echo "ready on $HOST:8000; logs: ssh $HOST 'tail -f ~/serve.log'"
             exit 0
         fi
         sleep 5
     done
-    echo "WARN: healthz didn't come up in 5 min"
+    echo "WARN: /healthz didn't come up in 5 min; check 'ssh $HOST tail ~/serve.log'"
     exit 1
+
+# Stop uvicorn only (box stays running). Useful for restarting the server
+# after a code change without a full stop/start cycle.
+# `just serve-down` additionally stops the EC2 box.
+serve-stop:
+    ssh {{host}} 'pkill -f "uvicorn bernoulli.server" && echo stopped || echo "nothing to stop"'
 
 # Start the EC2 box, update ClouDNS A record, wait for the public endpoint
 # to be reachable. Daily "come online" command.

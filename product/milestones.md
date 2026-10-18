@@ -289,6 +289,63 @@ Exit criteria: Bernoulli listed on the JevBench leaderboard with a reproducible 
 
 ---
 
+## M13 — Daily-serving public endpoint for Salesforce dev
+**Status**: 🔄 in progress
+**Goal**: A single-tenant, dev-tier public endpoint at `https://bernoulli-api.nuwire.dev` that a Salesforce dev org can call via Apex. Operates with `just serve-up` / `just serve-start` / `just serve-down` daily. **Not** production-hardened — API-key auth only, no TLS cert on our side (TLS terminated by ssd2), no systemd restart-on-crash, no metrics, no rate limiting. Full hardening is M5+M11 territory later.
+
+**Design (locked):**
+- **Public URL**: `https://bernoulli-api.nuwire.dev` (ClouDNS → ssd2, static).
+- **TLS termination**: ssd2 nginx with the existing `*.nuwire.dev` wildcard cert — same operational pattern as `gr{1,2,3}.nuwire.dev`. One nginx server block, already shipped. Nginx re-resolves `bernoulli-internal.nuwire.dev` every 30s via the `resolver` directive, so EC2 ephemeral-IP rotation is handled by updating one ClouDNS record (via `~/bin/cloudns_mgr`).
+- **Backend**: EC2 g5.xlarge (existing dev box), ephemeral public IP, security group opens tcp/8000 only to ssd2's /32. API traffic travels: Salesforce → ssd2 (HTTPS) → EC2 (HTTP:8000). Public internet cannot reach :8000 directly.
+- **Server**: `uv run uvicorn bernoulli.server:app --host 0.0.0.0 --port 8000`, launched via `nohup` on the box. **No systemd, no Docker for now** — minimum ceremony. If uvicorn crashes, re-run `just serve-start`.
+- **Auth**: `BERNOULLI_API_KEYS` env var — 5 hardcoded 64-char hex tokens stored in `~/.credentials` on laptop, injected into the server at `serve-start` time. API-key middleware already in `bernoulli/server.py` from 2026-10-17. `/healthz` exempt.
+- **Scorer**: `BERNOULLI_SCORER=hf` (transformers direct). Simpler install than vLLM, supports both `/v1/decide` and `/v1/generate`, ~70 ms per question. Can flip to vLLM later via env var if we want prefix-caching for multi-question requests.
+- **Cost shape**: $1/hr g5.xlarge only when running. Dev-day usage ~4-8 h × 20 workdays = ~$80-160/mo. $0 nights/weekends.
+
+**Already shipped (2026-10-17 commits dcef495 + d082606):**
+- API-key middleware in `bernoulli/server.py` + 8 tests.
+- Terraform SG ingress for port 8000 from ssd2's /32.
+- `just serve-up` / `serve-down` / `serve-status` recipes.
+- ssd2 nginx config at `/etc/nginx/sites-enabled/bernoulli-api.nuwire.dev` (reverse-proxy pattern copied from gr-slots).
+- ClouDNS records `bernoulli-api.nuwire.dev` (static → ssd2) + `bernoulli-internal.nuwire.dev` (placeholder → RFC 5737).
+- `deploy/user_data.sh` symlink of `uv` into `/usr/local/bin` so non-interactive SSH finds it.
+- `just model-pull` recipes use `uv run hf download` (bare `hf` was broken on non-interactive SSH).
+- 5 API keys generated and stored in `~/.credentials` as `BERNOULLI_API_KEYS=k1,k2,k3,k4,k5`.
+
+### Tasks
+
+- [ ] Rewrite `just serve-provision`: sync-mirror + `uv sync` on box + `just model-pull`. **No Docker build.** No systemd unit install. One-time per EC2 instance (survives stop/start because EBS persists).
+- [ ] Add `just serve-start`: `ssh bernoulli` + `nohup uv run uvicorn bernoulli.server:app --host 0.0.0.0 --port 8000 > ~/serve.log 2>&1 &` with `BERNOULLI_API_KEYS` + `BERNOULLI_SCORER=hf` + `BERNOULLI_MAX_MODEL_LEN=8192` injected via env. Waits for `/healthz` on the box (not via ssd2). Returns when ready. Supports `BERNOULLI_HOST=<ip>` override.
+- [ ] Add `just serve-stop`: ssh in, kill the uvicorn process by PID file or `pkill -f "uvicorn bernoulli.server"`. Keeps EC2 running — only stops the process. (Useful for debugging without full teardown.)
+- [ ] Start EC2, run `just serve-provision` end-to-end.
+- [ ] Run `just serve-start`. Verify local `/healthz` on the box responds.
+- [ ] Verify public endpoint: `curl -H "Authorization: Bearer <key>" https://bernoulli-api.nuwire.dev/healthz` returns 200.
+- [ ] Verify auth works: same curl without the header returns 401.
+- [ ] Verify a real decision call: POST a small `/v1/decide` request with a bearer token, get a typed response.
+- [ ] Add Salesforce Remote Site Settings entry for `https://bernoulli-api.nuwire.dev` and write a Named Credential with one of the API keys. Make a working Apex callout from the dev org.
+- [ ] Document the daily workflow in a short `HOSTING.md`: `just serve-up` → `just serve-start` → work → `just serve-down`. Include the key format reminder (how to add new keys, how to revoke).
+
+**Exit criteria**: Salesforce Apex callout from the dev org successfully receives a typed decision from `https://bernoulli-api.nuwire.dev/v1/decide`, authenticated by an API key, with the EC2 box having been started that morning via `just serve-up` + `just serve-start`.
+
+**Not in scope (deferred to M5 + M11):**
+- Systemd unit for restart-on-crash and restart-on-reboot.
+- Prometheus `/metrics`.
+- Structured logging with content redaction.
+- Offline mode (`HF_HUB_OFFLINE=1`).
+- CI regression gate.
+- Rate limiting on the API side.
+- Load balancer / multiple backends.
+- Elastic IP (vs ephemeral + ClouDNS update).
+- Monitoring + uptime SLO.
+- `/v1/decide` benchmark re-measurement against the live endpoint.
+
+**Dependencies:**
+- **Blocks on**: nothing. The infra pieces are all shipped except the serve-provision recipe rewrite.
+- **Does not block**: anything downstream — this is an independent dev-affordance.
+- **Supersedes but doesn't replace**: parts of M11 (public verification endpoint). M11 remains the "hardened + ranked" version to pursue once the Salesforce feature has real users.
+
+---
+
 ## M12 — Landing-page visitor analytics (self-hosted Umami on ssd2)
 **Status**: ⏳ pending
 **Goal**: Visitor traffic to [bernoulli.live](https://www.bernoulli.live/) is visible in a self-hosted, cookieless analytics dashboard at `analytics.bernoulli.live`, with no GDPR cookie banner surface and no third-party JS on the landing page.
