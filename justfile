@@ -274,6 +274,56 @@ serve-start:
 serve-stop:
     ssh {{host}} 'pkill -f "uvicorn bernoulli.server" && echo stopped || echo "nothing to stop"'
 
+# Smoke-test the running server against the request fixtures in samples/.
+# Prints: /healthz probe (no auth), /v1/models probe (with auth), then each
+# samples/*.json posted to /v1/decide with the response pretty-printed.
+# Uses the FIRST api key from BERNOULLI_API_KEYS; `jq` is required.
+#
+# Default url = the ssd2-fronted public endpoint. For local-on-box testing:
+#   just shell → curl http://127.0.0.1:8000/...
+# or override the URL:
+#   just serve-check http://127.0.0.1:8000
+serve-check url="https://bernoulli-api.nuwire.dev":
+    #!/usr/bin/env bash
+    set -uo pipefail
+    source ~/.credentials
+    : "${BERNOULLI_API_KEYS:?set BERNOULLI_API_KEYS in ~/.credentials}"
+    KEY=$(echo "$BERNOULLI_API_KEYS" | cut -d, -f1)
+    URL="{{url}}"
+    HEADER="Authorization: Bearer $KEY"
+    SENTINEL="__HTTP_STATUS__"
+
+    show() {
+        # read combined output (body then one line "__HTTP_STATUS__ ...") on stdin;
+        # split and print nicely.
+        local combined status body
+        combined=$(cat)
+        status=$(printf '%s\n' "$combined" | awk -v s="$SENTINEL" '$0 ~ "^" s {sub("^" s " ",""); print; exit}')
+        body=$(printf '%s\n' "$combined" | awk -v s="$SENTINEL" '$0 ~ "^" s {exit} {print}')
+        echo "  http $status"
+        printf '%s\n' "$body" | jq -C 2>/dev/null || printf '%s\n' "$body"
+    }
+
+    echo "=== GET /healthz (no auth) ==="
+    curl -sS -w "\n${SENTINEL} %{http_code} · %{time_total}s" "$URL/healthz" | show
+    echo
+
+    echo "=== GET /v1/models (bearer auth) ==="
+    curl -sS -w "\n${SENTINEL} %{http_code} · %{time_total}s" -H "$HEADER" "$URL/v1/models" | show
+    echo
+
+    for f in samples/*.json; do
+        name=$(basename "$f" .json)
+        echo "=== POST /v1/decide — $name ==="
+        echo "--- questions ---"
+        jq -r '.questions | map("  [\(.type)] \(.prompt)") | join("\n")' "$f"
+        echo "--- response ---"
+        curl -sS -w "\n${SENTINEL} %{http_code} · %{time_total}s" \
+            -X POST -H "$HEADER" -H "content-type: application/json" \
+            --data @"$f" "$URL/v1/decide" | show
+        echo
+    done
+
 # Start the EC2 box, update ClouDNS A record, wait for the public endpoint
 # to be reachable. Daily "come online" command.
 serve-up:

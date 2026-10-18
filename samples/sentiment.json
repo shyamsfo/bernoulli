@@ -1,0 +1,14 @@
+{
+  "state": {
+    "text": "This is honestly the best product I've bought this year. Customer service was outstanding, shipping was fast, and it exceeded all my expectations."
+  },
+  "questions": [
+    {
+      "id": "sentiment",
+      "type": "choice",
+      "prompt": "What is the sentiment of this review?",
+      "options": ["positive", "negative", "neutral"]
+    }
+  ],
+  "options": {"debias": "reverse", "calibrated": true}
+}

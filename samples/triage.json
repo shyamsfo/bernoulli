@@ -1,0 +1,36 @@
+{
+  "state": {
+    "text": "From: angry.customer@example.com\nSubject: Re: Re: Order #42-1138 - STILL HAVEN'T SHIPPED\n\nThis is the THIRD time I'm emailing about this order. I ordered the Series-X jacket on October 1st - over two weeks ago - and it still hasn't shipped. I need this jacket for a trip on Friday.\n\nI've been a customer for 4 years. I have the Premier membership that specifically promises guaranteed 3-day shipping. That is clearly not happening here.\n\nI want this resolved TODAY. If it doesn't ship by end of day I want a full refund AND credit for the Premier annual fee. Reply within the hour or I'm filing a chargeback."
+  },
+  "questions": [
+    {
+      "id": "intent",
+      "type": "choice",
+      "prompt": "What does the customer most want right now?",
+      "options": ["refund", "ship_now", "status_update", "complaint_only", "other"]
+    },
+    {
+      "id": "urgency",
+      "type": "rating",
+      "prompt": "How time-critical is this ticket? 1 = can wait a week, 5 = handle in next hour.",
+      "scale": [1, 5]
+    },
+    {
+      "id": "anger",
+      "type": "rating",
+      "prompt": "How angry is the customer? 1 = calm, 5 = threatening to leave or escalate publicly.",
+      "scale": [1, 5]
+    },
+    {
+      "id": "chargeback_risk",
+      "type": "binary",
+      "prompt": "Is the customer threatening a chargeback or public complaint?"
+    },
+    {
+      "id": "sla_breach",
+      "type": "binary",
+      "prompt": "Does the customer claim an SLA or shipping guarantee was violated?"
+    }
+  ],
+  "options": {"debias": "reverse", "calibrated": true}
+}
