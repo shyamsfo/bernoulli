@@ -237,42 +237,45 @@ serve-provision:
 # box responds locally (which means the model is loaded in VRAM).
 # Supports BERNOULLI_HOST=<ip> override for debugging; defaults to the
 # `bernoulli` ssh alias (updated by `serve-up`).
+#
+# All SSH calls use explicit timeouts (ConnectTimeout + overall `timeout`)
+# so a stuck connection can never cost more than ~10s per probe. Loop caps
+# at 3 min total.
 serve-start:
     #!/usr/bin/env bash
     set -euo pipefail
     source ~/.credentials
     : "${BERNOULLI_API_KEYS:?set BERNOULLI_API_KEYS in ~/.credentials (comma-separated 64-char hex tokens)}"
     HOST="${BERNOULLI_HOST:-{{host}}}"
+    SSH_OPTS="-o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=2"
     echo "[1/3] stopping any existing uvicorn on $HOST..."
-    ssh "$HOST" 'pkill -f "uvicorn bernoulli.server" 2>/dev/null; sleep 1; echo stopped' || true
-    echo "[2/3] starting uvicorn via nohup..."
-    # Env vars inline so BERNOULLI_API_KEYS never lands on disk on the box.
-    # Logs go to ~/serve.log on the box.
-    ssh "$HOST" "cd ~/bernoulli && \
+    timeout 15 ssh $SSH_OPTS "$HOST" 'pkill -f "uvicorn bernoulli.server" 2>/dev/null; sleep 1' || true
+    echo "[2/3] launching uvicorn (setsid --fork detaches so ssh returns immediately)..."
+    # Env vars passed to the setsid'd bash; bash's exec replaces with uvicorn,
+    # so the keys never appear in uvicorn's /proc/<pid>/cmdline (only env).
+    # setsid --fork creates a new session + forks so ssh closes right away.
+    timeout 15 ssh $SSH_OPTS "$HOST" "env \
         BERNOULLI_SCORER=hf \
         BERNOULLI_MAX_MODEL_LEN=8192 \
         BERNOULLI_API_KEYS='$BERNOULLI_API_KEYS' \
-        nohup uv run uvicorn bernoulli.server:app --host 0.0.0.0 --port 8000 \
-            > ~/serve.log 2>&1 </dev/null &
-        disown
-        echo 'uvicorn backgrounded; PID follows:'
-        pgrep -f 'uvicorn bernoulli.server' | head -1"
-    echo "[3/3] waiting for /healthz on the box (model load takes ~90s)..."
+        setsid --fork bash /home/ubuntu/bernoulli/deploy/start-serve.sh"
+    sleep 2
+    echo "[3/3] waiting for /healthz on the box (HFScorer loads ~729 weight shards; 4-5 min cold)..."
     for i in $(seq 1 60); do
-        if ssh "$HOST" 'curl -sf http://127.0.0.1:8000/healthz' >/dev/null 2>&1; then
-            echo "ready on $HOST:8000; logs: ssh $HOST 'tail -f ~/serve.log'"
+        if timeout 8 ssh $SSH_OPTS "$HOST" 'curl -sf -m 3 http://127.0.0.1:8000/healthz' >/dev/null 2>&1; then
+            echo "ready on $HOST:8000 after ${i} probes (~$((i*10))s); logs: ssh $HOST 'tail -f ~/serve.log'"
             exit 0
         fi
-        sleep 5
+        sleep 10
     done
-    echo "WARN: /healthz didn't come up in 5 min; check 'ssh $HOST tail ~/serve.log'"
+    echo "WARN: /healthz didn't come up in 10 min; check 'ssh $HOST tail ~/serve.log'"
     exit 1
 
 # Stop uvicorn only (box stays running). Useful for restarting the server
 # after a code change without a full stop/start cycle.
 # `just serve-down` additionally stops the EC2 box.
 serve-stop:
-    ssh {{host}} 'pkill -f "uvicorn bernoulli.server" && echo stopped || echo "nothing to stop"'
+    timeout 15 ssh -o ConnectTimeout=10 {{host}} 'pkill -f "uvicorn bernoulli.server" && echo stopped || echo "nothing to stop"'
 
 # Smoke-test the running server against the request fixtures in samples/.
 # Prints: /healthz probe (no auth), /v1/models probe (with auth), then each
@@ -345,13 +348,17 @@ serve-up:
     python3 -c "import re,os; p=os.path.expanduser('~/.ssh/config'); c=open(p).read(); open(p,'w').write(re.sub(r'(Host bernoulli\s*\n\s*HostName )\S+', r'\g<1>$IP', c, count=1))"
     echo "[5/5] box is up and healthy. Run 'just serve-provision' (first time per instance) or 'just serve-start' (if already provisioned)."
 
-# Stop the EC2 box. The ClouDNS record stays stale (no need to clean up —
-# nothing can reach a dead backend anyway). Next `serve-up` overwrites it.
+# Stop the EC2 box. Blocks until the instance is actually in "stopped" state
+# (not just "stopping") so a follow-up serve-up doesn't trip on the race.
+# The ClouDNS record stays stale (nothing reaches a dead backend anyway);
+# next serve-up overwrites it.
 serve-down:
     #!/usr/bin/env bash
     set -euo pipefail
     INSTANCE_ID=$(terraform -chdir=deploy output -raw instance_id)
     aws ec2 stop-instances --instance-ids $INSTANCE_ID > /dev/null
+    echo "stopping... (waiting for 'stopped' state so serve-up is race-free)"
+    aws ec2 wait instance-stopped --instance-ids $INSTANCE_ID
     echo "stopped; run 'just serve-up' to bring back"
 
 # EC2 state + current DNS value + endpoint health in one command.
