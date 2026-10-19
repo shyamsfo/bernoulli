@@ -389,6 +389,50 @@ Exit criteria: Bernoulli listed on the JevBench leaderboard with a reproducible 
 
 ---
 
+## M14 — Jev API-compatibility shim
+**Status**: ⏳ pending (parked; pick up when a specific customer or integration needs it)
+**Goal**: A `/jev/v1/*` endpoint set on the Bernoulli server that accepts Jev's wire-format requests and returns Jev-shaped responses, so a client written against Jev's SDK can swap to Bernoulli with URL + API key config only (no application-code changes).
+
+**Why this isn't the current pitch:**
+Our native `/v1/decide` schema is our own invention — pydantic v2 discriminated unions with `extra='forbid'`, our field names (`state`, `questions`, `options`, `decisions`), our question-type vocabulary (`choice` / `binary` / `rating`). It was designed for machine-friendly strictness, not for mimicry. The public pitch stays "same technique, open source, your infra" — not "drop-in binary-compatible with Jev." A compat shim is an **integration affordance**, not a correctness goal.
+
+**When to pursue:**
+- A specific customer with an existing Jev integration asks for migration-without-code-changes.
+- JevBench ever stops accepting self-reported numbers and demands a Jev-shaped public endpoint for ranked submission.
+- We want to be listed on a third-party "Jev-compatible alternatives" comparison and need the wire-format match for that story.
+
+**Design sketch (not committed; validate at build time):**
+- New router under `bernoulli/jev_compat.py` mounted at `/jev/v1/*` on the FastAPI app.
+- Thin translation layer: Jev-shaped `DecideRequest` → internal `bernoulli.types.DecideRequest`; internal `DecideResponse` → Jev-shaped response.
+- Share the same `decide()` function + scorer; the compat layer only touches request/response shape.
+- Pin a specific Jev API version (e.g., `v1.4.2` matching the current JevBench upstream) rather than tracking Jev's live API.
+- Error-shape translation: Jev's error envelope → our 422/401/500 surface.
+- Jev's auth flow (if different from Bearer token) handled in a middleware wrapper, OR hard-require the same `BERNOULLI_API_KEYS` story since we're not a hosted service.
+
+**Reference material we already have:**
+- [`benchmarks/jevbench/adapter.py`](../benchmarks/jevbench/adapter.py) — our `BernoulliLocalAdapter` that goes the *other* direction (JevBench harness → Bernoulli). The field-name and question-type mapping is reversible from this file.
+- [`benchmarks/jevbench/upstream/`](../benchmarks/jevbench/upstream/) — the vendored JevBench harness; its `typesafe` adapter is the ground truth for the real Jev wire format.
+- Jev public docs at [docs.typesafe.ai](https://docs.typesafe.ai) — for anything not covered by the harness's reference adapter.
+
+### Tasks (deferred; capture only, no action)
+
+- [ ] Pin a specific Jev API version to target (recommend v1.4.2 — current JevBench upstream reference).
+- [ ] Reverse-engineer field mapping from `benchmarks/jevbench/upstream/`'s `typesafe` adapter + Jev public docs. Document the mapping in a design note.
+- [ ] Add `bernoulli/jev_compat.py` with request/response translator + the three question-type mappers (`noul` ↔ binary, `choice` ↔ choice, `score` ↔ rating).
+- [ ] Mount `/jev/v1/decide` (or whatever Jev calls their primary endpoint) on `bernoulli/server.py`.
+- [ ] Add a smoke test suite: feed Jev-shaped fixture requests to the compat endpoint, verify the response matches Jev's expected shape at least on the three canonical question types.
+- [ ] Document on the landing page + USECASES.md: "Jev-SDK clients can point at `/jev/v1/*` for drop-in migration." Not a headline feature; a footnote.
+
+**Exit criteria**: A client that currently targets Jev's API can swap one URL + API-key config and have their application run against Bernoulli unchanged, verified by a smoke test using Jev's own Python SDK (or a direct curl of Jev-shaped payloads).
+
+**Dependencies:**
+- **Blocks on:** nothing structural. The native `/v1/decide` + scorer pipeline doesn't need any changes.
+- **Does not block:** anything.
+
+**Expected effort**: ~0.5-1 day for a minimum-viable shim covering the three question types. More if we discover Jev has a lot of surface area (batching options, streaming, callbacks, etc.) we don't currently expose.
+
+---
+
 ## Notes
 
 - Milestones are sequential by dependency, not by calendar priority.
