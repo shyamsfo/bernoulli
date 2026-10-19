@@ -275,6 +275,34 @@ serve-start:
 serve-stop:
     timeout 15 ssh -o ConnectTimeout=10 {{host}} 'pkill -f "uvicorn bernoulli.server" && echo stopped || echo "nothing to stop"'
 
+# Poll the public /healthz every N seconds up to T minutes; ring the terminal
+# bell on success (1 ding) or timeout (3 dings). Companion to `serve-start`:
+# run it in a side terminal to get an audible notification when the box is
+# actually serving — cold start loads ~729 weight shards and takes 4-5 min.
+# Defaults: public endpoint, 15s interval, 10m budget. Overrides:
+#   just serve-monitor http://127.0.0.1:8000 10 5
+serve-monitor url="https://bernoulli-api.nuwire.dev" interval="15" timeout_min="10":
+    #!/usr/bin/env bash
+    set -uo pipefail
+    URL="{{url}}"
+    INTERVAL={{interval}}
+    MAX_ITERS=$(( {{timeout_min}} * 60 / INTERVAL ))
+    echo "monitoring $URL/healthz every ${INTERVAL}s (timeout {{timeout_min}}m, ${MAX_ITERS} probes)..."
+    for i in $(seq 1 $MAX_ITERS); do
+        status=$(curl -s -m 5 -o /dev/null -w '%{http_code}' "$URL/healthz" 2>/dev/null || echo "err")
+        elapsed=$(( (i - 1) * INTERVAL ))
+        if [ "$status" = "200" ]; then
+            printf '\a'
+            echo "ok  [${elapsed}s]  $URL/healthz -> 200"
+            exit 0
+        fi
+        echo "wait [${elapsed}s]  $URL/healthz -> $status"
+        [ $i -lt $MAX_ITERS ] && sleep $INTERVAL
+    done
+    printf '\a\a\a'
+    echo "TIMEOUT after {{timeout_min}}m — $URL/healthz still not 200"
+    exit 1
+
 # Smoke-test the running server against the request fixtures in samples/.
 # Prints: /healthz probe (no auth), /v1/models probe (with auth), then each
 # samples/*.json posted to /v1/decide with the response pretty-printed.
@@ -346,18 +374,30 @@ serve-up:
     python3 -c "import re,os; p=os.path.expanduser('~/.ssh/config'); c=open(p).read(); open(p,'w').write(re.sub(r'(Host bernoulli\s*\n\s*HostName )\S+', r'\g<1>$IP', c, count=1))"
     echo "[5/5] box is up and healthy. Run 'just serve-provision' (first time per instance) or 'just serve-start' (if already provisioned)."
 
-# Stop the EC2 box. Blocks until the instance is actually in "stopped" state
-# (not just "stopping") so a follow-up serve-up doesn't trip on the race.
+# Stop the EC2 box. Blocks until AWS confirms "stopped" state — which is
+# the state at which compute billing stops. After that we double-check with
+# a describe-instances call. Rings 1 bell on success, 3 on timeout.
 # The ClouDNS record stays stale (nothing reaches a dead backend anyway);
-# next serve-up overwrites it.
+# next serve-up overwrites it. EBS (~$8/mo for 80GB gp3) keeps accruing.
 serve-down:
     #!/usr/bin/env bash
     set -euo pipefail
     INSTANCE_ID=$(terraform -chdir=deploy output -raw instance_id)
+    echo "[1/3] requesting stop of $INSTANCE_ID ..."
     aws ec2 stop-instances --instance-ids $INSTANCE_ID > /dev/null
-    echo "stopping... (waiting for 'stopped' state so serve-up is race-free)"
-    aws ec2 wait instance-stopped --instance-ids $INSTANCE_ID
-    echo "stopped; run 'just serve-up' to bring back"
+    echo "[2/3] waiting for 'stopped' state (compute billing ends here; typical 2-5 min)..."
+    if ! timeout 600 aws ec2 wait instance-stopped --instance-ids $INSTANCE_ID; then
+        printf '\a\a\a'
+        STATE=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID \
+            --query 'Reservations[0].Instances[0].State.Name' --output text)
+        echo "WARN: didn't reach 'stopped' in 10 min; current state: $STATE"
+        echo "       check the console; may need manual intervention."
+        exit 1
+    fi
+    STATE=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID \
+        --query 'Reservations[0].Instances[0].State.Name' --output text)
+    echo "[3/3] confirmed state: $STATE (no further compute charges; EBS ~\$8/mo continues)"
+    printf '\a'
 
 # EC2 state + current DNS value + endpoint health in one command.
 serve-status:
