@@ -4,7 +4,7 @@
 
 Everything you need to call Bernoulli over HTTP. If you're calling it from a shell instead of a service, see [`CLI.md`](CLI.md) — same engine, same request shape, just no HTTP envelope.
 
-**Prereq.** The server is running at `http://localhost:8000` (or wherever you pointed it). Start it with `just serve` (dev / HFScorer) or `just docker-build && just docker-run` (vLLM in Docker). `curl` is enough to call it.
+**Prereq.** The server is running at `http://localhost:8000` (or wherever you pointed it). Start it with `just dev serve-local` (dev / HFScorer) or `just dev docker-build && just dev docker-run` (vLLM in Docker). `curl` is enough to call it.
 
 ---
 

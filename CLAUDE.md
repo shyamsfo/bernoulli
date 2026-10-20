@@ -4,14 +4,17 @@ This file is the authoritative session reference. Keep commands, config, decisio
 
 ## Workflow
 
-Task runner is `just` (see `justfile`). Run `just` with no args to list available tasks.
+Task runner is `just`. The root `justfile` holds daily serving operations
+(`serve-*`, `shell`, `sync-mirror`, `status`); development recipes live in
+submodules (`just dev <recipe>`, `just bench <recipe>`). Run `just`,
+`just --list dev`, or `just --list bench` to see what's available.
 
 ```bash
 # push to dev box
 just sync-mirror
 
 # run full ci on dev box (what you'd want green before any merge)
-ssh bernoulli 'cd ~/bernoulli && just ci'
+ssh bernoulli 'cd ~/bernoulli && just dev ci'
 
 # just tests
 ssh bernoulli 'cd ~/bernoulli && uv run pytest -v'
@@ -30,7 +33,7 @@ just shell
 - HF cache: `/opt/dlami/nvme/hf-cache` (`HF_HOME` set in `~/.bashrc`)
 - Docker data-root: `/opt/dlami/nvme/docker` (set in `/etc/docker/daemon.json`); `/var/lib/containerd` symlinked to `/opt/dlami/nvme/containerd`. The 80GB EBS root can't hold the vLLM image + model weights at once — see Gotchas.
 - EBS root: 80GB gp3 encrypted
-- Terraform: `deploy/` — up with `just up`, down with `just down`
+- Terraform: `deploy/` — up with `just dev up`, down with `just dev down`
 
 **Stop/start caveat:** stopping and starting the instance drops the NVMe contents (HF cache + Docker state included) and changes the public IP. Re-pulling the model takes ~90 s via hf_transfer; re-paste the `ssh_config_stanza` output after start. Docker needs its data-root re-created too (it will — just re-build/re-run).
 
@@ -86,35 +89,37 @@ Env-driven via pydantic-settings, prefix `BERNOULLI_`. Defaults in `bernoulli/co
 
 ```bash
 # one-time per instance: model pull (~15 GB, ~90s via hf_transfer)
-ssh bernoulli 'cd ~/bernoulli && just model-pull'
+ssh bernoulli 'cd ~/bernoulli && just dev model-pull'
 
 # day-to-day
-just sync-mirror                              # push repo to bernoulli
-ssh bernoulli 'cd ~/bernoulli && just ci'     # lint + typecheck + pytest
-ssh bernoulli 'cd ~/bernoulli && just test-fast'   # CPU-only, 100+ tests in ~5s
-just status                                   # terraform output + nvidia-smi + df
+just sync-mirror                                     # push repo to bernoulli
+ssh bernoulli 'cd ~/bernoulli && just dev ci'        # lint + typecheck + pytest
+ssh bernoulli 'cd ~/bernoulli && just dev test-fast' # CPU-only, 100+ tests in ~5s
+just status                                          # terraform output + nvidia-smi + df
 just shell
 
 # eval harness (pre-M8, snapshot reports in evals/reports/)
-ssh bernoulli 'cd ~/bernoulli && just eval sst2 reverse'
+ssh bernoulli 'cd ~/bernoulli && just bench eval sst2 reverse'
 ssh bernoulli 'cd ~/bernoulli && uv run python -m evals.run_eval --dataset banking77'
 ssh bernoulli 'cd ~/bernoulli && uv run python -m evals.fit_calibration \
     --from evals/reports/sst2.json --out calibration/qwen2.5-vl-7b.json'
-just reports-pull                             # bring sidecars + markdown back
+just bench reports-pull                              # bring sidecars + markdown back
 
 # benchmark harness (M8+): per-benchmark runner → benchmarks/<spec>/results/
-# Needs `just serve` up at :8000 first.
-ssh bernoulli 'cd ~/bernoulli && just benchmark academic/sst2 bernoulli,generative,deberta,bge-m3-lr 500'
-ssh bernoulli 'cd ~/bernoulli && just sweep-academic 500 2000'   # full matrix × 6 academic benchmarks
-ssh bernoulli 'cd ~/bernoulli && just sweep-usecase 500 2000'    # full matrix × 5 use-case benchmarks
-just benchmarks-pull                                             # bring results/ back
+# Needs the server up at :8000 first — on the box, `just serve-start` after `just serve-up`,
+# or locally for dev: `just dev serve-local`.
+ssh bernoulli 'cd ~/bernoulli && just bench benchmark academic/sst2 bernoulli,generative,deberta,bge-m3-lr 500'
+ssh bernoulli 'cd ~/bernoulli && just bench sweep-academic 500 2000'   # full matrix × 6 academic benchmarks
+ssh bernoulli 'cd ~/bernoulli && just bench sweep-usecase 500 2000'    # full matrix × 5 use-case benchmarks
+just bench benchmarks-pull                                             # bring results/ back
 
 # serving (two paths)
-ssh bernoulli 'cd ~/bernoulli && just serve'                       # uvicorn, HFScorer
-ssh bernoulli 'cd ~/bernoulli && just docker-build && just docker-run'   # vLLM in Docker
+# Daily public-endpoint path: `just serve-up` then `just serve-start` from the repo root.
+# Dev-local path on the box: `just dev serve-local` (uvicorn, HFScorer).
+ssh bernoulli 'cd ~/bernoulli && just dev docker-build && just dev docker-run'   # vLLM in Docker
 
 # load test the running server
-ssh bernoulli 'cd ~/bernoulli && just loadtest'
+ssh bernoulli 'cd ~/bernoulli && just bench loadtest'
 
 # clean up a stuck vllm (zombie EngineCore pinning GPU memory)
 ssh bernoulli 'nvidia-smi --query-compute-apps=pid --format=csv,noheader | xargs -r sudo kill -9'

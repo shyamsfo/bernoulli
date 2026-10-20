@@ -35,21 +35,21 @@ terraform -chdir=deploy output -raw ssh_config_stanza
 ssh bernoulli 'sudo cloud-init status --wait && nvidia-smi | head -14'
 
 # 4. Recreate venv + re-pull Qwen weights (~90 sec via hf_transfer)
-ssh bernoulli 'cd ~/bernoulli && uv sync && just model-pull'
+ssh bernoulli 'cd ~/bernoulli && uv sync && just dev model-pull'
 ```
 
 What's lost on stop (all cheap to recreate):
 
 - `/opt/dlami/nvme/hf-cache` — Qwen2.5-VL-7B (~15 GB), BGE-m3 (~2 GB), DeBERTa-v3 (~800 MB) if ever pulled. Re-pulls on first use via `huggingface_hub` + `hf_transfer`.
 - `~/bernoulli/.venv` — rebuilt from `uv.lock` by `uv sync` (~1 min).
-- Docker data-root at `/opt/dlami/nvme/docker` — only matters if the next task uses `just docker-run`.
+- Docker data-root at `/opt/dlami/nvme/docker` — only matters if the next task uses `just dev docker-run`.
 - Public IP — hence the ssh-stanza re-paste step.
 
 What's **not** lost: the EBS root (`~/bernoulli/` source tree, bashrc, env). Code state on bernoulli survives stop/start — only the NVMe is ephemeral.
 
 ## Known project-specific footguns to re-check
 
-- **`just sync-mirror` has `--delete`.** It will remove files on `bernoulli` that don't exist locally. Before running sync-mirror, make sure any benchmark results on the box have been pulled back with `just benchmarks-pull` first. Lost 4 M9 result files to this once on 2026-10-07.
+- **`just sync-mirror` has `--delete`.** It will remove files on `bernoulli` that don't exist locally. Before running sync-mirror, make sure any benchmark results on the box have been pulled back with `just bench benchmarks-pull` first. Lost 4 M9 result files to this once on 2026-10-07.
 - **GPU zombies after a crashed `VLLM::EngineCore`.** If `nvidia-smi` shows memory in use but no running python process, kill with `nvidia-smi --query-compute-apps=pid --format=csv,noheader | xargs -r sudo kill -9`.
 - **Server + Generative baseline on same GPU is fine now.** `/v1/generate` endpoint shipped 2026-10-07; the earlier GPU-contention bug (second HFScorer load → OOM) is resolved.
 - **BinaryQuestion debias.** Reverse/cyclic debias is auto-no-op for binary (`Yes`/`No` are semantic, not positional). If you reintroduce manual debiasing on a binary task, you'll hit the PAWS below-random bug again — see `product/learnings/paws-below-random.md`.

@@ -32,7 +32,7 @@ For a tutorial walkthrough with worked examples per question type, read [`HTTP.m
 |---|---|
 | **Production** | `https://bernoulli-api.nuwire.dev` |
 | **Staging** | `https://bernoulli-api-staging.nuwire.dev` (same backend as prod; swap-mechanism test only) |
-| **Local dev** | `http://localhost:8000` after `just serve-start` or `just serve` |
+| **Local dev** | `http://localhost:8000` after `just serve-start` (daily/prod path) or `just dev serve-local` (local uvicorn) |
 | **Protocol** | HTTPS 1.1 / 2 (ssd2 nginx terminates TLS → plain HTTP to the backend) |
 | **Media type** | `application/json`, UTF-8 |
 | **Max request body** | 32 MB (nginx `client_max_body_size`) |

@@ -13,7 +13,7 @@ Latest run captured here: [`results/2026-10-08.md`](results/2026-10-08.md).
    specific commit SHA — the numbers must be reproducible by anyone cloning the
    repo at that SHA and running the commands in `results/<date>.md § Reproduce`.
    `git log --oneline benchmarks/jevbench/results/` finds it.
-2. **Check CI is green on that SHA.** If any post-run commit broke `just ci`,
+2. **Check CI is green on that SHA.** If any post-run commit broke `just dev ci`,
    submit from a known-green SHA, not `main`.
 3. **Pick the public URL you want listed.** Benchmark Heaven displays this on the
    leaderboard row — typically your GitHub repo (`https://github.com/shyamsfo/bernoulli`).

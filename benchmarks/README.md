@@ -40,9 +40,10 @@ Each benchmark subfolder owns its own `README.md`, loader, and `results/latest.m
 A single benchmark (lands in M8 task 4 alongside `benchmarks/common/`):
 
 ```bash
-just benchmark academic/sst2                        # single benchmark
-just benchmark academic/sst2 --baselines generative,deberta
-just benchmark-all                                  # everything (slow)
+just bench benchmark academic/sst2                        # single benchmark
+just bench benchmark academic/sst2 bernoulli,generative,deberta
+just bench sweep-academic                                 # the whole academic matrix
+just bench sweep-usecase                                  # the whole use-case matrix
 ```
 
 Direct invocation without the recipe:
@@ -51,7 +52,7 @@ Direct invocation without the recipe:
 uv run python -m benchmarks.run academic/sst2 --out results/$(date +%F).md
 ```
 
-The runner POSTs to a Bernoulli server (default `http://127.0.0.1:8000`). Start one with `just serve` or `just docker-run` first.
+The runner POSTs to a Bernoulli server (default `http://127.0.0.1:8000`). Start one with `just dev serve-local` or `just dev docker-run` first (or, on the box, `just serve-start` for the daily production uvicorn).
 
 ## Summary leaderboard
 

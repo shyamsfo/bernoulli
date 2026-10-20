@@ -46,11 +46,11 @@ See [`evals/reports/loadtest.md`](evals/reports/loadtest.md).
 Provision the AWS g5.xlarge dev box (NVIDIA A10G 24GB) and wire your local SSH config:
 
 ```bash
-just up                                                        # terraform apply (deploy/) — launches g5.xlarge in us-east-1a
+just dev up                                                        # terraform apply (deploy/) — launches g5.xlarge in us-east-1a
 terraform -chdir=deploy output -raw ssh_config_stanza >> ~/.ssh/config
-ssh bernoulli 'sudo cloud-init status --wait && nvidia-smi'    # ~2 min cloud-init; verifies GPU
-just sync-mirror                                               # push repo to the box
-ssh bernoulli 'cd ~/bernoulli && uv sync && just model-pull'   # install deps + pull Qwen2.5-VL-7B-Instruct (~15 GB, ~90 s via hf_transfer)
+ssh bernoulli 'sudo cloud-init status --wait && nvidia-smi'        # ~2 min cloud-init; verifies GPU
+just sync-mirror                                                   # push repo to the box
+ssh bernoulli 'cd ~/bernoulli && uv sync && just dev model-pull'   # install deps + pull Qwen2.5-VL-7B-Instruct (~15 GB, ~90 s via hf_transfer)
 ```
 
 If `g5.xlarge` in `us-east-1a` hits `InsufficientInstanceCapacity`, pass `-var 'availability_zone=us-east-1b'` (or `1d`) to `terraform apply`. The `create` timeout is capped at 4 min so capacity failures surface fast.
@@ -71,19 +71,19 @@ See [`deploy/README.md`](deploy/README.md) for details, cost notes, stop/start c
 just sync-mirror
 
 # run CI remotely (lint + typecheck + pytest; GPU tests run on bernoulli)
-ssh bernoulli 'cd ~/bernoulli && just ci'
+ssh bernoulli 'cd ~/bernoulli && just dev ci'
 
 # fire an eval against a dataset
-ssh bernoulli 'cd ~/bernoulli && just eval sst2 reverse'
-just reports-pull                   # bring the sidecar + markdown back
+ssh bernoulli 'cd ~/bernoulli && just bench eval sst2 reverse'
+just bench reports-pull             # bring the sidecar + markdown back
 
 # serve the HTTP API locally
-ssh bernoulli 'cd ~/bernoulli && just serve'            # uvicorn on :8000
+ssh bernoulli 'cd ~/bernoulli && just dev serve-local'  # uvicorn on :8000
 # or containerized (vLLM backend)
-ssh bernoulli 'cd ~/bernoulli && just docker-build && just docker-run'
+ssh bernoulli 'cd ~/bernoulli && just dev docker-build && just dev docker-run'
 
 # load test the running server
-ssh bernoulli 'cd ~/bernoulli && just loadtest'
+ssh bernoulli 'cd ~/bernoulli && just bench loadtest'
 
 # shell in
 just shell

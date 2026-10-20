@@ -102,7 +102,7 @@ Both are implemented as thin wrappers around the scorer call, not inside the mod
 ### What this means if you're coming from `vllm serve`
 
 - **The runtime is familiar** — same vLLM, same CUDA, same torch, same weights. The novel piece is a ~400-line Python scorer that reads logits at the answer position, plus a FastAPI endpoint that exposes typed questions instead of chat messages.
-- **Our Docker image is turnkey.** `just docker-run` gets you from zero to serving in ~5 minutes. We don't rebuild the CUDA/torch/vLLM compatibility matrix — we inherit it from vLLM's base image.
+- **Our Docker image is turnkey.** `just dev docker-run` gets you from zero to serving in ~5 minutes. We don't rebuild the CUDA/torch/vLLM compatibility matrix — we inherit it from vLLM's base image.
 - **Swapping the backbone** is an env-var change: set `BERNOULLI_MODEL_ID` + `BERNOULLI_MODEL_REVISION` to any open-weight model whose tokenizer gives you single-token labels for A-Z + Yes/No. The scorer auto-detects whether the backbone is text-only or vision-text and routes accordingly (see `_load_backbone()` in `scorer.py`). This has been exercised at both 7B and 32B scales.
 
 ---
@@ -430,7 +430,7 @@ The cleanest validation is a single benchmark run:
 ```bash
 export BERNOULLI_MODEL_ID=meta-llama/Llama-3.1-8B-Instruct
 export BERNOULLI_MODEL_REVISION=<pinned-sha>
-just serve &
+just dev serve-local &
 uv run python -m benchmarks.run academic/sst2 --baselines bernoulli --limit 100 --device cuda
 ```
 
@@ -580,7 +580,7 @@ Running list of things that aren't obvious from the architecture, but have shown
 
 Starter prompts for common extensions:
 
-- **"I want to swap in Llama 3.1 8B."** `BERNOULLI_MODEL_ID=meta-llama/Llama-3.1-8B-Instruct` + `BERNOULLI_MODEL_REVISION=<sha>`. That's it — `_load_backbone()` dispatches to `AutoModelForCausalLM` automatically. Scorer construction will fail if any label isn't single-token; verify by running the test suite (`just test-fast` covers this).
+- **"I want to swap in Llama 3.1 8B."** `BERNOULLI_MODEL_ID=meta-llama/Llama-3.1-8B-Instruct` + `BERNOULLI_MODEL_REVISION=<sha>`. That's it — `_load_backbone()` dispatches to `AutoModelForCausalLM` automatically. Scorer construction will fail if any label isn't single-token; verify by running the test suite (`just dev test-fast` covers this).
 
 - **"I want to add a fourth question type (e.g., ranked list)."** Add a new `RankedQuestion` to `bernoulli/types.py` (will auto-register in the discriminated union). Add a prompt builder entry in `bernoulli/prompt.py` (`labels_for` + `option_strings_for`). Add decision assembly to `_decide_one` in `bernoulli/decide.py`. Add a result type in `bernoulli/types.py`. ~50 lines total if you follow the pattern of the existing three.
 

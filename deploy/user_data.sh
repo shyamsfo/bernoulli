@@ -8,7 +8,13 @@ export DEBIAN_FRONTEND=noninteractive
 
 # -- base packages ----------------------------------------------------------
 apt-get update
-apt-get install -y git tmux htop build-essential rsync jq curl ca-certificates pkg-config just
+apt-get install -y git tmux htop build-essential rsync jq curl ca-certificates pkg-config
+
+# -- just (latest, not apt's 1.21) ------------------------------------------
+# apt-noble ships just 1.21.0; we use `mod` which was stabilized in 1.31.
+# Install script drops the current release into /usr/local/bin, which
+# precedes /usr/bin in PATH, so no symlink juggling.
+curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin --force
 
 # -- uv (for the ubuntu user) ----------------------------------------------
 # Installs into ~/.local/bin. Earlier version of this file assumed that's on

@@ -402,7 +402,7 @@ if [ "$(echo "$confidence > 0.9" | bc)" = "1" ]; then route; else queue; fi
 
 - **Validation error (pydantic)** — the request payload didn't validate. Common causes: missing `prompt`, missing `options` for a choice, `scale` where `high <= low`, unknown fields (we use `extra='forbid'` on all models). The error output shows which field.
 - **`NotImplementedError: image states land in M4`** — you passed images in the state. Image modality lands in M6; right now `state.images` raises.
-- **First call is slow** — includes model load (~2 min on HFScorer, longer on vLLM with Triton JIT). Subsequent calls in the same process are fast, but the CLI reloads on each invocation. For repeated calls, use the HTTP server (`just serve`) and keep the model resident.
+- **First call is slow** — includes model load (~2 min on HFScorer, longer on vLLM with Triton JIT). Subsequent calls in the same process are fast, but the CLI reloads on each invocation. For repeated calls, use the HTTP server (`just dev serve-local`) and keep the model resident.
 - **Max option count** — `choice` goes up to 128 options; above 26 the engine uses chunked scoring (one engine call per 26-option chunk).
 - **Rating scale width** — must be ≤ 9. Internally mapped to the 9 single-token labels A–I.
 
