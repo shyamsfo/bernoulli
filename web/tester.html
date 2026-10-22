@@ -330,6 +330,13 @@ const PRESETS = {
   local:   { url: "http://localhost:8000",                    label: "Local" },
 };
 
+// Baked-in default keys per preset. Only used when the user has no stored key
+// for that origin yet. Safe to hardcode here because the tester page is public
+// and these keys only unlock mock / fixture endpoints that serve fake data.
+const DEFAULT_KEYS = {
+  mock: 'mock-dev-key',
+};
+
 // --- Theme toggle (same pattern as index.html) --------------------------------
 (function(){
   const html = document.documentElement;
@@ -386,11 +393,20 @@ function currentOrigin() {
 }
 function syncKeyField() {
   const origin = currentOrigin();
-  keyEl.value = origin ? ls(LS.keyFor(origin), '') : '';
+  const stored = origin ? ls(LS.keyFor(origin), '') : '';
+  const defaultKey = DEFAULT_KEYS[presetEl.value] || '';
+  keyEl.value = stored || defaultKey;
   statusEl.textContent = '';
   statusEl.removeAttribute('data-ok');
   hintEl.textContent = origin ? ('→ ' + origin + '/v1/decide') : 'Enter a valid URL above.';
   hintEl.className = origin ? 'hint' : 'hint err';
+  // Flag auto-filled defaults so the user knows the key is baked in on purpose.
+  const kh = document.getElementById('key-hint');
+  if (!stored && defaultKey && keyEl.value === defaultKey) {
+    kh.textContent = 'Default dev key for this preset — safe to leave as-is.';
+  } else {
+    kh.textContent = "Keys are stored per-endpoint in your browser's localStorage. Not sent anywhere else.";
+  }
 }
 
 function initConfig() {
