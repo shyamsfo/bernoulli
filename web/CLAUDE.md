@@ -17,13 +17,17 @@ The source project lives at [github.com/shyamsfo/bernoulli](https://github.com/s
 
 ```
 web/
-├── index.html       # single-page landing — inlined CSS + JS, no build step
-├── benchmarks.html  # standalone /benchmarks.html — all 9 benchmark numbers + methodology + caveats + reproducibility
+├── index.html        # single-page landing — inlined CSS + JS, no build step
+├── benchmarks.html   # standalone /benchmarks.html — all 9 benchmark numbers + methodology + caveats + reproducibility
+├── when-to-use.html  # standalone /when-to-use.html — buyer-decision guide (fit assessment, when-not-to-use, migration path)
+├── tester.html       # standalone /tester.html — browser-based API tester; endpoint dropdown + bearer key input; CORS-dependent (see note below)
 ├── favicon.svg
-├── justfile         # deploy recipes (local to this folder)
-├── CLAUDE.md        # this file
-└── README.md        # short "how to edit + deploy" (parent-project-oriented)
+├── justfile          # deploy recipes (local to this folder)
+├── CLAUDE.md         # this file
+└── README.md         # short "how to edit + deploy" (parent-project-oriented)
 ```
+
+**Note on `tester.html`:** it `fetch()`es the configured endpoint directly from the browser, so the Bernoulli serving vhost on ssd2 (`bernoulli-api.nuwire.dev`) and the mock vhost (`bmock.nuwire.dev`) both need `Access-Control-Allow-Origin: *` plus an `OPTIONS` preflight branch. That lives in the ssd2 nginx vhost files, not in this repo. If a new endpoint gets added to the tester's dropdown, remember to add the same CORS block to its vhost.
 
 No build pipeline. Edit, deploy, done.
 

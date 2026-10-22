@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bernoulli — API tester</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Point-and-click tester for the Bernoulli HTTP API. Swap endpoints (prod / staging / mock), paste a key, run binary / choice / rating decisions.">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f3ee; --surface:#ffffff; --surface-2:#ece9e1;
+  --ink:#15171c; --ink-2:#4a4d55; --ink-3:#7c7f87;
+  --line:#dcd8ce; --accent:#2340d0; --accent-soft:#e3e8fb;
+  --good:#1f7a4d; --warn:#a15c00; --bar-bg:#ece9e1;
+  --code-bg:#15171c; --code-ink:#e6e4de; --code-dim:#8a8d96; --code-key:#9db0ff; --code-str:#b9e3c6;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1014; --surface:#161920; --surface-2:#1d2129;
+    --ink:#ecebe6; --ink-2:#b3b5bb; --ink-3:#7e818a;
+    --line:#2a2e37; --accent:#8098ff; --accent-soft:#1c2340;
+    --good:#5fcf95; --warn:#e3a54f; --bar-bg:#232733;
+    --code-bg:#0a0c0f; --code-ink:#e6e4de;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1014; --surface:#161920; --surface-2:#1d2129;
+  --ink:#ecebe6; --ink-2:#b3b5bb; --ink-3:#7e818a;
+  --line:#2a2e37; --accent:#8098ff; --accent-soft:#1c2340;
+  --good:#5fcf95; --warn:#e3a54f; --bar-bg:#232733;
+  --code-bg:#0a0c0f; --code-ink:#e6e4de;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.serif{font-family:"Instrument Serif",Georgia,serif;font-weight:400}
+.eyebrow{font:500 12px/1 "JetBrains Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+
+/* nav */
+nav{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font:400 24px/1 "Instrument Serif",serif}
+.brand-mark{width:22px;height:22px;border-radius:50%;background:conic-gradient(var(--accent) 0 72%,var(--line) 72% 100%)}
+.nav-links{display:flex;gap:16px;align-items:center;font-size:14px;color:var(--ink-2)}
+.nav-links a{text-decoration:none}
+.nav-links a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:8px;font:500 13px/1 Inter,sans-serif;text-decoration:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;transition:transform .15s,border-color .15s}
+.btn:hover{border-color:var(--ink-3);transform:translateY(-1px)}
+.btn-primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn-primary:hover{border-color:var(--ink)}
+.btn-primary:disabled{opacity:.55;cursor:wait;transform:none}
+.btn-icon{padding:9px}
+.btn-icon svg{width:16px;height:16px;display:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#theme-toggle[data-mode="light"] svg[data-icon="dark"],
+#theme-toggle[data-mode="dark"] svg[data-icon="light"]{display:block}
+@media (max-width:480px){.nav-links .gh-label{display:none}}
+
+/* page */
+main{padding:40px 0 80px}
+.head{margin-bottom:28px}
+.head h1{font:400 clamp(36px,5vw,52px)/1.05 "Instrument Serif",serif;letter-spacing:-.01em}
+.head p{margin-top:10px;font-size:16px;color:var(--ink-2);max-width:60em}
+.head code{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:13px;background:var(--surface-2);padding:1px 6px;border-radius:4px}
+
+/* config panel */
+.config{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px 24px}
+.config .field{display:flex;flex-direction:column;gap:6px}
+.config label{font:500 12px/1 "JetBrains Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.config .row{display:flex;gap:8px;align-items:center}
+.config select,.config input{font:14px/1.4 Inter,sans-serif;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:0;flex:1}
+.config select:focus,.config input:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+.config input[type="password"]{font-family:"JetBrains Mono",ui-monospace,monospace;letter-spacing:.1em}
+.config .hint{font-size:12.5px;color:var(--ink-3)}
+.config .hint.err{color:var(--warn)}
+.config .hint.ok{color:var(--good)}
+.config .btns{display:flex;gap:8px;grid-column:1 / -1;align-items:center;flex-wrap:wrap}
+.config #status{margin-left:auto;font:500 12px/1 "JetBrains Mono",monospace;color:var(--ink-3)}
+.config #status[data-ok="1"]{color:var(--good)}
+.config #status[data-ok="0"]{color:var(--warn)}
+@media (max-width:720px){.config{grid-template-columns:1fr}}
+
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:24px}
+.tabs button{appearance:none;background:transparent;border:0;padding:12px 18px;font:500 14px/1 Inter,sans-serif;color:var(--ink-2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* panels */
+.panel{display:none}
+.panel.active{display:block}
+.panel .intro{margin-bottom:18px;color:var(--ink-2);font-size:14.5px}
+
+.form-and-result{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:900px){.form-and-result{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.card h3{font:500 13px/1 "JetBrains Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px}
+.card .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.card .field label{font:500 12px/1 "JetBrains Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.card textarea,.card input[type="text"],.card input[type="number"]{font:14px/1.5 Inter,sans-serif;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;resize:vertical}
+.card textarea{min-height:88px}
+.card textarea:focus,.card input:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+.card .scale-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card .examples{margin-top:4px;display:flex;flex-wrap:wrap;gap:6px}
+.card .examples button{appearance:none;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font:500 12px/1.2 Inter,sans-serif;color:var(--ink-2);cursor:pointer}
+.card .examples button:hover{color:var(--ink);border-color:var(--ink-3)}
+.card .submit{margin-top:4px;display:flex;gap:10px;align-items:center}
+.card .lat{font:500 12px/1 "JetBrains Mono",monospace;color:var(--ink-3)}
+
+/* bars (reused from index.html) */
+.bars{display:grid;gap:6px}
+.bar{display:grid;grid-template-columns:minmax(100px,180px) 1fr 60px;align-items:center;gap:10px;font:13px/1.3 "JetBrains Mono",monospace;color:var(--ink-2)}
+.bar .label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.bar .track{height:10px;border-radius:5px;background:var(--bar-bg);overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);transition:width .3s}
+.bar.top .fill{background:var(--good)}
+.bar .val{text-align:right}
+.empty{font-size:14px;color:var(--ink-3);padding:12px 0}
+
+/* code accordion */
+.accordion{margin-top:24px;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.accordion summary{padding:14px 20px;cursor:pointer;font:500 13px/1 "JetBrains Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);list-style:none;display:flex;justify-content:space-between;align-items:center}
+.accordion summary::-webkit-details-marker{display:none}
+.accordion summary:hover{color:var(--ink)}
+.accordion summary::after{content:"+";font-family:"JetBrains Mono",monospace;color:var(--ink-3)}
+.accordion[open] summary::after{content:"−"}
+.accordion .body{padding:0 20px 20px;display:grid;gap:16px}
+.accordion .body h4{font:500 11px/1 "JetBrains Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+.accordion pre{background:var(--code-bg);color:var(--code-ink);font:13px/1.5 "JetBrains Mono",ui-monospace,monospace;padding:14px 16px;border-radius:8px;overflow-x:auto;white-space:pre}
+.accordion pre .k{color:var(--code-key)}
+.accordion pre .s{color:var(--code-str)}
+.accordion pre .c{color:var(--code-dim)}
+.accordion .copy{appearance:none;background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 8px;font:500 11px/1 "JetBrains Mono",monospace;color:var(--ink-3);cursor:pointer;float:right;position:relative;top:-24px}
+.accordion .copy:hover{color:var(--ink);border-color:var(--ink-3)}
+.err-banner{background:color-mix(in srgb,var(--warn) 20%,transparent);border:1px solid var(--warn);color:var(--ink);padding:12px 14px;border-radius:10px;margin-bottom:18px;font-size:14px}
+.err-banner strong{color:var(--warn)}
+
+footer{margin-top:60px;padding:30px 0;border-top:1px solid var(--line);color:var(--ink-3);font-size:13px}
+footer .wrap{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+footer a{color:inherit}
+</style>
+<script>
+  // Apply saved theme before first paint
+  try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch(e) {}
+</script>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="/" class="brand"><span class="brand-mark" aria-hidden="true"></span>Bernoulli</a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/benchmarks.html">Benchmarks</a>
+      <a href="https://github.com/shyamsfo/bernoulli/blob/main/API.md" target="_blank" rel="noopener">API docs</a>
+      <button id="theme-toggle" class="btn btn-icon" type="button" aria-label="Toggle color theme" title="Switch theme">
+        <svg data-icon="light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.07-7.07l-1.42 1.42M6.34 17.66l-1.42 1.42m0-14.14l1.42 1.42m11.31 11.31l1.42 1.42"/></svg>
+        <svg data-icon="dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <a class="btn" aria-label="GitHub" href="https://github.com/shyamsfo/bernoulli" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" aria-hidden="true" style="width:16px;height:16px;fill:currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span class="gh-label">GitHub</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap">
+    <div class="head">
+      <h1>API tester</h1>
+      <p>Pick an endpoint, paste a bearer token, send a <code>/v1/decide</code> request against it. Nothing in this page talks to any server besides the endpoint you configure — the key stays in your browser's <code>localStorage</code>. See the full schema at <a href="https://github.com/shyamsfo/bernoulli/blob/main/API.md" target="_blank" rel="noopener">API.md</a>.</p>
+    </div>
+
+    <section class="config" aria-label="Endpoint configuration">
+      <div class="field">
+        <label for="endpoint-preset">Endpoint</label>
+        <select id="endpoint-preset">
+          <option value="prod">Production — bernoulli-api.nuwire.dev</option>
+          <option value="staging">Staging — bernoulli-api-staging.nuwire.dev</option>
+          <option value="mock">Mock — bmock.nuwire.dev</option>
+          <option value="local">Local — http://localhost:8000</option>
+          <option value="custom">Custom URL…</option>
+        </select>
+        <input id="endpoint-url" type="text" placeholder="https://your.api/" style="display:none" autocomplete="off" spellcheck="false">
+        <div class="hint" id="endpoint-hint"></div>
+      </div>
+      <div class="field">
+        <label for="api-key">Bearer token</label>
+        <div class="row">
+          <input id="api-key" type="password" placeholder="paste the key for this endpoint" autocomplete="off" spellcheck="false">
+          <button id="toggle-key" class="btn" type="button" title="Show/hide">👁</button>
+        </div>
+        <div class="hint" id="key-hint">Keys are stored per-endpoint in your browser's localStorage. Not sent anywhere else.</div>
+      </div>
+      <div class="btns">
+        <button id="save-btn" class="btn" type="button">Save</button>
+        <button id="check-btn" class="btn btn-primary" type="button">Check endpoint</button>
+        <span id="status" aria-live="polite"></span>
+      </div>
+    </section>
+
+    <nav class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="binary">Binary (Yes / No)</button>
+      <button role="tab" aria-selected="false" data-tab="choice">Choice (one of N)</button>
+      <button role="tab" aria-selected="false" data-tab="rating">Rating (1 - N)</button>
+    </nav>
+
+    <section class="panel active" data-panel="binary">
+      <p class="intro">A single yes/no question. The response is a <code>probability</code> on "Yes" — the thing you'd branch on. Calibrated 0.72 means ~72% of similar prompts should turn out to be Yes.</p>
+      <div class="form-and-result">
+        <div class="card">
+          <h3>Request</h3>
+          <div class="field"><label>State</label><textarea data-field="state" placeholder="The piece of text to decide about..."></textarea></div>
+          <div class="field"><label>Question</label><textarea data-field="question" rows="2" placeholder="Does this message express...?"></textarea></div>
+          <div class="examples" aria-label="Load an example">
+            <button data-ex="0">frustrated customer</button>
+            <button data-ex="1">transformer efficiency</button>
+            <button data-ex="2">prod-impacting incident</button>
+          </div>
+          <div class="submit">
+            <button class="btn btn-primary" data-submit>Decide</button>
+            <span class="lat" data-lat></span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Response</h3>
+          <div class="bars" data-bars><div class="empty">Submit a request to see the distribution here.</div></div>
+        </div>
+      </div>
+      <details class="accordion">
+        <summary>Show request + response</summary>
+        <div class="body">
+          <div><h4>curl</h4><button class="copy" data-copy>copy</button><pre data-curl>(pending)</pre></div>
+          <div><h4>Response JSON</h4><pre data-resp>(pending)</pre></div>
+        </div>
+      </details>
+    </section>
+
+    <section class="panel" data-panel="choice">
+      <p class="intro">Pick one of N labels, get a probability per option. The full distribution matters — if the top option is 0.4 and the second is 0.35, that's not a confident decision and your branching logic should see that.</p>
+      <div class="form-and-result">
+        <div class="card">
+          <h3>Request</h3>
+          <div class="field"><label>State</label><textarea data-field="state" placeholder="The piece of text to classify..."></textarea></div>
+          <div class="field"><label>Question</label><textarea data-field="question" rows="2" placeholder="Which category..."></textarea></div>
+          <div class="field"><label>Options (comma-separated, 2 to 26)</label><input data-field="options" type="text" value="refund, information, complaint, other"></div>
+          <div class="examples" aria-label="Load an example">
+            <button data-ex="0">news category</button>
+            <button data-ex="1">support ticket</button>
+            <button data-ex="2">arxiv category</button>
+          </div>
+          <div class="submit">
+            <button class="btn btn-primary" data-submit>Decide</button>
+            <span class="lat" data-lat></span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Response</h3>
+          <div class="bars" data-bars><div class="empty">Submit a request to see the distribution here.</div></div>
+        </div>
+      </div>
+      <details class="accordion">
+        <summary>Show request + response</summary>
+        <div class="body">
+          <div><h4>curl</h4><button class="copy" data-copy>copy</button><pre data-curl>(pending)</pre></div>
+          <div><h4>Response JSON</h4><pre data-resp>(pending)</pre></div>
+        </div>
+      </details>
+    </section>
+
+    <section class="panel" data-panel="rating">
+      <p class="intro">Ordinal rating on an integer scale. You get a probability per value and an <code>expected</code> rating (Σ p<sub>i</sub>·i). Scale width must be ≤ 9.</p>
+      <div class="form-and-result">
+        <div class="card">
+          <h3>Request</h3>
+          <div class="field"><label>State</label><textarea data-field="state" placeholder="The piece of text to score..."></textarea></div>
+          <div class="field"><label>Question</label><textarea data-field="question" rows="2" placeholder="How many stars..."></textarea></div>
+          <div class="scale-row">
+            <div class="field"><label>Scale low</label><input data-field="low" type="number" value="1"></div>
+            <div class="field"><label>Scale high</label><input data-field="high" type="number" value="5"></div>
+          </div>
+          <div class="examples" aria-label="Load an example">
+            <button data-ex="0">yelp review</button>
+            <button data-ex="1">incident severity</button>
+            <button data-ex="2">PR urgency</button>
+          </div>
+          <div class="submit">
+            <button class="btn btn-primary" data-submit>Decide</button>
+            <span class="lat" data-lat></span>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Response</h3>
+          <div class="bars" data-bars><div class="empty">Submit a request to see the distribution here.</div></div>
+        </div>
+      </div>
+      <details class="accordion">
+        <summary>Show request + response</summary>
+        <div class="body">
+          <div><h4>curl</h4><button class="copy" data-copy>copy</button><pre data-curl>(pending)</pre></div>
+          <div><h4>Response JSON</h4><pre data-resp>(pending)</pre></div>
+        </div>
+      </details>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Bernoulli — API tester · <a href="/">bernoulli.live</a> · <a href="https://github.com/shyamsfo/bernoulli" target="_blank" rel="noopener">GitHub</a></span>
+    <span>Keys stay in your browser.</span>
+  </div>
+</footer>
+
+<script>
+"use strict";
+
+const PRESETS = {
+  prod:    { url: "https://bernoulli-api.nuwire.dev",         label: "Production" },
+  staging: { url: "https://bernoulli-api-staging.nuwire.dev", label: "Staging" },
+  mock:    { url: "https://bmock.nuwire.dev",                 label: "Mock" },
+  local:   { url: "http://localhost:8000",                    label: "Local" },
+};
+
+// --- Theme toggle (same pattern as index.html) --------------------------------
+(function(){
+  const html = document.documentElement;
+  const btn = document.getElementById('theme-toggle');
+  const KEY = 'theme';
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const current = () => html.getAttribute('data-theme') || (mq.matches ? 'dark' : 'light');
+  function sync(){
+    const cur = current(), next = cur === 'dark' ? 'light' : 'dark';
+    btn.setAttribute('data-mode', cur);
+    btn.title = 'Switch to ' + next + ' theme';
+    btn.setAttribute('aria-label', btn.title);
+  }
+  btn.addEventListener('click', () => {
+    const next = current() === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    try { localStorage.setItem(KEY, next); } catch(e) {}
+    sync();
+  });
+  mq.addEventListener('change', sync);
+  sync();
+})();
+
+// --- Config: endpoint + API key -----------------------------------------------
+const presetEl   = document.getElementById('endpoint-preset');
+const customEl   = document.getElementById('endpoint-url');
+const keyEl      = document.getElementById('api-key');
+const hintEl     = document.getElementById('endpoint-hint');
+const statusEl   = document.getElementById('status');
+const saveBtn    = document.getElementById('save-btn');
+const checkBtn   = document.getElementById('check-btn');
+const toggleKey  = document.getElementById('toggle-key');
+
+const LS = {
+  preset: 'tester.preset',
+  custom: 'tester.customUrl',
+  keyFor: (origin) => 'tester.key:' + origin,
+};
+
+function ls(key, fallback = '') {
+  try { return localStorage.getItem(key) ?? fallback; } catch(e) { return fallback; }
+}
+function lsSet(key, val) {
+  try { if (val == null || val === '') localStorage.removeItem(key); else localStorage.setItem(key, val); } catch(e) {}
+}
+
+function currentUrl() {
+  const p = presetEl.value;
+  if (p === 'custom') return (customEl.value || '').trim();
+  return PRESETS[p].url;
+}
+function currentOrigin() {
+  try { return new URL(currentUrl()).origin; } catch(e) { return ''; }
+}
+function syncKeyField() {
+  const origin = currentOrigin();
+  keyEl.value = origin ? ls(LS.keyFor(origin), '') : '';
+  statusEl.textContent = '';
+  statusEl.removeAttribute('data-ok');
+  hintEl.textContent = origin ? ('→ ' + origin + '/v1/decide') : 'Enter a valid URL above.';
+  hintEl.className = origin ? 'hint' : 'hint err';
+}
+
+function initConfig() {
+  const savedPreset = ls(LS.preset, 'prod');
+  presetEl.value = (savedPreset in PRESETS || savedPreset === 'custom') ? savedPreset : 'prod';
+  customEl.value = ls(LS.custom, '');
+  customEl.style.display = presetEl.value === 'custom' ? 'block' : 'none';
+  syncKeyField();
+}
+
+presetEl.addEventListener('change', () => {
+  customEl.style.display = presetEl.value === 'custom' ? 'block' : 'none';
+  lsSet(LS.preset, presetEl.value);
+  syncKeyField();
+});
+customEl.addEventListener('input', () => {
+  lsSet(LS.custom, customEl.value);
+  syncKeyField();
+});
+saveBtn.addEventListener('click', () => {
+  const origin = currentOrigin();
+  if (!origin) {
+    statusEl.textContent = 'invalid url';
+    statusEl.dataset.ok = '0';
+    return;
+  }
+  lsSet(LS.keyFor(origin), keyEl.value);
+  statusEl.textContent = keyEl.value ? ('saved for ' + origin) : ('cleared for ' + origin);
+  statusEl.dataset.ok = '1';
+});
+toggleKey.addEventListener('click', () => {
+  keyEl.type = keyEl.type === 'password' ? 'text' : 'password';
+});
+keyEl.addEventListener('input', () => {
+  const origin = currentOrigin();
+  if (origin) lsSet(LS.keyFor(origin), keyEl.value);
+});
+
+// --- Check endpoint: /healthz (no auth) + /v1/models (auth) -------------------
+async function checkEndpoint() {
+  const url = currentUrl();
+  if (!url) { setStatus('invalid url', false); return; }
+  statusEl.dataset.ok = '';
+  statusEl.textContent = 'checking…';
+  try {
+    const t0 = performance.now();
+    const h = await fetch(url + '/healthz', { method: 'GET' });
+    const dt1 = Math.round(performance.now() - t0);
+    if (!h.ok) { setStatus('/healthz → ' + h.status + ' (' + dt1 + 'ms)', false); return; }
+    const t1 = performance.now();
+    const m = await fetch(url + '/v1/models', { headers: authHeaders() });
+    const dt2 = Math.round(performance.now() - t1);
+    if (m.status === 401) { setStatus('/healthz ok · /v1/models → 401 (bad key)', false); return; }
+    if (!m.ok) { setStatus('/healthz ok · /v1/models → ' + m.status + ' (' + dt2 + 'ms)', false); return; }
+    setStatus('ok · /healthz ' + dt1 + 'ms · /v1/models ' + dt2 + 'ms', true);
+  } catch (err) {
+    setStatus('network error (' + (err && err.message ? err.message : 'unknown') + ')', false);
+  }
+}
+function setStatus(txt, ok) { statusEl.textContent = txt; statusEl.dataset.ok = ok ? '1' : '0'; }
+function authHeaders() {
+  const h = { 'content-type': 'application/json' };
+  if (keyEl.value) h['authorization'] = 'Bearer ' + keyEl.value;
+  return h;
+}
+checkBtn.addEventListener('click', checkEndpoint);
+
+// --- Tabs ---------------------------------------------------------------------
+document.querySelectorAll('.tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', b === btn ? 'true' : 'false'));
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tab));
+  });
+});
+
+// --- Examples -----------------------------------------------------------------
+const EXAMPLES = {
+  binary: [
+    ["A customer email: 'I ordered a blender three weeks ago and it still hasn't arrived. I want my money back and I'm never buying from you again.'",
+     "Does this message express strong frustration with the company?"],
+    ["A paper's abstract: 'We propose a novel attention mechanism that reduces transformer memory from O(n^2) to O(n log n) by exploiting a hierarchical token structure.'",
+     "Is this abstract about transformer efficiency rather than application performance?"],
+    ["A one-sentence incident report: 'The staging database replica fell behind primary by 12 hours overnight and had to be rebuilt from scratch.'",
+     "Should this be flagged as a production-impacting incident?"],
+  ],
+  choice: [
+    ["The Lakers beat the Celtics 112-104 in overtime last night behind LeBron's 42-point effort.",
+     "Which news category does this story belong to?",
+     "world, sports, business, sci/tech"],
+    ["A user message: 'I lost my credit card at the restaurant last night. Can you help me block it?'",
+     "Which support category does this ticket fall into?",
+     "lost_card, fraud_dispute, balance_inquiry, general_info, other"],
+    ["An abstract: 'We present a self-supervised method for learning robust visual representations from unlabeled video via temporal contrastive loss.'",
+     "Which arXiv category?",
+     "cs.CL, cs.CV, cs.LG, cs.RO"],
+  ],
+  rating: [
+    ["The food was fine, service was slow but friendly, pretty good value for the price.",
+     "How many stars would this review likely give (1 = terrible, 5 = perfect)?", 1, 5],
+    ["An incident: One user cannot download a PDF attachment, but opening it in the browser works.",
+     "Rate the severity (1 = cosmetic, 2 = workaround available, 3 = many users blocked, 4 = data loss).", 1, 4],
+    ["A code review comment: 'This looks fine but the variable name could be clearer. Not a blocker.'",
+     "Rate the urgency (1 = ship it, 2 = optional nitpick, 3 = should fix, 4 = must fix before merge).", 1, 4],
+  ],
+};
+
+document.querySelectorAll('.panel').forEach(panel => {
+  const kind = panel.dataset.panel;
+  panel.querySelectorAll('.examples button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ex = EXAMPLES[kind][+btn.dataset.ex];
+      if (kind === 'binary') {
+        panel.querySelector('[data-field="state"]').value = ex[0];
+        panel.querySelector('[data-field="question"]').value = ex[1];
+      } else if (kind === 'choice') {
+        panel.querySelector('[data-field="state"]').value = ex[0];
+        panel.querySelector('[data-field="question"]').value = ex[1];
+        panel.querySelector('[data-field="options"]').value = ex[2];
+      } else if (kind === 'rating') {
+        panel.querySelector('[data-field="state"]').value = ex[0];
+        panel.querySelector('[data-field="question"]').value = ex[1];
+        panel.querySelector('[data-field="low"]').value = ex[2];
+        panel.querySelector('[data-field="high"]').value = ex[3];
+      }
+    });
+  });
+  panel.querySelector('[data-submit]').addEventListener('click', () => decide(panel, kind));
+  panel.querySelector('[data-copy]').addEventListener('click', (ev) => {
+    const txt = panel.querySelector('[data-curl]').textContent;
+    navigator.clipboard?.writeText(txt).then(() => {
+      ev.target.textContent = 'copied';
+      setTimeout(() => { ev.target.textContent = 'copy'; }, 1200);
+    });
+  });
+});
+
+// --- Decide handler -----------------------------------------------------------
+async function decide(panel, kind) {
+  const btn = panel.querySelector('[data-submit]');
+  const latEl = panel.querySelector('[data-lat]');
+  const barsEl = panel.querySelector('[data-bars]');
+  const curlEl = panel.querySelector('[data-curl]');
+  const respEl = panel.querySelector('[data-resp]');
+
+  const state = panel.querySelector('[data-field="state"]').value.trim();
+  const question = panel.querySelector('[data-field="question"]').value.trim();
+  if (!state || !question) { flashError(panel, 'Please provide both state and question.'); return; }
+
+  let q;
+  if (kind === 'binary') {
+    q = { id: 'q', type: 'binary', prompt: question };
+  } else if (kind === 'choice') {
+    const opts = (panel.querySelector('[data-field="options"]').value || '')
+      .split(',').map(s => s.trim()).filter(Boolean);
+    if (opts.length < 2) { flashError(panel, 'Please provide at least two options, comma-separated.'); return; }
+    if (opts.length > 26) { flashError(panel, 'Choice tester caps at 26 options (chunked scoring would need a different debias strategy).'); return; }
+    q = { id: 'q', type: 'choice', prompt: question, options: opts };
+  } else {
+    const low = +panel.querySelector('[data-field="low"]').value;
+    const high = +panel.querySelector('[data-field="high"]').value;
+    if (!(high > low)) { flashError(panel, 'Scale high must be greater than scale low.'); return; }
+    if (high - low + 1 > 9) { flashError(panel, 'Rating scale width must be at most 9 (single-digit labels).'); return; }
+    q = { id: 'q', type: 'rating', prompt: question, scale: [low, high] };
+  }
+
+  const req = { state: { text: state }, questions: [q] };
+  const url = currentUrl();
+  if (!url) { flashError(panel, 'Set an endpoint above first.'); return; }
+
+  curlEl.textContent = formatCurl(url, req);
+  respEl.textContent = '(sending…)';
+  barsEl.innerHTML = '<div class="empty">waiting…</div>';
+  btn.disabled = true;
+  latEl.textContent = '';
+
+  const t0 = performance.now();
+  try {
+    const resp = await fetch(url + '/v1/decide', {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify(req),
+    });
+    const dt = Math.round(performance.now() - t0);
+    latEl.textContent = resp.status + ' · ' + dt + ' ms';
+    const text = await resp.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { data = text; }
+    respEl.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+    if (!resp.ok) {
+      barsEl.innerHTML = '<div class="err-banner"><strong>HTTP ' + resp.status + '</strong> — see the Response JSON panel below.</div>';
+      return;
+    }
+    const decision = data?.decisions?.q;
+    if (!decision) { barsEl.innerHTML = '<div class="err-banner">response had no <code>decisions.q</code> — check Response JSON.</div>'; return; }
+    renderBars(barsEl, kind, decision);
+  } catch (err) {
+    const dt = Math.round(performance.now() - t0);
+    latEl.textContent = dt + ' ms';
+    const msg = err && err.message ? err.message : String(err);
+    barsEl.innerHTML = '<div class="err-banner"><strong>Network error</strong> — ' + escapeHtml(msg) + '. '
+      + 'If this is a CORS failure, the endpoint needs <code>Access-Control-Allow-Origin</code>; check the browser console.</div>';
+    respEl.textContent = msg;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function renderBars(container, kind, decision) {
+  let entries;
+  if (kind === 'binary') {
+    const p = decision.probability;
+    entries = [['Yes', p], ['No', 1 - p]];
+  } else if (kind === 'choice') {
+    entries = Object.entries(decision.distribution || {});
+  } else {
+    entries = Object.entries(decision.distribution || {});
+  }
+  entries.sort((a, b) => b[1] - a[1]);
+  const top = entries[0]?.[0];
+  container.innerHTML = entries.map(([label, p]) => {
+    const pct = Math.round(p * 100);
+    const wd = Math.max(2, Math.min(100, p * 100));
+    return '<div class="bar' + (label === top ? ' top' : '') + '">'
+      + '<span class="label" title="' + escapeHtml(label) + '">' + escapeHtml(label) + '</span>'
+      + '<span class="track"><span class="fill" style="width:' + wd + '%"></span></span>'
+      + '<span class="val">' + (p < 0.01 ? p.toFixed(3) : (pct + '%')) + '</span>'
+      + '</div>';
+  }).join('');
+  if (kind === 'rating' && typeof decision.expected === 'number') {
+    container.insertAdjacentHTML('afterbegin',
+      '<div style="padding:6px 0 10px;font:500 13px/1 Inter,sans-serif;color:var(--ink-2)">'
+      + 'Expected: <strong style="color:var(--ink)">' + decision.expected.toFixed(2) + '</strong>'
+      + '</div>');
+  }
+}
+
+function flashError(panel, msg) {
+  const bars = panel.querySelector('[data-bars]');
+  bars.innerHTML = '<div class="err-banner">' + escapeHtml(msg) + '</div>';
+}
+
+function formatCurl(baseUrl, req) {
+  const body = JSON.stringify(req, null, 2);
+  const key = keyEl.value ? '  -H ' + JSON.stringify('Authorization: Bearer ' + keyEl.value) + ' \\\n' : '';
+  return 'curl -X POST ' + baseUrl + '/v1/decide \\\n'
+    + '  -H ' + JSON.stringify('Content-Type: application/json') + ' \\\n'
+    + key
+    + "  -d '" + body + "'";
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// --- Init ---------------------------------------------------------------------
+initConfig();
+</script>
+
+</body>
+</html>
