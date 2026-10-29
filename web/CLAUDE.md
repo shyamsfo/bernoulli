@@ -21,6 +21,7 @@ web/
 ├── benchmarks.html   # standalone /benchmarks.html — all 9 benchmark numbers + methodology + caveats + reproducibility
 ├── when-to-use.html  # standalone /when-to-use.html — buyer-decision guide (fit assessment, when-not-to-use, migration path)
 ├── tester.html       # standalone /tester.html — browser-based API tester; endpoint dropdown + bearer key input; CORS-dependent (see note below)
+├── chrome-tos-plugin-privacy.html  # standalone /chrome-tos-plugin-privacy.html — privacy policy for the "Bernoulli for Terms" Chrome extension; linked from the extension's listing + settings
 ├── favicon.svg
 ├── justfile          # deploy recipes (local to this folder)
 ├── CLAUDE.md         # this file

@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Privacy Policy — Bernoulli for Terms (Chrome extension)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Privacy policy for the Bernoulli for Terms Chrome extension — what it reads, what it sends, and what stays on your machine.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f3ee; --surface:#ffffff; --surface-2:#ece9e1;
+  --ink:#15171c; --ink-2:#4a4d55; --ink-3:#7c7f87;
+  --line:#dcd8ce; --accent:#2340d0; --accent-soft:#e3e8fb;
+  --good:#1f7a4d; --warn:#a15c00; --bar-bg:#ece9e1;
+  --code-bg:#15171c; --code-ink:#e6e4de; --code-dim:#8a8d96; --code-key:#9db0ff; --code-str:#b9e3c6;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1014; --surface:#161920; --surface-2:#1d2129;
+    --ink:#ecebe6; --ink-2:#b3b5bb; --ink-3:#7e818a;
+    --line:#2a2e37; --accent:#8098ff; --accent-soft:#1c2340;
+    --good:#5fcf95; --warn:#e3a54f; --bar-bg:#232733;
+    --code-bg:#0a0c0f; --code-ink:#e6e4de;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1014; --surface:#161920; --surface-2:#1d2129;
+  --ink:#ecebe6; --ink-2:#b3b5bb; --ink-3:#7e818a;
+  --line:#2a2e37; --accent:#8098ff; --accent-soft:#1c2340;
+  --good:#5fcf95; --warn:#e3a54f; --bar-bg:#232733;
+  --code-bg:#0a0c0f; --code-ink:#e6e4de;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:"JetBrains Mono",ui-monospace,monospace;font-size:0.9em;background:var(--surface-2);padding:1px 6px;border-radius:4px;color:var(--ink)}
+strong{color:var(--ink);font-weight:600}
+
+.wrap{max-width:760px;margin:0 auto;padding:0 24px}
+.eyebrow{font:500 12px/1 "JetBrains Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+
+/* nav */
+nav{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+nav .wrap{max-width:1120px;display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font:400 24px/1 "Instrument Serif",serif;color:var(--ink)}
+.brand:hover{text-decoration:none}
+.brand-mark{width:22px;height:22px;border-radius:50%;background:conic-gradient(var(--accent) 0 72%,var(--line) 72% 100%)}
+.nav-links{display:flex;gap:16px;align-items:center;font-size:14px;color:var(--ink-2)}
+.nav-links a{color:inherit;text-decoration:none}
+.nav-links a:hover{color:var(--ink);text-decoration:none}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:8px;font:500 13px/1 Inter,sans-serif;text-decoration:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--ink-3);text-decoration:none}
+.btn-icon{padding:9px}
+.btn-icon svg{width:16px;height:16px;display:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#theme-toggle[data-mode="light"] svg[data-icon="dark"],
+#theme-toggle[data-mode="dark"] svg[data-icon="light"]{display:block}
+@media (max-width:480px){.nav-links .gh-label{display:none}}
+
+/* page */
+main{padding:56px 0 96px}
+.head{margin-bottom:36px}
+.head h1{font:400 clamp(36px,5vw,52px)/1.05 "Instrument Serif",serif;letter-spacing:-.01em}
+.head .meta{margin-top:10px;color:var(--ink-3);font-size:14px;font-family:"JetBrains Mono",ui-monospace,monospace}
+
+h2{font:400 clamp(22px,2.4vw,28px)/1.2 "Instrument Serif",serif;margin:40px 0 12px}
+
+p{margin:0 0 14px;color:var(--ink)}
+ul{margin:0 0 14px;padding-left:22px}
+li{margin:6px 0}
+li::marker{color:var(--ink-3)}
+
+/* summary card */
+.summary{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;padding:20px 24px;margin:0 0 36px}
+.summary h2{margin:0 0 10px;font-size:22px}
+.summary p:last-child{margin:0}
+
+/* permissions table */
+table{width:100%;border-collapse:collapse;margin:4px 0 14px;font-size:14.5px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink)}
+th{background:var(--surface-2);font:500 11px/1 "JetBrains Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+tbody tr:last-child td{border-bottom:0}
+td code{word-break:break-word}
+
+footer{margin-top:60px;padding:30px 0;border-top:1px solid var(--line);color:var(--ink-3);font-size:13px}
+footer .wrap{max-width:1120px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+footer a{color:inherit}
+</style>
+<script>
+  // Apply saved theme before first paint
+  try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch(e) {}
+</script>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="/" class="brand"><span class="brand-mark" aria-hidden="true"></span>Bernoulli</a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/benchmarks.html">Benchmarks</a>
+      <a href="/tester.html">Tester</a>
+      <button id="theme-toggle" class="btn btn-icon" type="button" aria-label="Toggle color theme" title="Switch theme">
+        <svg data-icon="light" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.07-7.07l-1.42 1.42M6.34 17.66l-1.42 1.42m0-14.14l1.42 1.42m11.31 11.31l1.42 1.42"/></svg>
+        <svg data-icon="dark" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <a class="btn" aria-label="GitHub" href="https://github.com/shyamsfo/bernoulli" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" aria-hidden="true" style="width:16px;height:16px;fill:currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span class="gh-label">GitHub</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Chrome extension privacy</div>
+      <h1>Privacy Policy — Bernoulli for Terms</h1>
+      <p class="meta">Last updated: 2026-10-29</p>
+    </div>
+
+    <section class="summary">
+      <h2>Summary</h2>
+      <p>Bernoulli for Terms is a Chrome extension that reads a terms-of-service page you're looking at and sends the text to a configurable "decide" endpoint, which returns a scorecard against twelve calibrated questions. No usage metrics, telemetry, or analytics are collected. The extension author receives no information from your use of the extension unless you have configured it to call an endpoint the author operates.</p>
+    </section>
+
+    <h2>What data is read</h2>
+    <p>When you open the side panel on a page, the extension reads from the current tab:</p>
+    <ul>
+      <li>The page's URL</li>
+      <li>The page's title</li>
+      <li>The visible text content, extracted via Mozilla Readability (falls back to raw <code>document.body.innerText</code> if Readability can't find article content)</li>
+      <li>Any text you have highlighted at the moment you open the panel (optional; used only if you choose "Analyze selection")</li>
+    </ul>
+    <p>This happens via <code>chrome.scripting.executeScript</code> on the tab you're currently viewing. The extension reads the page only when you open the panel; it does <strong>not</strong> run in the background, does <strong>not</strong> watch what you browse, and does <strong>not</strong> inject any always-on content scripts.</p>
+
+    <h2>What data is sent, and where</h2>
+    <p>The URL, title, extracted text, and (optionally) selection are combined into a single <code>state</code> payload and sent to the "Decide endpoint" you configure in Settings via an HTTPS <code>POST /v1/decide</code> request. The default endpoint is:</p>
+    <ul>
+      <li><code>https://bmock.nuwire.dev</code> — a public mock service that returns canned responses and does not persist your data</li>
+    </ul>
+    <p>You can change this to any endpoint you trust. The project author also operates a dev-tier production endpoint at <code>https://bernoulli-api.nuwire.dev</code>; see its <a href="https://github.com/shyamsfo/bernoulli/blob/main/API.md" target="_blank" rel="noopener noreferrer">API reference</a> for its own operational scope.</p>
+    <p><strong>You are responsible for choosing an endpoint you trust.</strong> The extension does not call any other servers.</p>
+
+    <h2>What data is stored on your machine</h2>
+    <p>Two Chrome storage areas:</p>
+    <ul>
+      <li><code>chrome.storage.sync</code> (syncs across your Chrome profile): your endpoint URL, API token, detection-sensitivity setting, cache-enabled flag, cache TTL.</li>
+      <li><code>chrome.storage.local</code> (this device only): a per-URL cache of scorecard results (24h default TTL, configurable), and a one-time "disclaimer acknowledged" flag.</li>
+    </ul>
+    <p>The cache stores: the scorecard response from the endpoint, the URL you analyzed, a cheap content hash (text length + first 500 + last 500 characters) to detect page changes, and a timestamp. Clear it anytime via <strong>Settings &rarr; Clear cached results</strong>.</p>
+    <p>Nothing in storage is sent anywhere else.</p>
+
+    <h2>Permissions explained</h2>
+    <table>
+      <thead>
+        <tr><th>Permission</th><th>What it's for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>activeTab</code></td><td>Read the current tab when you open the panel</td></tr>
+        <tr><td><code>scripting</code></td><td>Inject the extraction + signal-collection script into the current tab</td></tr>
+        <tr><td><code>storage</code></td><td>Store settings + cache locally</td></tr>
+        <tr><td><code>sidePanel</code></td><td>Open the side panel UI</td></tr>
+        <tr><td><code>host_permissions: https://*.nuwire.dev/*</code></td><td>Call the default and production endpoints</td></tr>
+        <tr><td><code>optional_host_permissions: &lt;all_urls&gt;</code></td><td>If you configure a non-nuwire endpoint, Chrome asks for permission to call it. Granted per-host, revocable at <code>chrome://extensions</code>.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>No tracking</h2>
+    <p>Bernoulli for Terms does not use analytics services (no Google Analytics, no Mixpanel, no Sentry), does not phone home, and does not log usage data to the extension author.</p>
+
+    <h2>Children</h2>
+    <p>The extension is not intended for use by children under 13.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about privacy, or to report an issue: <a href="mailto:privacy@bernoulli.live">privacy@bernoulli.live</a>.</p>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Bernoulli — <a href="/">bernoulli.live</a> · <a href="https://github.com/shyamsfo/bernoulli" target="_blank" rel="noopener">GitHub</a></span>
+    <span>&copy; 2026 DeepStore · <a href="https://github.com/shyamsfo/bernoulli/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0</a></span>
+  </div>
+</footer>
+
+<script>
+"use strict";
+// Theme toggle — same pattern as index.html / tester.html
+(function(){
+  const html = document.documentElement;
+  const btn = document.getElementById('theme-toggle');
+  const KEY = 'theme';
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const current = () => html.getAttribute('data-theme') || (mq.matches ? 'dark' : 'light');
+  function sync(){
+    const cur = current(), next = cur === 'dark' ? 'light' : 'dark';
+    btn.setAttribute('data-mode', cur);
+    btn.title = 'Switch to ' + next + ' theme';
+    btn.setAttribute('aria-label', btn.title);
+  }
+  btn.addEventListener('click', () => {
+    const next = current() === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    try { localStorage.setItem(KEY, next); } catch(e) {}
+    sync();
+  });
+  mq.addEventListener('change', sync);
+  sync();
+})();
+</script>
+
+</body>
+</html>
