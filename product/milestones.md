@@ -433,6 +433,38 @@ Our native `/v1/decide` schema is our own invention — pydantic v2 discriminate
 
 ---
 
+## M15 — API usage statistics
+**Status**: ⏳ pending (defined only — further planning required before execution; run `/ds-work-plan M15` when ready)
+**Goal**: Know who's calling the Bernoulli API, how often, what question types, how fast — enough to make product decisions about Chrome-plugin vs Salesforce-plugin usage without flying blind.
+
+**Why now:**
+Expected first-wave callers are the "Bernoulli for Terms" Chrome extension and Salesforce plugins (M13's daily-serving endpoint is already live for the latter). Today we have no visibility beyond nginx access logs on ssd2, which can't see the question type, label count, calibration state, or scorer timing — the fields that matter for product calls. Volume is still low enough that we can get the instrumentation in before it starts to matter, which is the right order.
+
+**Recommended shape (from the 2026-10-29 scoping discussion — not binding; validate at planning time):**
+- **Approach**: application-level JSONL event log via a FastAPI middleware wrapping `/v1/decide` and `/v1/generate`. Not nginx-only (can't see question type); not a full TSDB (premature at one box, handful of clients).
+- **Per-event fields (sketch)**: ts, request_id, hashed api_key_id (NOT raw key), endpoint, status, latency_ms, scorer_ms, model, calibration_version, question_count, question_types, label_counts, state_text_bytes (count only — never the text), state_images, debias, calibrated, origin, user_agent, error_type.
+- **Client attribution**: `Origin` header + `User-Agent` is enough to separate Chrome-extension traffic from Salesforce-plugin traffic. Confirm during planning that Salesforce Apex callouts expose a usable UA.
+- **Storage + rotation**: `~/events.jsonl` on the serving box's EBS (persists across stop/start). logrotate daily, gzip, retain 30 days.
+- **Analytics path**: `just bench stats` recipe rsyncs the event log down, runs a DuckDB query over the JSONL, writes a markdown report into `reports/`. No DB service, no dashboard — just a reproducible weekly report.
+- **Later (not this milestone)**: Prometheus `/metrics` endpoint for alerting; per-key quotas / rate limits; shipping events to S3 as parquet; customer-facing usage dashboard.
+
+**Open questions to settle in planning (`/ds-work-plan M15`):**
+- Exact field list — are we missing anything a product decision will need? (e.g., truncation flags, cache-hit flags once the Chrome extension's local cache can be measured server-side.)
+- Fire-and-forget mechanics — `asyncio.create_task` with a bounded queue vs a background thread. What's the drop policy if the queue fills during a traffic spike?
+- Hash scheme for api_key_id — SHA-256 prefix is fine, but confirm it stays stable across key rotation (same key → same id).
+- Correlation across layers — do we also need to echo `X-Request-Id` on the response so clients can report "my request `req_...` errored" and we can look it up? Likely yes; cheap to do.
+- Report format — one weekly markdown? Or one per client (Chrome / Salesforce)? Pick after a week of real data.
+
+**Exit criteria** (to be refined during planning): one week of real traffic produces a weekly report that answers top-N API keys by request count, question-type mix, p50/p95 latency, 4xx/5xx rate, and the Chrome-vs-Salesforce split.
+
+**Dependencies:**
+- **Blocks on:** M13 serving endpoint being up (it is).
+- **Does not block:** anything structural. Can land anytime.
+
+**Expected effort**: 0.5-1 day for the writer + middleware + logrotate + a stats recipe. Longer if the "what to capture" conversation keeps expanding scope.
+
+---
+
 ## Notes
 
 - Milestones are sequential by dependency, not by calendar priority.
