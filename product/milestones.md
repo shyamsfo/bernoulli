@@ -465,8 +465,8 @@ Expected first-wave callers are the "Bernoulli for Terms" Chrome extension and S
 
 ---
 
-## M16 — API key management (SQLite + CLI, hot-reload)
-**Status**: ⏳ pending (defined only — further planning required before execution; run `/ds-work-plan M16` when ready)
+## M16 — API key management (SQLite + CLI)
+**Status**: 🔄 in progress (planned 2026-10-29 — Decisions + Tasks below)
 **Goal**: Issue, label, revoke, and rotate individual API keys without restarting the server or disrupting other keys. Replace the current `BERNOULLI_API_KEYS` env-list in `~/.bernoulli.env` with a tiny SQLite-backed store that still has zero new runtime deps and no new services.
 
 **Why now:**
@@ -491,19 +491,32 @@ Separate from "we need auth" — we have auth. This is purely a key-lifecycle up
 - Use SHA-256 for the hash column, **not** argon2/bcrypt. Argon2 is for low-entropy human passwords where you want slowness; API keys are high-entropy random bytes where you want fast comparison.
 - Avoid the small OSS "fastapi-api-key-auth" style packages — they're 20 lines wrapped in a dependency. Hand-rolled middleware is better.
 
-**Open questions to settle in planning (`/ds-work-plan M16`):**
-- Reload mechanism — SIGUSR1 vs admin HTTP endpoint vs file-mtime watch. Signal is simplest if the CLI runs on the box; HTTP endpoint is nicer if the CLI could ever run remotely.
-- Where the CLI lives — `bernoulli/admin.py` module invoked as `uv run python -m bernoulli.admin ...`, a separate script in `scripts/`, or a `just admin ...` recipe wrapper. Trade-offs around discoverability vs. shipping-it-with-the-package.
-- Admin bootstrap — if we use an HTTP admin endpoint, how is *that* authenticated? Separate bootstrap key in env? File on disk only root can read? Signal-based reload sidesteps this entirely.
-- Rotation UX — should `rotate` keep the old key valid for N hours as a grace period, or revoke immediately? Grace period means a secondary `grace_until` column and middleware checks.
-- Backup — the SQLite file is now a secret store. Daily off-box backup (encrypted + rsync to ssd2 or S3)? Or just rely on EBS snapshots?
-- Hashing scheme choice — plain SHA-256 vs. HMAC-SHA-256 with a per-DB secret (defends against rainbow-table attacks on the DB file *if* it's ever leaked). Marginal; worth 5 minutes of thought.
+**Decisions (resolved 2026-10-29):**
+- **Reload mechanism**: *none for now* — the server reads the active-key set from the SQLite file at startup only. Issuing or revoking a key takes effect on the next `serve-stop` + `serve-start` cycle. Load is light enough that the ~5-min cold-reload cost is acceptable, and startup-only loading avoids the sharp edges of signal handling inside async FastAPI apps. SIGUSR1 hot-reload parked for later if restart downtime starts hurting.
+- **CLI location**: `bernoulli/admin.py` module invoked as `uv run python -m bernoulli.admin ...`, with a `just admin <subcommand>` wrapper recipe for ergonomic invocation from the laptop. Keeps the CLI shippable with the package.
+- **Rotation UX**: revoke-immediately. If a caller needs a grace period, the explicit pattern is `issue` new → deploy to the client → `revoke` old (two commands, caller-owned timing). Avoids a `grace_until` column + middleware check for marginal gain.
+- **Hashing**: plain SHA-256 of the full key. Keys have ~128 bits of entropy from `secrets.token_hex(32)`, so rainbow tables are infeasible; HMAC-with-DB-secret adds complexity for near-zero security gain.
+- **Backup**: nightly cron on the box — `rsync ~/.bernoulli-keys.db ssd2:bernoulli-key-backups/$(date +%F).db`. Retain 30 nights on ssd2. EBS snapshots are a secondary line of defense; this gives off-box redundancy for cheap. Same trust zone as everything else (ssd2 is already our TLS termination + reverse-proxy host).
+- **Client attribution**: single `label` column, free-form string (`"salesforce-acme-prod"`, `"chrome-ext-shyam-dev"`). Doubles as the join key into M15's event log. If a single client eventually has multiple keys needing to be grouped, promoting `label` to `(client_id, environment, purpose)` columns is a cheap future migration — parked.
 
-**Exit criteria** (to be refined during planning):
-- Can `issue` → paste the printed key into a curl `--Authorization: Bearer ...` → `/v1/decide` returns 200, with the new key's `id` visible in the M15 event log.
-- Can `revoke <id>` → within 5 seconds, the same curl returns 401.
-- Server restart preserves the active set (DB file persists on EBS).
-- Legacy env-based keys continue to work until explicitly migrated.
+### Tasks
+
+- [ ] Add `bernoulli/admin.py` — SQLite schema `(id TEXT PK, key_hash TEXT NOT NULL, label TEXT NOT NULL, created_at INT NOT NULL, revoked_at INT, notes TEXT)` + `issue` / `list` / `revoke` / `rotate` subcommands via `argparse`. Key format: `bnl_live_<32 hex>` from `secrets.token_hex(32)`. `id` format: short ULID-ish (e.g., `key_` + 10-char token). `issue --label <...> [--notes <...>]` prints the full key once to stdout and refuses to re-print on subsequent `list` calls (list shows id + label + status only). Refuse to issue if label is blank.
+- [ ] On first run of any admin subcommand: create the table if missing + ingest existing `BERNOULLI_API_KEYS` env values with placeholder labels (`legacy-env-slot-0` … `legacy-env-slot-N`). Idempotent — safe to re-run without duplicating. DB file lives at `~/.bernoulli-keys.db` chmod 600.
+- [ ] Add tests in `tests/test_admin.py` — schema creation, issue+list roundtrip, revoke sets `revoked_at`, rotate = revoke+issue under same label, SHA-256 hash matches `sha256(key).hexdigest()`, legacy env ingest is idempotent. CPU-only (no GPU dependency).
+- [ ] Rewrite auth middleware in `bernoulli/server.py` to load the active-key set from `~/.bernoulli-keys.db` at startup into an in-memory `dict[str, dict]` keyed by `sha256(bearer)` → `{id, label}`. Keep `BERNOULLI_API_KEYS` env fallback for one week post-migration (both sources OR'd together) — remove after verifying no accidental 401s.
+- [ ] Add `just admin <subcommand>` recipe wrapper in root `justfile` — passes through to `uv run python -m bernoulli.admin ...` on the box via ssh. Document in the recipe doc comment that revoke/issue takes effect on next `serve-stop` + `serve-start`.
+- [ ] Deploy to box: run the schema migration once (first `just admin list` triggers it), verify legacy env keys all work, verify a freshly `issue`d key works after `serve-stop` + `serve-start`, then remove `BERNOULLI_API_KEYS` from `~/.bernoulli.env` so there's a single source of truth.
+- [ ] Add nightly backup cron on the box: `0 2 * * * rsync -a ~/.bernoulli-keys.db ssd2:bernoulli-key-backups/$(date +\%F).db` with a trailing find+delete for anything older than 30 days on the ssd2 side. Document in the "API key management" CLAUDE.md section.
+- [ ] Add a new "API key management" section to `CLAUDE.md`: how to issue/list/revoke/rotate, where the DB lives, the "restart to apply" caveat, backup pattern, and the lost-DB recovery flow (scp the latest ssd2 backup back + restart).
+- [ ] Update M15's planning note in `milestones.md`: `api_key_id` field in events now comes from the labelled `id` column directly (not a hash prefix). Blocking-but-not-strictly: M15 can still land independently with hash prefixes and backfill once M16 is live, but the natural order is M16 first.
+
+**Exit criteria**:
+- `just admin issue --label test` → paste the printed key into a curl `-H "Authorization: Bearer bnl_live_..."` → `/v1/decide` returns 200 after `serve-stop` + `serve-start`.
+- `just admin revoke <id>` → `serve-stop` + `serve-start` → the same curl returns 401.
+- `just admin list` shows all active + revoked keys with labels; no key material leaks (only hash prefixes if anything).
+- Legacy `BERNOULLI_API_KEYS` entries have been migrated and the env var is gone from `~/.bernoulli.env`.
+- Nightly backup lands on ssd2 at `bernoulli-key-backups/YYYY-MM-DD.db` and the 30-day retention sweep works.
 
 **Dependencies:**
 - **Blocks on:** nothing structural.
