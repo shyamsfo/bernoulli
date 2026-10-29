@@ -466,7 +466,7 @@ Expected first-wave callers are the "Bernoulli for Terms" Chrome extension and S
 ---
 
 ## M16 — API key management (SQLite + CLI)
-**Status**: 🔄 in progress (planned 2026-10-29 — Decisions + Tasks below)
+**Status**: ⏳ pending (planned 2026-10-29 — queued behind M17 split so admin.py's OSS vs private location is clean from day one)
 **Goal**: Issue, label, revoke, and rotate individual API keys without restarting the server or disrupting other keys. Replace the current `BERNOULLI_API_KEYS` env-list in `~/.bernoulli.env` with a tiny SQLite-backed store that still has zero new runtime deps and no new services.
 
 **Why now:**
@@ -524,6 +524,79 @@ Separate from "we need auth" — we have auth. This is purely a key-lifecycle up
 - **Does not block:** anything else.
 
 **Expected effort**: ~1 day for schema + CLI + middleware swap + migration script. +0.5 day if we add the HTTP admin endpoint vs. the simpler signal-based reload.
+
+---
+
+## M17 — Split OSS from private surface (open-core structure)
+**Status**: 🔄 in progress (planned 2026-10-29 — Decisions + Tasks below)
+**Goal**: Separate the public open-source repo (library + API + benchmarks + public docs) from a new private repo for the operational and commercial surface (website, marketing, planning docs, our specific Terraform, ops recipes, upcoming Chrome extension + Salesforce code). After the split, OSS stands alone as something anyone can clone and run; private depends on OSS via a pinned pip reference.
+
+**Why now:**
+Three forces pointing the same direction:
+- M16 is next, and its artifacts split naturally across OSS (generic `bernoulli/admin.py`) and private (our deployment config). Doing M16 before M17 means re-splitting those artifacts right after writing them.
+- The pile of commingled stuff only grows — Chrome extension, Salesforce plugin, more marketing pages, more admin tooling are all queued up.
+- **No external users of the OSS repo yet.** Rewriting OSS history is free today; in six months it won't be.
+
+Pattern we're adopting is standard open-core: Grafana, HashiCorp Vault, GitLab, Mattermost all do OSS repo + private repo depending on it.
+
+**Decisions (resolved 2026-10-29):**
+- **Private repo name**: `shyamsfo/bernoulli-platform` (confirm before creation; alternatives `bernoulli-ops`, `bernoulli-internal`). GitHub, private visibility, no license file, no README initially.
+- **Dependency direction**: private → OSS via pip. Private's `pyproject.toml` pins `bernoulli @ git+https://github.com/shyamsfo/bernoulli.git@<sha>`. Bump the pin manually when OSS changes.
+- **No submodules in that direction.** OSS keeps its one existing submodule (`benchmarks/jevbench/upstream` — external harness, unrelated).
+- **History rewrite on OSS: aggressive.** `git filter-repo --invert-paths` to strip private directories entirely from OSS history. Tag `pre-m17-split` on main before the rewrite so rollback is one command.
+- **Private history**: `git filter-repo --path <...>` on a fresh clone to extract moved paths *with* their history, so blame continuity survives. Private repo is initialized from that extraction, not from a fresh init.
+- **M16 code location** (decided together with M17): `bernoulli/admin.py` → OSS (generic key lifecycle useful for any Bernoulli operator); `just admin` wrapper + backup cron + box-specific config → private.
+- **What moves to private**:
+  - `web/` (marketing site + tester + privacy page)
+  - `product/` (milestones, parking-lot, reports, research, how-to)
+  - `on-box/` (ops recipes)
+  - `deploy/` (our specific Terraform + user_data + bringup.sh — contains our IPs, ssd2 integration specifics)
+  - `demo/` (companion-app build brief; internal planning)
+  - `samples/` (fixtures used by `serve-check`; ops-only)
+  - Root `justfile` serve-* recipes (daily operations)
+- **What stays OSS**:
+  - `bernoulli/` (server code + future `bernoulli/admin.py`)
+  - `benchmarks/` (public results + jevbench submodule)
+  - `evals/` (public eval harness)
+  - `tests/` (test suite)
+  - `Dockerfile` (OSS deploy example)
+  - Public docs: `README`, `API`, `HTTP`, `CLI`, `HOW-IT-WORKS`, `USAGE`, `USECASES`, `vision_and_roadmap`
+  - `pyproject.toml`, `uv.lock`, `.python-version`, `LICENSE`
+  - Root `justfile` (slimmed to default + sync; serve-* removed), `dev.just`, `bench.just`
+- **`hf-space/`**: already a separate HF Spaces git repo (its own `.git`). Not tracked by OSS. Leave as-is — it continues to live alongside both repos as a convenient working directory.
+- **Box deployment model after split**: bernoulli EC2 box clones the **private** repo. `uv sync` pulls OSS in as a pip dep. All serve-* recipes + admin tooling + deployment config live in private. No separate OSS checkout on the box.
+- **CLAUDE.md surgery**: OSS CLAUDE.md loses the operational cheat sheet (depends on serve-* / deploy / terraform); private CLAUDE.md inherits that content and adds the two-repo workflow.
+
+### Tasks
+
+- [ ] Pre-flight audit of OSS history for leak risks. Grep for personal info, real API key material, customer names. Document findings even if clean. (Spot-checked 2026-10-29: nothing substantive — `~/.credentials` and `~/.bernoulli.env` are off-repo.)
+- [ ] Confirm private repo name with user, then `gh repo create shyamsfo/<name> --private` (empty — no license, no README).
+- [ ] Clone OSS repo into two fresh working dirs: `/tmp/bernoulli-oss-slim/` and `/tmp/bernoulli-platform/`. Install `git-filter-repo` locally if missing.
+- [ ] On `/tmp/bernoulli-platform/`: `git filter-repo --path web/ --path product/ --path on-box/ --path deploy/ --path demo/ --path samples/` to retain only those paths plus their history. Add new top-level files: `pyproject.toml` depending on OSS at the pre-split SHA, `justfile` (with serve-* recipes extracted from OSS justfile), `CLAUDE.md` (private-surface guide), `README.md` (one-paragraph "private platform on top of github.com/shyamsfo/bernoulli"). First commit `main`, push to the new private repo.
+- [ ] Tag OSS main as `pre-m17-split` and push the tag (safety net before the rewrite).
+- [ ] On `/tmp/bernoulli-oss-slim/`: `git filter-repo --invert-paths --path web/ --path product/ --path on-box/ --path deploy/ --path demo/ --path samples/` to strip those paths from OSS history entirely. Trim root `justfile` to OSS-relevant recipes (keep `mod dev` + `mod bench`, drop serve-* + deploy-web). Update OSS `CLAUDE.md` to remove the ops cheat sheet. Update OSS `README.md` to remove private-ops references + add a one-line pointer to the private platform repo (bare name only, no link to the private URL since it's inaccessible).
+- [ ] Verify OSS slim-down locally: `uv sync` works, `just dev test-fast` passes, imports clean.
+- [ ] Force-push slim OSS to `shyamsfo/bernoulli` main. (`--force-with-lease` — not `--force` outright — against the `pre-m17-split` tag's SHA.)
+- [ ] Verify private repo locally: `uv sync` resolves the pinned OSS, root-level `just` lists expected recipes.
+- [ ] Update bernoulli EC2 box: clone private repo under `~/bernoulli-platform/` (or re-use `~/bernoulli/` path for continuity), `uv sync` to pull OSS as a dep. Verify `just serve-start` works from the new checkout. Remove the old OSS-only checkout once private is proven.
+- [ ] Update `deploy/user_data.sh` (now in private) to clone the private repo on fresh instance bringup instead of the OSS repo.
+- [ ] Update both CLAUDE.md files to reflect the new layout.
+- [ ] Cross-link in both READMEs: OSS says "see our private platform repo (internal)" with no URL; private says "built on top of OSS Bernoulli" with URL.
+- [ ] Session report capturing: pre-split SHA, filter-repo commands run, verification steps, box re-checkout, any surprises.
+
+**Exit criteria**:
+- `shyamsfo/bernoulli` contains only library + public docs + tests + benchmarks + evals. `git log --follow web/` on OSS returns empty (path doesn't exist in history).
+- `shyamsfo/bernoulli-platform` (private) contains web + product + on-box + deploy + ops recipes + fixtures, and depends on OSS at a pinned SHA. `git log --follow web/index.html` on private shows preserved history.
+- bernoulli EC2 box runs from the private repo clone; `just serve-up` + `just serve-start` + `just serve-check` all work.
+- `/healthz` on `https://bernoulli-api.nuwire.dev` still returns 200 — no customer-visible break.
+- The `pre-m17-split` tag exists on OSS and points to the pre-rewrite SHA (rollback path).
+
+**Dependencies:**
+- **Blocks on**: user confirmation of private repo name before `gh repo create`.
+- **Blocks**: M16's execution. M15 is unaffected (defined only; will revisit after M16).
+- **Does not block**: anything else.
+
+**Expected effort**: ~0.5-1 day end-to-end. Dominated by: (a) the two filter-repo passes, (b) verifying both repos still build + test on both laptop and box, (c) the box re-checkout. Low risk because `pre-m17-split` tag lets us roll back cleanly.
 
 ---
 
