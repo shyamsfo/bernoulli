@@ -223,7 +223,7 @@ Exit criteria: Each use-case card on the landing page has at least one benchmark
 ---
 
 ## M10 — JevBench adapter + leaderboard submission
-**Status**: 🔄 in progress
+**Status**: ✅ done (2026-10-10 — submission queued at FIFO #62; three follow-ups below pending Benchmark Heaven posting the entry)
 **Goal**: Run Bernoulli through the official JevBench harness and submit to its public leaderboard. Getting listed is distribution; being measured on their rules is credibility.
 
 Tasks:
@@ -290,7 +290,7 @@ Exit criteria: Bernoulli listed on the JevBench leaderboard with a reproducible 
 ---
 
 ## M13 — Daily-serving public endpoint for Salesforce dev
-**Status**: 🔄 in progress
+**Status**: ✅ done (2026-10-29 — endpoint live, Salesforce dev-org Apex callout verified, Chrome extension is already a second client, OOM path hardened in b666eec)
 **Goal**: A single-tenant, dev-tier public endpoint at `https://bernoulli-api.nuwire.dev` that a Salesforce dev org can call via Apex. Operates with `just serve-up` / `just serve-start` / `just serve-down` daily. **Not** production-hardened — API-key auth only, no TLS cert on our side (TLS terminated by ssd2), no systemd restart-on-crash, no metrics, no rate limiting. Full hardening is M5+M11 territory later.
 
 **Design (locked):**
@@ -314,16 +314,16 @@ Exit criteria: Bernoulli listed on the JevBench leaderboard with a reproducible 
 
 ### Tasks
 
-- [ ] Rewrite `just serve-provision`: sync-mirror + `uv sync` on box + `just model-pull`. **No Docker build.** No systemd unit install. One-time per EC2 instance (survives stop/start because EBS persists).
-- [ ] Add `just serve-start`: `ssh bernoulli` + `nohup uv run uvicorn bernoulli.server:app --host 0.0.0.0 --port 8000 > ~/serve.log 2>&1 &` with `BERNOULLI_API_KEYS` + `BERNOULLI_SCORER=hf` + `BERNOULLI_MAX_MODEL_LEN=8192` injected via env. Waits for `/healthz` on the box (not via ssd2). Returns when ready. Supports `BERNOULLI_HOST=<ip>` override.
-- [ ] Add `just serve-stop`: ssh in, kill the uvicorn process by PID file or `pkill -f "uvicorn bernoulli.server"`. Keeps EC2 running — only stops the process. (Useful for debugging without full teardown.)
-- [ ] Start EC2, run `just serve-provision` end-to-end.
-- [ ] Run `just serve-start`. Verify local `/healthz` on the box responds.
-- [ ] Verify public endpoint: `curl -H "Authorization: Bearer <key>" https://bernoulli-api.nuwire.dev/healthz` returns 200.
-- [ ] Verify auth works: same curl without the header returns 401.
-- [ ] Verify a real decision call: POST a small `/v1/decide` request with a bearer token, get a typed response.
-- [ ] Add Salesforce Remote Site Settings entry for `https://bernoulli-api.nuwire.dev` and write a Named Credential with one of the API keys. Make a working Apex callout from the dev org.
-- [ ] Document the daily workflow in a short `HOSTING.md`: `just serve-up` → `just serve-start` → work → `just serve-down`. Include the key format reminder (how to add new keys, how to revoke).
+- [x] Rewrite `just serve-provision`: sync-mirror + `uv sync` on box + `just model-pull`. **No Docker build.** No systemd unit install. (Shipped as `deploy/bringup.sh` in 926d053 — stepwise + resumable, with explicit per-step timeouts that catch the UEFI-boot-loop class of failures.)
+- [x] Add `just serve-start`: launches uvicorn via `setsid --fork` + `deploy/start-serve.sh`, with `BERNOULLI_API_KEYS` sourced from `~/.bernoulli.env` (chmod 600) to keep keys out of `ps`. Waits for local `/healthz`. (a01f793 + 0785f5f)
+- [x] Add `just serve-stop`. (a01f793)
+- [x] Start EC2, run `just serve-provision` end-to-end.
+- [x] Run `just serve-start`. Verify local `/healthz` on the box responds.
+- [x] Verify public endpoint: `curl -H "Authorization: Bearer <key>" https://bernoulli-api.nuwire.dev/healthz` returns 200.
+- [x] Verify auth works: same curl without the header returns 401.
+- [x] Verify a real decision call: POST a small `/v1/decide` request with a bearer token, get a typed response. (Verified repeatedly; `just serve-check` smokes this against three sample fixtures each start.)
+- [x] Add Salesforce Remote Site Settings entry for `https://bernoulli-api.nuwire.dev` and write a Named Credential with one of the API keys. Make a working Apex callout from the dev org. (Working as of 2026-10-29 per user; Chrome extension is a second client against the same endpoint.)
+- [x] ~~Document the daily workflow in a short `HOSTING.md`~~ — **struck as redundant.** The daily workflow is already covered in `CLAUDE.md` (commands cheat sheet) and the `serve-*` recipe headers in `justfile`. Adding `HOSTING.md` would duplicate without adding value.
 
 **Exit criteria**: Salesforce Apex callout from the dev org successfully receives a typed decision from `https://bernoulli-api.nuwire.dev/v1/decide`, authenticated by an API key, with the EC2 box having been started that morning via `just serve-up` + `just serve-start`.
 
