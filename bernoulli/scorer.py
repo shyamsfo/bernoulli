@@ -128,6 +128,8 @@ class HFScorer:
         dtype: str = "bfloat16",
         device: str = "cuda",
     ) -> None:
+        import inspect
+
         import torch
         from transformers import AutoTokenizer
 
@@ -145,6 +147,14 @@ class HFScorer:
         self._model.eval()  # type: ignore[no-untyped-call]
         self._torch = torch
 
+        # Detect `logits_to_keep` support once. All modern HF LMs (transformers
+        # 4.45+) expose it; the fallback path exists so an exotic backbone with
+        # a different forward signature still works, just without this
+        # optimization.
+        self._supports_logits_to_keep = (
+            "logits_to_keep" in inspect.signature(self._model.forward).parameters
+        )
+
     def score(
         self,
         prompt: str,
@@ -159,8 +169,16 @@ class HFScorer:
 
         torch = self._torch
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+        # We only read the last-position logits, so ask the backbone to project
+        # just that one position through lm_head. On a ~150k-vocab VLM at full
+        # context (8192 tokens) this cuts the final allocation from ~2.5 GB to
+        # ~300 KB and prevents OOMs on long prompts. See product/milestones.md
+        # (background: the Chrome extension hits this with full-page ToS text).
+        forward_kwargs: dict[str, Any] = {}
+        if self._supports_logits_to_keep:
+            forward_kwargs["logits_to_keep"] = 1
         with torch.no_grad():
-            outputs = self._model(**inputs)
+            outputs = self._model(**inputs, **forward_kwargs)
         last_logits = outputs.logits[0, -1, :]
         selected = last_logits[allowed_token_ids].float().cpu().numpy()
         return np.asarray(selected, dtype=np.float32)
