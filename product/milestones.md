@@ -465,6 +465,55 @@ Expected first-wave callers are the "Bernoulli for Terms" Chrome extension and S
 
 ---
 
+## M16 — API key management (SQLite + CLI, hot-reload)
+**Status**: ⏳ pending (defined only — further planning required before execution; run `/ds-work-plan M16` when ready)
+**Goal**: Issue, label, revoke, and rotate individual API keys without restarting the server or disrupting other keys. Replace the current `BERNOULLI_API_KEYS` env-list in `~/.bernoulli.env` with a tiny SQLite-backed store that still has zero new runtime deps and no new services.
+
+**Why now:**
+Today's model — 5 comma-separated keys in an env file, loaded at startup — works for a handful of trusted recipients but has three pain points that compound as real customers show up:
+- **No selective revocation.** Rotating one key means editing the env file and restarting the server, which drops every other key's in-flight requests.
+- **No attribution.** We can't tell who got key #3 or when; label-free keys make leaks painful to triage.
+- **No join into usage stats.** M15 is going to log `api_key_id = sha256(key)[:12]` as a stand-in. With real labelled ids, the weekly report can say "the Acme Salesforce plugin burned 40% of requests this week" instead of "key_abc12345".
+
+Separate from "we need auth" — we have auth. This is purely a key-lifecycle upgrade.
+
+**Recommended shape (from the 2026-10-29 scoping discussion — not binding; validate at planning time):**
+- **Tier choice: Tier 1** — small SQLite file + CLI. Not Tier 0 (env list, current), not Tier 2 (managed service like Auth0 / Kong — overkill for a 1-2 person shop), not Tier 3 (OAuth/JWT — wrong trust model for programmatic server-to-server traffic, and JWTs lose cheap revocation which is the main thing we want).
+- **Format convention (Stripe-style)**: keys look like `bnl_live_<32 hex>` (or `bnl_test_...` for a future test tier). The visible prefix means a leaked key is identifiable in logs/stack traces/git grep, and GitHub secret scanning accepts vendor patterns — once we have real external customers, submit `bnl_live_[a-f0-9]{32}` to auto-flag accidental commits.
+- **Storage**: `~/.bernoulli-keys.db` on the serving box's EBS. One table — `(id TEXT PK, key_hash TEXT, label TEXT, created_at INT, revoked_at INT, notes TEXT)`. Key material never stored, only `sha256(key)`. Stdlib `sqlite3` only; no SQLAlchemy, no ORM.
+- **CLI** (`bernoulli-admin` or a `just` recipe): `issue --label <...> [--notes <...>]` (prints the key ONCE; refuse to show again), `list`, `revoke <id>`, `rotate <id>` (= revoke + issue under same label). Script lives in `bernoulli/admin.py` or `scripts/`.
+- **Middleware**: load the active-key set at startup into an in-memory `set[str]` keyed by `sha256(key)`. No DB hit per request. Reload on SIGUSR1 (or on a `POST /admin/refresh-keys` endpoint protected by a bootstrap admin key). CLI issue/revoke sends the signal automatically so the server picks up changes without restart.
+- **Migration**: a one-shot script that reads the current 5 `BERNOULLI_API_KEYS` entries and ingests them with placeholder labels (`legacy-env-slot-0` ... `legacy-env-slot-4`) so no customer sees a 401 during cutover.
+- **Later (not this milestone)**: scopes/RBAC (we have one endpoint tier), per-key rate limits (nginx `limit_req` or in-process token bucket when needed), web UI for issuing (over-invest until >50 keys or non-engineer admins).
+
+**Standard-libs guidance:**
+- Use `secrets.token_urlsafe(32)` / `secrets.token_hex(32)` for key material. Nothing fancier needed.
+- Use SHA-256 for the hash column, **not** argon2/bcrypt. Argon2 is for low-entropy human passwords where you want slowness; API keys are high-entropy random bytes where you want fast comparison.
+- Avoid the small OSS "fastapi-api-key-auth" style packages — they're 20 lines wrapped in a dependency. Hand-rolled middleware is better.
+
+**Open questions to settle in planning (`/ds-work-plan M16`):**
+- Reload mechanism — SIGUSR1 vs admin HTTP endpoint vs file-mtime watch. Signal is simplest if the CLI runs on the box; HTTP endpoint is nicer if the CLI could ever run remotely.
+- Where the CLI lives — `bernoulli/admin.py` module invoked as `uv run python -m bernoulli.admin ...`, a separate script in `scripts/`, or a `just admin ...` recipe wrapper. Trade-offs around discoverability vs. shipping-it-with-the-package.
+- Admin bootstrap — if we use an HTTP admin endpoint, how is *that* authenticated? Separate bootstrap key in env? File on disk only root can read? Signal-based reload sidesteps this entirely.
+- Rotation UX — should `rotate` keep the old key valid for N hours as a grace period, or revoke immediately? Grace period means a secondary `grace_until` column and middleware checks.
+- Backup — the SQLite file is now a secret store. Daily off-box backup (encrypted + rsync to ssd2 or S3)? Or just rely on EBS snapshots?
+- Hashing scheme choice — plain SHA-256 vs. HMAC-SHA-256 with a per-DB secret (defends against rainbow-table attacks on the DB file *if* it's ever leaked). Marginal; worth 5 minutes of thought.
+
+**Exit criteria** (to be refined during planning):
+- Can `issue` → paste the printed key into a curl `--Authorization: Bearer ...` → `/v1/decide` returns 200, with the new key's `id` visible in the M15 event log.
+- Can `revoke <id>` → within 5 seconds, the same curl returns 401.
+- Server restart preserves the active set (DB file persists on EBS).
+- Legacy env-based keys continue to work until explicitly migrated.
+
+**Dependencies:**
+- **Blocks on:** nothing structural.
+- **Blocks:** M15 benefits from this landing first (events get real labels instead of hash prefixes), but doesn't strictly require it — M15 can ship with hash prefixes and re-key when M16 lands.
+- **Does not block:** anything else.
+
+**Expected effort**: ~1 day for schema + CLI + middleware swap + migration script. +0.5 day if we add the HTTP admin endpoint vs. the simpler signal-based reload.
+
+---
+
 ## Notes
 
 - Milestones are sequential by dependency, not by calendar priority.
