@@ -278,3 +278,11 @@ See [`HTTP.md`](HTTP.md) for the full API surface and [`CLAUDE.md`](CLAUDE.md) f
 - **No backup of the HF cache.** It can be re-downloaded in 1–2 min via `hf_transfer`. Not worth snapshotting.
 
 These are deliberate — the OSS core is "one box, serves well, authenticated". The private `bernoulli-ops` repo handles ALBs, Terraform, systemd, metrics, and multi-tenant key management for the project's own hosted endpoint, but none of that is required for Alice to run her own.
+
+---
+
+## Appendix: PyTorch CUDA pin
+
+`pyproject.toml` pins torch wheels to the `pytorch-cu130` index on Linux x86_64, which requires an NVIDIA driver ≥580 (CUDA 13 runtime). The AWS g5/g6/g6e AMIs recommended above ship with recent-enough drivers.
+
+On GPU hosts that ship an older driver (e.g. CUDA 12.8 only, driver 570-era), torch imports fail with "driver too old". Fix that at the host layer (newer driver, or launch an image with one) rather than by downgrading the project pin — on 2026-10-30 we tried swapping to `cu128` to accommodate such a host and the change cascaded through `torchvision`, `torchaudio`, `vllm`, and `triton`, pinning most of the stack to older versions. We reverted. If someone needs a cu128 branch to start from, see `m19-cu128-experiment`.
