@@ -1,0 +1,7000 @@
+{
+  "dataset": "sst2",
+  "config": "method=bernoulli; debias=reverse; calibrated=2026-10-05",
+  "model": "Qwen/Qwen2.5-VL-7B-Instruct",
+  "revision": "cc594898137f460bfe9f0759e9844b3ce807cfb5",
+  "n_examples": 872,
+  "method": "bernoulli",
+  "debias": "reverse",
+  "metrics": {
+    "accuracy": 0.9174311926605505,
+    "macro_f1": 0.9174099038658858,
+    "ece": 0.02529351381466145,
+    "brier": 0.1334002848359332,
+    "nll": 0.23381176860674197
+  },
+  "latency": {
+    "p50_ms": 145.0,
+    "p95_ms": 149.0,
+    "mean_ms": 144.83715596330276
+  },
+  "predictions": [
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005186200138326119,
+        "positive": 0.994813799861674
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.997468426996981,
+        "positive": 0.0025315730030189814
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.010470702958822822,
+        "positive": 0.9895292970411772
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.008450259364176323,
+        "positive": 0.9915497406358236
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9938569402257448,
+        "positive": 0.006143059774255349
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.06371539549034758,
+        "positive": 0.9362846045096525
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9382137267998774,
+        "positive": 0.061786273200122754
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9814639159374487,
+        "positive": 0.018536084062551403
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.025974925665086263,
+        "positive": 0.9740250743349137
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9889634433385229,
+        "positive": 0.01103655666147699
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.013256778753594043,
+        "positive": 0.986743221246406
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8556563423292529,
+        "positive": 0.1443436576707472
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9688346197827845,
+        "positive": 0.03116538021721546
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.47824769262620664,
+        "positive": 0.5217523073737934
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9930223665572533,
+        "positive": 0.006977633442746782
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.006234770178015862,
+        "positive": 0.9937652298219841
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.8136316319004212,
+        "positive": 0.18636836809957877
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.00939274415577039,
+        "positive": 0.9906072558442297
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9137194613197303,
+        "positive": 0.08628053868026973
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9646417161808145,
+        "positive": 0.03535828381918546
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.885914158035555,
+        "positive": 0.11408584196444506
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6818792478084007,
+        "positive": 0.31812075219159935
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.5201725753507933,
+        "positive": 0.4798274246492066
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.01809649489124283,
+        "positive": 0.9819035051087571
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.01809649489124283,
+        "positive": 0.9819035051087571
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8958049276094304,
+        "positive": 0.10419507239056959
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9771625005949433,
+        "positive": 0.02283749940505675
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.4508016250995909,
+        "positive": 0.549198374900409
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9945734024068484,
+        "positive": 0.0054265975931515244
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9955961251953904,
+        "positive": 0.004403874804609554
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.041936951761777905,
+        "positive": 0.9580630482382221
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9840915425013008,
+        "positive": 0.015908457498699333
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.006660588124024797,
+        "positive": 0.9933394118759752
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9013784006381843,
+        "positive": 0.09862159936181564
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9948086042939107,
+        "positive": 0.005191395706089372
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.5265130110276759,
+        "positive": 0.4734869889723242
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.012361790463675259,
+        "positive": 0.9876382095363248
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6429668748390776,
+        "positive": 0.35703312516092245
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.026846389817426146,
+        "positive": 0.9731536101825738
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.00926245867026555,
+        "positive": 0.9907375413297345
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.003935227007609498,
+        "positive": 0.9960647729923906
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005806498533600624,
+        "positive": 0.9941935014663994
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.22050254346778186,
+        "positive": 0.7794974565322181
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.006075148314723187,
+        "positive": 0.9939248516852769
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8640360235576043,
+        "positive": 0.13596397644239575
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8356519599264066,
+        "positive": 0.16434804007359335
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9533141308687408,
+        "positive": 0.04668586913125905
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.1365866928052783,
+        "positive": 0.8634133071947218
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.04180078156134572,
+        "positive": 0.9581992184386542
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.993701143212349,
+        "positive": 0.006298856787651051
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9940502132456196,
+        "positive": 0.00594978675438033
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.003933209835228737,
+        "positive": 0.9960667901647713
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07783135322505452,
+        "positive": 0.9221686467749456
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.08089548393226974,
+        "positive": 0.9191045160677301
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9304197963484048,
+        "positive": 0.06958020365159522
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.010540195440960827,
+        "positive": 0.9894598045590391
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9349410424638727,
+        "positive": 0.06505895753612742
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6388741636835363,
+        "positive": 0.3611258363164636
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.990342890485136,
+        "positive": 0.00965710951486401
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.990342890485136,
+        "positive": 0.00965710951486401
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.006413851186925475,
+        "positive": 0.9935861488130745
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7538116458864267,
+        "positive": 0.2461883541135733
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.1510754800238177,
+        "positive": 0.8489245199761823
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005686510138946091,
+        "positive": 0.9943134898610541
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9381636871067479,
+        "positive": 0.06183631289325198
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7291208047843624,
+        "positive": 0.27087919521563764
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.281369758510595,
+        "positive": 0.718630241489405
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005335291724584892,
+        "positive": 0.9946647082754151
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.2307693489437426,
+        "positive": 0.7692306510562575
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9803015428142885,
+        "positive": 0.019698457185711463
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8742999001573788,
+        "positive": 0.12570009984262115
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.011865836729040808,
+        "positive": 0.9881341632709593
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.06272125831302443,
+        "positive": 0.9372787416869756
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.5947611605621217,
+        "positive": 0.4052388394378783
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9849242598344917,
+        "positive": 0.015075740165508318
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.569965752524189,
+        "positive": 0.43003424747581087
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9902066600135085,
+        "positive": 0.009793339986491432
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.05678306287261777,
+        "positive": 0.9432169371273822
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.2525854886941257,
+        "positive": 0.7474145113058743
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9965773524525943,
+        "positive": 0.0034226475474057345
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.043664452877516254,
+        "positive": 0.9563355471224838
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9474876890975342,
+        "positive": 0.05251231090246574
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9457039732723262,
+        "positive": 0.05429602672767374
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.05276830287059486,
+        "positive": 0.947231697129405
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.007302010096470216,
+        "positive": 0.9926979899035299
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.40000871288666495,
+        "positive": 0.599991287113335
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9854768048364474,
+        "positive": 0.014523195163552483
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0733194743658281,
+        "positive": 0.926680525634172
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.9877660849856036,
+        "positive": 0.012233915014396454
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.007949695930284264,
+        "positive": 0.9920503040697158
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.061919333287498324,
+        "positive": 0.9380806667125017
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.18620291634353023,
+        "positive": 0.8137970836564697
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7572846484970569,
+        "positive": 0.24271535150294313
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.11070483268523922,
+        "positive": 0.8892951673147609
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.008080689506768652,
+        "positive": 0.9919193104932312
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9758764067244112,
+        "positive": 0.024123593275588745
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7700576836075712,
+        "positive": 0.22994231639242882
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.019079266106279573,
+        "positive": 0.9809207338937204
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9951145549900876,
+        "positive": 0.004885445009912434
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.3208655773015008,
+        "positive": 0.6791344226984993
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.02373865622996893,
+        "positive": 0.9762613437700312
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9523182380507957,
+        "positive": 0.04768176194920421
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.43124760011992086,
+        "positive": 0.5687523998800791
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.013994530987506023,
+        "positive": 0.9860054690124941
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.017086891636503957,
+        "positive": 0.982913108363496
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7920867827094291,
+        "positive": 0.20791321729057088
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.009551646356319,
+        "positive": 0.990448353643681
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9870090607136426,
+        "positive": 0.012990939286357405
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.993476950958256,
+        "positive": 0.006523049041743916
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.025563440485409504,
+        "positive": 0.9744365595145905
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.981309755802662,
+        "positive": 0.018690244197338127
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9814639159374487,
+        "positive": 0.018536084062551403
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.9938111994344834,
+        "positive": 0.006188800565516655
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9948086042939107,
+        "positive": 0.005191395706089372
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.012996575106476498,
+        "positive": 0.9870034248935236
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.829206985190473,
+        "positive": 0.17079301480952697
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.008569403305956375,
+        "positive": 0.9914305966940435
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.3245253363744541,
+        "positive": 0.675474663625546
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9585435208935308,
+        "positive": 0.04145647910646926
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9243204343649105,
+        "positive": 0.07567956563508949
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.02454472459624227,
+        "positive": 0.9754552754037578
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9784400247479158,
+        "positive": 0.02155997525208434
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.013256778753594043,
+        "positive": 0.986743221246406
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07436910645811307,
+        "positive": 0.925630893541887
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.01822313587353322,
+        "positive": 0.9817768641264667
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.007651160142816771,
+        "positive": 0.9923488398571833
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9868878773082239,
+        "positive": 0.013112122691776043
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9771625005949433,
+        "positive": 0.02283749940505675
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.011865836729040808,
+        "positive": 0.9881341632709593
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005502420138203973,
+        "positive": 0.994497579861796
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9885319837975326,
+        "positive": 0.01146801620246745
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9515930756434042,
+        "positive": 0.04840692435659582
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.01147258337695653,
+        "positive": 0.9885274166230433
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9879070302705829,
+        "positive": 0.012092969729417018
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9966951879743206,
+        "positive": 0.0033048120256794185
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9798691271476523,
+        "positive": 0.020130872852347787
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6938316617293367,
+        "positive": 0.3061683382706633
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9959369678690408,
+        "positive": 0.004063032130959089
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.04579788109346473,
+        "positive": 0.9542021189065353
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7164240254708176,
+        "positive": 0.2835759745291824
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9795393920368596,
+        "positive": 0.02046060796314054
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9369666115493372,
+        "positive": 0.06303338845066286
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.025024506563610688,
+        "positive": 0.9749754934363892
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.730353655443565,
+        "positive": 0.26964634455643494
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9783100923562903,
+        "positive": 0.02168990764370967
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9834037106258506,
+        "positive": 0.01659628937414928
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.059483132329039255,
+        "positive": 0.9405168676709608
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7686779210648813,
+        "positive": 0.2313220789351186
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9474876890975342,
+        "positive": 0.05251231090246574
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.025024506563610688,
+        "positive": 0.9749754934363892
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.007302010096470216,
+        "positive": 0.9926979899035299
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.007302010096470216,
+        "positive": 0.9926979899035299
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.06608190589938556,
+        "positive": 0.9339180941006143
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9917023993235137,
+        "positive": 0.00829760067648639
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.44542850113923577,
+        "positive": 0.5545714988607642
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9911426647542018,
+        "positive": 0.008857335245798152
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0224270216448377,
+        "positive": 0.9775729783551623
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.903120460162926,
+        "positive": 0.09687953983707398
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7538116458864267,
+        "positive": 0.2461883541135733
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.5628334389892787,
+        "positive": 0.4371665610107213
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9874279508703131,
+        "positive": 0.012572049129686801
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9143272851613651,
+        "positive": 0.08567271483863506
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9829302069354795,
+        "positive": 0.017069793064520642
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8614244520943498,
+        "positive": 0.13857554790565027
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.18126067352671,
+        "positive": 0.8187393264732901
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9465489617626912,
+        "positive": 0.05345103823730886
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.45323186654917036,
+        "positive": 0.5467681334508296
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7554910060694342,
+        "positive": 0.2445089939305658
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.04500691035411375,
+        "positive": 0.9549930896458861
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.004500516335546583,
+        "positive": 0.9954994836644534
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.003586583295608404,
+        "positive": 0.9964134167043915
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7572846484970569,
+        "positive": 0.24271535150294313
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.007131295594841899,
+        "positive": 0.9928687044051582
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.891986760165624,
+        "positive": 0.10801323983437598
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.020130872852347787,
+        "positive": 0.9798691271476523
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.11399044042102316,
+        "positive": 0.8860095595789768
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9578107498926642,
+        "positive": 0.04218925010733586
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8780610102124766,
+        "positive": 0.12193898978752334
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.994705159175724,
+        "positive": 0.005294840824275906
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.00401651367862052,
+        "positive": 0.9959834863213795
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9113613540938902,
+        "positive": 0.08863864590610974
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9941946317466342,
+        "positive": 0.005805368253365767
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8569090169088281,
+        "positive": 0.14309098309117177
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.053261581567540406,
+        "positive": 0.9467384184324595
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9216516674095295,
+        "positive": 0.07834833259047044
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005295752344626462,
+        "positive": 0.9947042476553735
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.10524854227983456,
+        "positive": 0.8947514577201654
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.30085748243020394,
+        "positive": 0.699142517569796
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9941946317466342,
+        "positive": 0.005805368253365767
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8328472872735251,
+        "positive": 0.16715271272647497
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.974720446440575,
+        "positive": 0.025279553559425065
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.006234770178015862,
+        "positive": 0.9937652298219841
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.03999348544831725,
+        "positive": 0.9600065145516827
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.39265832402925405,
+        "positive": 0.607341675970746
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.19559545184835309,
+        "positive": 0.804404548151647
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.2082115147280674,
+        "positive": 0.7917884852719327
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.1678243175194905,
+        "positive": 0.8321756824805095
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9894172098436328,
+        "positive": 0.01058279015636725
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005295752344626462,
+        "positive": 0.9947042476553735
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8863512895320872,
+        "positive": 0.1136487104679127
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.4901426669211696,
+        "positive": 0.5098573330788304
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.4079861665915077,
+        "positive": 0.5920138334084923
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7718696789138749,
+        "positive": 0.22813032108612508
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9916156625391054,
+        "positive": 0.008384337460894615
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.10270815530555079,
+        "positive": 0.8972918446944493
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.03107495226995548,
+        "positive": 0.9689250477300445
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.03275329173747276,
+        "positive": 0.9672467082625272
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.01707331489154691,
+        "positive": 0.982926685108453
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9064188595717313,
+        "positive": 0.09358114042826868
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9335015922675766,
+        "positive": 0.06649840773242341
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.004829698288748033,
+        "positive": 0.9951703017112521
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.834845127452274,
+        "positive": 0.16515487254772596
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9910641279150515,
+        "positive": 0.008935872084948554
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9492265967686215,
+        "positive": 0.050773403231378536
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9516378056220777,
+        "positive": 0.048362194377922205
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.041936951761777905,
+        "positive": 0.9580630482382221
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.013994530987506023,
+        "positive": 0.9860054690124941
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9415413579703521,
+        "positive": 0.058458642029647866
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.4892943277431261,
+        "positive": 0.5107056722568738
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.023401768136809695,
+        "positive": 0.9765982318631904
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.14435376223784546,
+        "positive": 0.8556462377621544
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9957496754350829,
+        "positive": 0.004250324564917101
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.016252775828018422,
+        "positive": 0.9837472241719816
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.44500294253874356,
+        "positive": 0.5549970574612565
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.27086984855116575,
+        "positive": 0.7291301514488342
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.20552165652165041,
+        "positive": 0.7944783434783496
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9917792268005297,
+        "positive": 0.008220773199470188
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.004437271401427499,
+        "positive": 0.9955627285985725
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.038386287734341676,
+        "positive": 0.9616137122656583
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6778289723507707,
+        "positive": 0.3221710276492294
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.7870357591742179,
+        "positive": 0.21296424082578216
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.03996970632313852,
+        "positive": 0.9600302936768614
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9396501222784954,
+        "positive": 0.06034987772150451
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9932152182551798,
+        "positive": 0.006784781744820286
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.028414668105851408,
+        "positive": 0.9715853318941485
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.6946241646323427,
+        "positive": 0.30537583536765733
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.17408762363165028,
+        "positive": 0.8259123763683498
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9882405781980081,
+        "positive": 0.011759421801991802
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8760635578321492,
+        "positive": 0.12393644216785078
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.20215445380727168,
+        "positive": 0.7978455461927283
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.013866959878193688,
+        "positive": 0.9861330401218062
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9633016491087113,
+        "positive": 0.036698350891288714
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9941946317466342,
+        "positive": 0.005805368253365767
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.8328472872735251,
+        "positive": 0.16715271272647497
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.008857335245798152,
+        "positive": 0.9911426647542018
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.015329770776389303,
+        "positive": 0.9846702292236107
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.05673408187200495,
+        "positive": 0.943265918127995
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.981309755802662,
+        "positive": 0.018690244197338127
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.32553456077713433,
+        "positive": 0.6744654392228656
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.9646417161808145,
+        "positive": 0.03535828381918546
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.009192941812717112,
+        "positive": 0.9908070581872829
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9908103829677418,
+        "positive": 0.009189617032258223
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005186200138326119,
+        "positive": 0.994813799861674
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8019309760597954,
+        "positive": 0.19806902394020465
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9929408495443894,
+        "positive": 0.007059150455610587
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8147368612817452,
+        "positive": 0.18526313871825484
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9845415420872832,
+        "positive": 0.01545845791271673
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.988327308652987,
+        "positive": 0.011672691347012943
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9502115278988995,
+        "positive": 0.04978847210110058
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.08361383310248519,
+        "positive": 0.9163861668975148
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.4892943277431261,
+        "positive": 0.5107056722568738
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.08217725604685798,
+        "positive": 0.917822743953142
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9502115278988995,
+        "positive": 0.04978847210110058
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005502420138203973,
+        "positive": 0.994497579861796
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6362411482480718,
+        "positive": 0.3637588517519282
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7336987838512906,
+        "positive": 0.2663012161487094
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.8489245199761823,
+        "positive": 0.1510754800238177
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9550779880102822,
+        "positive": 0.044922011989717764
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.970924154210434,
+        "positive": 0.029075845789565954
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9396501222784954,
+        "positive": 0.06034987772150451
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.01871245617048574,
+        "positive": 0.9812875438295143
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.9661148553913637,
+        "positive": 0.033885144608636356
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9966951879743206,
+        "positive": 0.0033048120256794185
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.43003424747581087,
+        "positive": 0.569965752524189
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9492265967686215,
+        "positive": 0.050773403231378536
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005335291724584892,
+        "positive": 0.9946647082754151
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.06063213408608545,
+        "positive": 0.9393678659139145
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.012099310669962088,
+        "positive": 0.987900689330038
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.16566928803168682,
+        "positive": 0.8343307119683132
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.14207697976667924,
+        "positive": 0.8579230202333208
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.02886796168467939,
+        "positive": 0.9711320383153207
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9550779880102822,
+        "positive": 0.044922011989717764
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.9795393920368596,
+        "positive": 0.02046060796314054
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.6761981493169401,
+        "positive": 0.3238018506830599
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8579230202333208,
+        "positive": 0.14207697976667924
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8378726758672316,
+        "positive": 0.16212732413276837
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.06573607026962479,
+        "positive": 0.9342639297303753
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.009707819178704976,
+        "positive": 0.990292180821295
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.004729691881035411,
+        "positive": 0.9952703081189646
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.14922722162839627,
+        "positive": 0.8507727783716036
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005686510138946091,
+        "positive": 0.9943134898610541
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7291301514488342,
+        "positive": 0.27086984855116575
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7457290492817955,
+        "positive": 0.25427095071820455
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.017559650762947496,
+        "positive": 0.9824403492370525
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.004934988049988366,
+        "positive": 0.9950650119500116
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.9717740394905482,
+        "positive": 0.02822596050945181
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.950985709126599,
+        "positive": 0.04901429087340097
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.8087355280714511,
+        "positive": 0.19126447192854895
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9756976199530053,
+        "positive": 0.024302380046994768
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0674825053614981,
+        "positive": 0.932517494638502
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.032125195259134674,
+        "positive": 0.9678748047408652
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6870804791201381,
+        "positive": 0.31291952087986186
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.007651160142816771,
+        "positive": 0.9923488398571833
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005806498533600624,
+        "positive": 0.9941935014663994
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005186200138326119,
+        "positive": 0.994813799861674
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9465489617626912,
+        "positive": 0.05345103823730886
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005186200138326119,
+        "positive": 0.994813799861674
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.015587613036791596,
+        "positive": 0.9844123869632083
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.6870804791201381,
+        "positive": 0.31291952087986186
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.13384128725771216,
+        "positive": 0.866158712742288
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.035807019674223985,
+        "positive": 0.9641929803257759
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.006234770178015862,
+        "positive": 0.9937652298219841
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.20810178896216494,
+        "positive": 0.7918982110378351
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.10688412510026699,
+        "positive": 0.893115874899733
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.014523195163552483,
+        "positive": 0.9854768048364474
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9919607275352719,
+        "positive": 0.008039272464728164
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005335291724584892,
+        "positive": 0.9946647082754151
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.08217725604685798,
+        "positive": 0.917822743953142
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9911426647542018,
+        "positive": 0.008857335245798152
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9597564266036848,
+        "positive": 0.040243573396315194
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.009015248566521913,
+        "positive": 0.9909847514334782
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.2659455552172191,
+        "positive": 0.7340544447827809
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9758764067244112,
+        "positive": 0.024123593275588745
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.657654019175832,
+        "positive": 0.342345980824168
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.878401374410902,
+        "positive": 0.1215986255890978
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.2871812913828897,
+        "positive": 0.7128187086171103
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.010075457087184008,
+        "positive": 0.989924542912816
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07238533333614211,
+        "positive": 0.9276146666638578
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9023009575709638,
+        "positive": 0.09769904242903608
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9939638996915515,
+        "positive": 0.006036100308448513
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.959118627910564,
+        "positive": 0.040881372089436006
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07873604423326465,
+        "positive": 0.9212639557667353
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.3279711808029058,
+        "positive": 0.6720288191970942
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.33971803647281923,
+        "positive": 0.6602819635271807
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.003832336629537548,
+        "positive": 0.9961676633704624
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9939638996915515,
+        "positive": 0.006036100308448513
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.012361790463675259,
+        "positive": 0.9876382095363248
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9936352358662122,
+        "positive": 0.006364764133787705
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9807176292552778,
+        "positive": 0.019282370744722027
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.016789959541057893,
+        "positive": 0.9832100404589421
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9916156625391054,
+        "positive": 0.008384337460894615
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0204876955550454,
+        "positive": 0.9795123044449545
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9723455396462394,
+        "positive": 0.027654460353760766
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9948086042939107,
+        "positive": 0.005191395706089372
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.009880809344141084,
+        "positive": 0.9901191906558591
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.015602114200523152,
+        "positive": 0.9843978857994768
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9974053220548834,
+        "positive": 0.0025946779451166365
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9633940506016653,
+        "positive": 0.03660594939833483
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9961240191895642,
+        "positive": 0.003875980810435769
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9893471472581299,
+        "positive": 0.010652852741870089
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9871163709445748,
+        "positive": 0.01288362905542532
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.00900439893154333,
+        "positive": 0.9909956010684566
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.35473481139798074,
+        "positive": 0.6452651886020193
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005932993808946986,
+        "positive": 0.9940670061910529
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.4892943277431261,
+        "positive": 0.5107056722568738
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6833779037113259,
+        "positive": 0.31662209628867405
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9253806771683522,
+        "positive": 0.07461932283164784
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8542495520848149,
+        "positive": 0.14575044791518516
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.17079301480952697,
+        "positive": 0.829206985190473
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.019079266106279573,
+        "positive": 0.9809207338937204
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0077087071344644625,
+        "positive": 0.9922912928655356
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9928488975549659,
+        "positive": 0.007151102445034171
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.40443633949560387,
+        "positive": 0.5955636605043961
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9941946317466342,
+        "positive": 0.005805368253365767
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.669344686299853,
+        "positive": 0.3306553137001469
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9231314316795488,
+        "positive": 0.07686856832045129
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.008214685083664987,
+        "positive": 0.991785314916335
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.23958392174869256,
+        "positive": 0.7604160782513074
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9966951879743206,
+        "positive": 0.0033048120256794185
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.010294314998995333,
+        "positive": 0.9897056850010048
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.88798044747604,
+        "positive": 0.11201955252396004
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.007031753178873771,
+        "positive": 0.9929682468211262
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005335291724584892,
+        "positive": 0.9946647082754151
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9867510822877168,
+        "positive": 0.013248917712283228
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9870090607136426,
+        "positive": 0.012990939286357405
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07554735610721282,
+        "positive": 0.9244526438927871
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9563228769935533,
+        "positive": 0.04367712300644672
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9189087447200425,
+        "positive": 0.08109125527995754
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.978226704682541,
+        "positive": 0.021773295317459015
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9389507273398322,
+        "positive": 0.06104927266016777
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9933489425078109,
+        "positive": 0.00665105749218908
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.009880809344141084,
+        "positive": 0.9901191906558591
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9534664792275624,
+        "positive": 0.04653352077243762
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.00939274415577039,
+        "positive": 0.9906072558442297
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9754957021380366,
+        "positive": 0.024504297861963398
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7779207532341246,
+        "positive": 0.22207924676587537
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.010294314998995333,
+        "positive": 0.9897056850010048
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.026389634752271105,
+        "positive": 0.9736103652477289
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.25893620370453124,
+        "positive": 0.7410637962954688
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.010540195440960827,
+        "positive": 0.9894598045590391
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9842675992531162,
+        "positive": 0.01573240074688371
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9539447261268998,
+        "positive": 0.0460552738731001
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9922616712267538,
+        "positive": 0.007738328773246222
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0050533193630173225,
+        "positive": 0.9949466806369827
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.01838629438935011,
+        "positive": 0.9816137056106498
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9842675992531162,
+        "positive": 0.01573240074688371
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005686510138946091,
+        "positive": 0.9943134898610541
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.007302010096470216,
+        "positive": 0.9926979899035299
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.04579788109346473,
+        "positive": 0.9542021189065353
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.4690997678576833,
+        "positive": 0.5309002321423167
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.00900439893154333,
+        "positive": 0.9909956010684566
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.15328618412396014,
+        "positive": 0.8467138158760399
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.974720446440575,
+        "positive": 0.025279553559425065
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9761746827785358,
+        "positive": 0.02382531722146423
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.007651160142816771,
+        "positive": 0.9923488398571833
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.5767262408655464,
+        "positive": 0.4232737591344536
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.036139506116766085,
+        "positive": 0.9638604938832338
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9844128824482291,
+        "positive": 0.015587117551770887
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9506219879548173,
+        "positive": 0.049378012045182704
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9958839516771961,
+        "positive": 0.004116048322803877
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.39265832402925405,
+        "positive": 0.607341675970746
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.39265832402925405,
+        "positive": 0.607341675970746
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9917023993235137,
+        "positive": 0.00829760067648639
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9822991110529292,
+        "positive": 0.017700888947070732
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005686510138946091,
+        "positive": 0.9943134898610541
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0068393579541065775,
+        "positive": 0.9931606420458934
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.06183631289325198,
+        "positive": 0.9381636871067479
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07783135322505452,
+        "positive": 0.9221686467749456
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.05004588744094418,
+        "positive": 0.9499541125590558
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9818280462523195,
+        "positive": 0.018171953747680436
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9917023993235137,
+        "positive": 0.00829760067648639
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0673560221409549,
+        "positive": 0.9326439778590451
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.8223132391642641,
+        "positive": 0.17768676083573573
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7870357591742179,
+        "positive": 0.21296424082578216
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.03660594939833483,
+        "positive": 0.9633940506016653
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.5628334389892787,
+        "positive": 0.4371665610107213
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.21030169305573937,
+        "positive": 0.7896983069442606
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.004404466376558229,
+        "positive": 0.9955955336234418
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.01822313587353322,
+        "positive": 0.9817768641264667
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9961305909431067,
+        "positive": 0.0038694090568934052
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005540865264283836,
+        "positive": 0.9944591347357162
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8986075872264951,
+        "positive": 0.10139241277350494
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9023009575709638,
+        "positive": 0.09769904242903608
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.03275329173747276,
+        "positive": 0.9672467082625272
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9716429792774236,
+        "positive": 0.028357020722576287
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.015087826959960762,
+        "positive": 0.9849121730400392
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9439878976474027,
+        "positive": 0.05601210235259721
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.05004588744094418,
+        "positive": 0.9499541125590558
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.010075457087184008,
+        "positive": 0.989924542912816
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.006660588124024797,
+        "positive": 0.9933394118759752
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.05276830287059486,
+        "positive": 0.947231697129405
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9177528972222525,
+        "positive": 0.08224710277774745
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9581992184386542,
+        "positive": 0.04180078156134572
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005540865264283836,
+        "positive": 0.9944591347357162
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9693651497893523,
+        "positive": 0.030634850210647636
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.029371246642777224,
+        "positive": 0.9706287533572229
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9003406711397937,
+        "positive": 0.09965932886020631
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.5835072685368251,
+        "positive": 0.4164927314631749
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.804404548151647,
+        "positive": 0.19559545184835309
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7858499404457536,
+        "positive": 0.2141500595542464
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0077087071344644625,
+        "positive": 0.9922912928655356
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.003274956125671388,
+        "positive": 0.9967250438743286
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.99425476365684,
+        "positive": 0.005745236343160146
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.006504800184382545,
+        "positive": 0.9934951998156174
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9793489194250139,
+        "positive": 0.020651080574986182
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.006660588124024797,
+        "positive": 0.9933394118759752
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9934951998156174,
+        "positive": 0.006504800184382545
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.010294314998995333,
+        "positive": 0.9897056850010048
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.5,
+        "positive": 0.5
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07079812214322906,
+        "positive": 0.9292018778567709
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.05972882176562605,
+        "positive": 0.940271178234374
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.940271178234374,
+        "positive": 0.05972882176562605
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9739359236800595,
+        "positive": 0.02606407631994034
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.993866637265043,
+        "positive": 0.006133362734956969
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.9841036139712258,
+        "positive": 0.015896386028774176
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7779207532341246,
+        "positive": 0.22207924676587537
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.052998106283809555,
+        "positive": 0.9470018937161904
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.31812075219159935,
+        "positive": 0.6818792478084007
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.004829698288748033,
+        "positive": 0.9951703017112521
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9849242598344917,
+        "positive": 0.015075740165508318
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.015191123081974293,
+        "positive": 0.9848088769180257
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9309352630155809,
+        "positive": 0.06906473698441899
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.9492265967686215,
+        "positive": 0.050773403231378536
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.009869242219060229,
+        "positive": 0.9901307577809397
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9912401023941638,
+        "positive": 0.008759897605836122
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.030594331953482132,
+        "positive": 0.969405668046518
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8491664411937806,
+        "positive": 0.15083355880621932
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.2999469511361825,
+        "positive": 0.7000530488638175
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.4205374359063589,
+        "positive": 0.5794625640936412
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005186200138326119,
+        "positive": 0.994813799861674
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.01871245617048574,
+        "positive": 0.9812875438295143
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.9099413012525265,
+        "positive": 0.09005869874747342
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.022865841574109768,
+        "positive": 0.9771341584258904
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.7065975505475284,
+        "positive": 0.29340244945247157
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.27862260072831274,
+        "positive": 0.7213773992716872
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.891986760165624,
+        "positive": 0.10801323983437598
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9949789976156731,
+        "positive": 0.0050210023843269835
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9862264752325443,
+        "positive": 0.013773524767455855
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.00800467779097838,
+        "positive": 0.9919953222090216
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.675474663625546,
+        "positive": 0.3245253363744541
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9882405781980081,
+        "positive": 0.011759421801991802
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9928488975549659,
+        "positive": 0.007151102445034171
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005686510138946091,
+        "positive": 0.9943134898610541
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9960256016852662,
+        "positive": 0.003974398314733757
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8502840467275223,
+        "positive": 0.14971595327247764
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.5320844799361784,
+        "positive": 0.4679155200638217
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.020473415305273635,
+        "positive": 0.9795265846947263
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9549930896458861,
+        "positive": 0.04500691035411375
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0204876955550454,
+        "positive": 0.9795123044449545
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.02937783077281892,
+        "positive": 0.9706221692271811
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9879070302705829,
+        "positive": 0.012092969729417018
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.8552987100482308,
+        "positive": 0.14470128995176917
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9965276210884664,
+        "positive": 0.0034723789115335153
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8892951673147609,
+        "positive": 0.11070483268523922
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0041041283255741036,
+        "positive": 0.9958958716744258
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.036139506116766085,
+        "positive": 0.9638604938832338
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.010075457087184008,
+        "positive": 0.989924542912816
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.2831004364153838,
+        "positive": 0.7168995635846162
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.01128136606600051,
+        "positive": 0.9887186339339995
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.7734863566491963,
+        "positive": 0.22651364335080373
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.10506614995791715,
+        "positive": 0.8949338500420828
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.013994530987506023,
+        "positive": 0.9860054690124941
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9379565860853661,
+        "positive": 0.06204341391463394
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6518852729440837,
+        "positive": 0.3481147270559163
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.15849809539438237,
+        "positive": 0.8415019046056177
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6961407541882338,
+        "positive": 0.30385924581176627
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9451987553280976,
+        "positive": 0.05480124467190233
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.9676488528377243,
+        "positive": 0.03235114716227571
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.01871245617048574,
+        "positive": 0.9812875438295143
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.39265832402925405,
+        "positive": 0.607341675970746
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.4079861665915077,
+        "positive": 0.5920138334084923
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9846702292236107,
+        "positive": 0.015329770776389303
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.987900689330038,
+        "positive": 0.012099310669962088
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.015602114200523152,
+        "positive": 0.9843978857994768
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07710330116093453,
+        "positive": 0.9228966988390654
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.010075457087184008,
+        "positive": 0.989924542912816
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6400327154929717,
+        "positive": 0.3599672845070283
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9506219879548173,
+        "positive": 0.049378012045182704
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.4197432472899201,
+        "positive": 0.5802567527100799
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9925002684039802,
+        "positive": 0.007499731596019824
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.030594331953482132,
+        "positive": 0.969405668046518
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9823891645593975,
+        "positive": 0.017610835440602532
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.033973984725191385,
+        "positive": 0.9660260152748086
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0077087071344644625,
+        "positive": 0.9922912928655356
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0036898278026819696,
+        "positive": 0.996310172197318
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.02411796235578531,
+        "positive": 0.9758820376442148
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9427689487443804,
+        "positive": 0.05723105125561962
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.19400270675820336,
+        "positive": 0.8059972932417967
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9941267679744503,
+        "positive": 0.00587323202554976
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9376659431297858,
+        "positive": 0.06233405687021427
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.1443436576707472,
+        "positive": 0.8556563423292529
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.027337267694088865,
+        "positive": 0.9726627323059112
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.869242380516657,
+        "positive": 0.13075761948334294
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9915177805044039,
+        "positive": 0.008482219495596046
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.829206985190473,
+        "positive": 0.17079301480952697
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9886896112070738,
+        "positive": 0.011310388792926243
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.5217523073737934,
+        "positive": 0.47824769262620664
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.657654019175832,
+        "positive": 0.342345980824168
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.829206985190473,
+        "positive": 0.17079301480952697
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9862360634604143,
+        "positive": 0.013763936539585889
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9865967357250217,
+        "positive": 0.01340326427497824
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9335015922675766,
+        "positive": 0.06649840773242341
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9701026483180188,
+        "positive": 0.029897351681981085
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.010294314998995333,
+        "positive": 0.9897056850010048
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9932152182551798,
+        "positive": 0.006784781744820286
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9858865385006489,
+        "positive": 0.01411346149935115
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.994308021769814,
+        "positive": 0.005691978230185982
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.003586583295608404,
+        "positive": 0.9964134167043915
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.06272125831302443,
+        "positive": 0.9372787416869756
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.5533659045742843,
+        "positive": 0.4466340954257157
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9949789976156731,
+        "positive": 0.0050210023843269835
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07554735610721282,
+        "positive": 0.9244526438927871
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9848453974528967,
+        "positive": 0.015154602547103347
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07834833259047044,
+        "positive": 0.9216516674095295
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9317967944214204,
+        "positive": 0.06820320557857948
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005411162950727194,
+        "positive": 0.9945888370492727
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9081405675910073,
+        "positive": 0.09185943240899269
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.06832001705394368,
+        "positive": 0.9316799829460565
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.970924154210434,
+        "positive": 0.029075845789565954
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.004608465967602443,
+        "positive": 0.9953915340323976
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.2313220789351186,
+        "positive": 0.7686779210648813
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9756976199530053,
+        "positive": 0.024302380046994768
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9952210799276603,
+        "positive": 0.004778920072339707
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.019079266106279573,
+        "positive": 0.9809207338937204
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9930223665572533,
+        "positive": 0.006977633442746782
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9199964305071324,
+        "positive": 0.08000356949286769
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9968790879839289,
+        "positive": 0.0031209120160710134
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.013544161013324731,
+        "positive": 0.9864558389866752
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.844552214720709,
+        "positive": 0.15544778527929096
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9779632552960151,
+        "positive": 0.022036744703984798
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9258220868126965,
+        "positive": 0.07417791318730364
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9945734024068484,
+        "positive": 0.0054265975931515244
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9865967357250217,
+        "positive": 0.01340326427497824
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.751556954733852,
+        "positive": 0.2484430452661481
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8958049276094304,
+        "positive": 0.10419507239056959
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8748745068000269,
+        "positive": 0.12512549319997313
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9842675992531162,
+        "positive": 0.01573240074688371
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9924301574146301,
+        "positive": 0.007569842585369888
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.01707331489154691,
+        "positive": 0.982926685108453
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.11230008085599019,
+        "positive": 0.8876999191440097
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9951710359711454,
+        "positive": 0.004828964028854602
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.990342890485136,
+        "positive": 0.00965710951486401
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9921609089561453,
+        "positive": 0.007839091043854744
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.00750312878305431,
+        "positive": 0.9924968712169456
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.003494574629232984,
+        "positive": 0.9965054253707669
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9731932804694791,
+        "positive": 0.026806719530520967
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7807840788750814,
+        "positive": 0.2192159211249186
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8764639154310131,
+        "positive": 0.12353608456898695
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9959369678690408,
+        "positive": 0.004063032130959089
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9965773524525943,
+        "positive": 0.0034226475474057345
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.893115874899733,
+        "positive": 0.10688412510026699
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9720829062989571,
+        "positive": 0.02791709370104287
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.010294314998995333,
+        "positive": 0.9897056850010048
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.004313186807102803,
+        "positive": 0.9956868131928971
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.917062302155037,
+        "positive": 0.082937697844963
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.05480124467190233,
+        "positive": 0.9451987553280976
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9956822046385505,
+        "positive": 0.004317795361449578
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.3362520279178552,
+        "positive": 0.6637479720821448
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07061700144093111,
+        "positive": 0.9293829985590689
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.4332990395299444,
+        "positive": 0.5667009604700556
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9469006526224387,
+        "positive": 0.05309934737756128
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005295752344626462,
+        "positive": 0.9947042476553735
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7538116458864267,
+        "positive": 0.2461883541135733
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.010540195440960827,
+        "positive": 0.9894598045590391
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.28801860238017585,
+        "positive": 0.7119813976198242
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9765982318631904,
+        "positive": 0.023401768136809695
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07197786491132145,
+        "positive": 0.9280221350886786
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9154086501129408,
+        "positive": 0.08459134988705928
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8194252624236102,
+        "positive": 0.18057473757638978
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9943969042431376,
+        "positive": 0.005603095756862452
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9888347536017552,
+        "positive": 0.011165246398244894
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0146353942086546,
+        "positive": 0.9853646057913454
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.010828475997351459,
+        "positive": 0.9891715240026485
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0345150714956176,
+        "positive": 0.9654849285043824
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.009192941812717112,
+        "positive": 0.9908070581872829
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.012656640095687004,
+        "positive": 0.987343359904313
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.03345604885000382,
+        "positive": 0.9665439511499962
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9745467704952052,
+        "positive": 0.025453229504794696
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005932993808946986,
+        "positive": 0.9940670061910529
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9605158894068334,
+        "positive": 0.03948411059316649
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.014243322651388973,
+        "positive": 0.9857566773486109
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8094249938261274,
+        "positive": 0.19057500617387257
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9960256016852662,
+        "positive": 0.003974398314733757
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.019079266106279573,
+        "positive": 0.9809207338937204
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.9819035051087571,
+        "positive": 0.01809649489124283
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8958049276094304,
+        "positive": 0.10419507239056959
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.03772201100034358,
+        "positive": 0.9622779889996563
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8673097836010214,
+        "positive": 0.13269021639897857
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07061700144093111,
+        "positive": 0.9293829985590689
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.891986760165624,
+        "positive": 0.10801323983437598
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.006075148314723187,
+        "positive": 0.9939248516852769
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.027380587479648062,
+        "positive": 0.9726194125203519
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.928445290716094,
+        "positive": 0.07155470928390599
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.1296390211224269,
+        "positive": 0.870360978877573
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0204876955550454,
+        "positive": 0.9795123044449545
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6074343144876597,
+        "positive": 0.39256568551234033
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6510455083593985,
+        "positive": 0.3489544916406016
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.994308021769814,
+        "positive": 0.005691978230185982
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.7065975505475284,
+        "positive": 0.29340244945247157
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9955961251953904,
+        "positive": 0.004403874804609554
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9951710359711454,
+        "positive": 0.004828964028854602
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9955446039233548,
+        "positive": 0.0044553960766453475
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9956822046385505,
+        "positive": 0.004317795361449578
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9909895944522031,
+        "positive": 0.00901040554779689
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9917023993235137,
+        "positive": 0.00829760067648639
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07061700144093111,
+        "positive": 0.9293829985590689
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.5,
+        "positive": 0.5
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9556341692660775,
+        "positive": 0.04436583073392257
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.04115146538857975,
+        "positive": 0.9588485346114204
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8684812642301369,
+        "positive": 0.131518735769863
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.01742328000589881,
+        "positive": 0.9825767199941011
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6316868882090049,
+        "positive": 0.36831311179099513
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9379565860853661,
+        "positive": 0.06204341391463394
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.3306553137001469,
+        "positive": 0.669344686299853
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.030634850210647636,
+        "positive": 0.9693651497893523
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.8293202826068291,
+        "positive": 0.17067971739317084
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.008450259364176323,
+        "positive": 0.9915497406358236
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.8126640109135808,
+        "positive": 0.1873359890864193
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.956410499722962,
+        "positive": 0.043589500277037944
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.013544161013324731,
+        "positive": 0.9864558389866752
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7480601510176141,
+        "positive": 0.25193984898238586
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.004729691881035411,
+        "positive": 0.9952703081189646
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6119921900349018,
+        "positive": 0.3880078099650982
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.9802100609478618,
+        "positive": 0.01978993905213825
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.01128136606600051,
+        "positive": 0.9887186339339995
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.05429602672767374,
+        "positive": 0.9457039732723262
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9945734024068484,
+        "positive": 0.0054265975931515244
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.03772201100034358,
+        "positive": 0.9622779889996563
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.01128136606600051,
+        "positive": 0.9887186339339995
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.007302010096470216,
+        "positive": 0.9926979899035299
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.09917742110914077,
+        "positive": 0.9008225788908593
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9829302069354795,
+        "positive": 0.017069793064520642
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9947600179587684,
+        "positive": 0.005239982041231575
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.9633940506016653,
+        "positive": 0.03660594939833483
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.29116664871481396,
+        "positive": 0.7088333512851861
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.09548681708720645,
+        "positive": 0.9045131829127936
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.06608190589938556,
+        "positive": 0.9339180941006143
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.988327308652987,
+        "positive": 0.011672691347012943
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9676488528377243,
+        "positive": 0.03235114716227571
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.4679155200638217,
+        "positive": 0.5320844799361784
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9962949213384447,
+        "positive": 0.0037050786615552473
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.9133549882998252,
+        "positive": 0.08664501170017475
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8057010405605303,
+        "positive": 0.19429895943946973
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.994705159175724,
+        "positive": 0.005294840824275906
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.5171355465647287,
+        "positive": 0.48286445343527123
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.08459134988705928,
+        "positive": 0.9154086501129408
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.06272125831302443,
+        "positive": 0.9372787416869756
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.4901426669211696,
+        "positive": 0.5098573330788304
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.13596397644239575,
+        "positive": 0.8640360235576043
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.7779207532341246,
+        "positive": 0.22207924676587537
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9090940126777821,
+        "positive": 0.09090598732221787
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9686514643472645,
+        "positive": 0.03134853565273567
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9862264752325443,
+        "positive": 0.013773524767455855
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9811356930109193,
+        "positive": 0.018864306989080804
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9908103829677418,
+        "positive": 0.009189617032258223
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.974393449178832,
+        "positive": 0.025606550821168007
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.612810555712757,
+        "positive": 0.387189444287243
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7213773992716872,
+        "positive": 0.27862260072831274
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.004729691881035411,
+        "positive": 0.9952703081189646
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8489245199761823,
+        "positive": 0.1510754800238177
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9163861668975148,
+        "positive": 0.08361383310248519
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9845415420872832,
+        "positive": 0.01545845791271673
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7961380640525165,
+        "positive": 0.2038619359474836
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9673127748897513,
+        "positive": 0.03268722511024873
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.007497994674793868,
+        "positive": 0.9925020053252062
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9955961251953904,
+        "positive": 0.004403874804609554
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9183655489837849,
+        "positive": 0.0816344510162151
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.025974925665086263,
+        "positive": 0.9740250743349137
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0050533193630173225,
+        "positive": 0.9949466806369827
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9925623442677312,
+        "positive": 0.00743765573226894
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.026389634752271105,
+        "positive": 0.9736103652477289
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.05958619766476993,
+        "positive": 0.9404138023352301
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8735389443876606,
+        "positive": 0.12646105561233947
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.006504800184382545,
+        "positive": 0.9934951998156174
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.5881779698390054,
+        "positive": 0.41182203016099456
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0372205195017053,
+        "positive": 0.9627794804982948
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.006835513192974408,
+        "positive": 0.9931644868070256
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9912829055335676,
+        "positive": 0.00871709446643238
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.03913242115731387,
+        "positive": 0.9608675788426861
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.03349314715125319,
+        "positive": 0.9665068528487468
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.993275757184554,
+        "positive": 0.006724242815445905
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7252374888737642,
+        "positive": 0.2747625111262359
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9268653006326832,
+        "positive": 0.07313469936731676
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9726627323059112,
+        "positive": 0.027337267694088865
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6387387300234691,
+        "positive": 0.36126126997653074
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6602819635271807,
+        "positive": 0.33971803647281923
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.24259332324841362,
+        "positive": 0.7574066767515863
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.017709315190085506,
+        "positive": 0.9822906848099145
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.004173295471867642,
+        "positive": 0.9958267045281324
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.006844283492815373,
+        "positive": 0.9931557165071847
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.020888947146901066,
+        "positive": 0.979111052853099
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.43459608828214336,
+        "positive": 0.5654039117178566
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.3165025351115518,
+        "positive": 0.6834974648884482
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9871163709445748,
+        "positive": 0.01288362905542532
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.05429602672767374,
+        "positive": 0.9457039732723262
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9925623442677312,
+        "positive": 0.00743765573226894
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.009015248566521913,
+        "positive": 0.9909847514334782
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.023401768136809695,
+        "positive": 0.9765982318631904
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8735389443876606,
+        "positive": 0.12646105561233947
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.9090940126777821,
+        "positive": 0.09090598732221787
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9907031414841592,
+        "positive": 0.009296858515840835
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9553730048018559,
+        "positive": 0.04462699519814399
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6439100000527301,
+        "positive": 0.35608999994726975
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.43502879338553885,
+        "positive": 0.5649712066144612
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.10286832918840297,
+        "positive": 0.8971316708115971
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.00781762601026146,
+        "positive": 0.9921823739897385
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9721629196924024,
+        "positive": 0.02783708030759768
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9316799829460565,
+        "positive": 0.06832001705394368
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.006234770178015862,
+        "positive": 0.9937652298219841
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9355420513367372,
+        "positive": 0.06445794866326286
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.628039568608832,
+        "positive": 0.37196043139116797
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.994806864328477,
+        "positive": 0.0051931356715230765
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.004202600768231866,
+        "positive": 0.9957973992317682
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.31772769708712856,
+        "positive": 0.6822723029128714
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.5718043236897129,
+        "positive": 0.42819567631028704
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.39265832402925405,
+        "positive": 0.607341675970746
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.015602114200523152,
+        "positive": 0.9843978857994768
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.011041670259680354,
+        "positive": 0.9889583297403196
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.979133959269023,
+        "positive": 0.02086604073097697
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.00939274415577039,
+        "positive": 0.9906072558442297
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9664100906789769,
+        "positive": 0.033589909321023216
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9837099790178366,
+        "positive": 0.01629002098216332
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.28734854462817383,
+        "positive": 0.7126514553718262
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.03999348544831725,
+        "positive": 0.9600065145516827
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9926284151432471,
+        "positive": 0.007371584856752846
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8853797102300287,
+        "positive": 0.1146202897699713
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9958839516771961,
+        "positive": 0.004116048322803877
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.8764455299915274,
+        "positive": 0.12355447000847265
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.013994530987506023,
+        "positive": 0.9860054690124941
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9917023993235137,
+        "positive": 0.00829760067648639
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.5434330296390278,
+        "positive": 0.4565669703609722
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9719880317061145,
+        "positive": 0.028011968293885643
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.27862260072831274,
+        "positive": 0.7213773992716872
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.008224823643816746,
+        "positive": 0.9917751763561833
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.04579788109346473,
+        "positive": 0.9542021189065353
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.017559650762947496,
+        "positive": 0.9824403492370525
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.887214345486162,
+        "positive": 0.11278565451383804
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7128187086171103,
+        "positive": 0.2871812913828897
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.014243322651388973,
+        "positive": 0.9857566773486109
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9920473097310257,
+        "positive": 0.00795269026897423
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8886600528527505,
+        "positive": 0.11133994714724944
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.22548788393529992,
+        "positive": 0.7745121160647
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.02411796235578531,
+        "positive": 0.9758820376442148
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.15849809539438237,
+        "positive": 0.8415019046056177
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.009880809344141084,
+        "positive": 0.9901191906558591
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9961920388894129,
+        "positive": 0.003807961110586988
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07873604423326465,
+        "positive": 0.9212639557667353
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9627853275109961,
+        "positive": 0.03721467248900398
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9853175482461874,
+        "positive": 0.014682451753812565
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.007302010096470216,
+        "positive": 0.9926979899035299
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9872261038910907,
+        "positive": 0.012773896108909472
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7604160782513074,
+        "positive": 0.23958392174869256
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7823285704226028,
+        "positive": 0.21767142957739716
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.11070483268523922,
+        "positive": 0.8892951673147609
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9236867360125304,
+        "positive": 0.07631326398746967
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.6241023753066367,
+        "positive": 0.37589762469336324
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.003586583295608404,
+        "positive": 0.9964134167043915
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.007302010096470216,
+        "positive": 0.9926979899035299
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005932993808946986,
+        "positive": 0.9940670061910529
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.01742328000589881,
+        "positive": 0.9825767199941011
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.004313186807102803,
+        "positive": 0.9956868131928971
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9729440010402969,
+        "positive": 0.027055998959703214
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.8162179629378653,
+        "positive": 0.1837820370621347
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9867510822877168,
+        "positive": 0.013248917712283228
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9940502132456196,
+        "positive": 0.00594978675438033
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.007031753178873771,
+        "positive": 0.9929682468211262
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.4332990395299444,
+        "positive": 0.5667009604700556
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005806498533600624,
+        "positive": 0.9941935014663994
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.87204040681226,
+        "positive": 0.12795959318774006
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.3880078099650982,
+        "positive": 0.6119921900349018
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.014523195163552483,
+        "positive": 0.9854768048364474
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.033973984725191385,
+        "positive": 0.9660260152748086
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9799896509887781,
+        "positive": 0.020010349011221965
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.028011968293885643,
+        "positive": 0.9719880317061145
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8771211457360056,
+        "positive": 0.1228788542639944
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005694023812877733,
+        "positive": 0.9943059761871224
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.008774331841440096,
+        "positive": 0.99122566815856
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8892951673147609,
+        "positive": 0.11070483268523922
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9023009575709638,
+        "positive": 0.09769904242903608
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9896786726102509,
+        "positive": 0.010321327389749144
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.2382574230570597,
+        "positive": 0.7617425769429403
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.25893620370453124,
+        "positive": 0.7410637962954688
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8907184184242207,
+        "positive": 0.10928158157577916
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9901250020267667,
+        "positive": 0.009874997973233435
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07554735610721282,
+        "positive": 0.9244526438927871
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.006844283492815373,
+        "positive": 0.9931557165071847
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9857690290047553,
+        "positive": 0.01423097099524474
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.0673560221409549,
+        "positive": 0.9326439778590451
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9408222954586728,
+        "positive": 0.05917770454132726
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9847562293792128,
+        "positive": 0.015243770620787222
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9851269692431461,
+        "positive": 0.014873030756853934
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.31812075219159935,
+        "positive": 0.6818792478084007
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9373375389199279,
+        "positive": 0.06266246108007222
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9556341692660775,
+        "positive": 0.04436583073392257
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9930223665572533,
+        "positive": 0.006977633442746782
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9930223665572533,
+        "positive": 0.006977633442746782
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.946394453660353,
+        "positive": 0.053605546339647016
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.29555990692537343,
+        "positive": 0.7044400930746265
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.006844283492815373,
+        "positive": 0.9931557165071847
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.025024506563610688,
+        "positive": 0.9749754934363892
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.8467138158760399,
+        "positive": 0.15328618412396014
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9389507273398322,
+        "positive": 0.06104927266016777
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.820548294134997,
+        "positive": 0.17945170586500298
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.07686856832045129,
+        "positive": 0.9231314316795488
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.3637588517519282,
+        "positive": 0.6362411482480718
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.009192941812717112,
+        "positive": 0.9908070581872829
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.23619626247352865,
+        "positive": 0.7638037375264713
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.005335291724584892,
+        "positive": 0.9946647082754151
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.04879745997216851,
+        "positive": 0.9512025400278314
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.08089548393226974,
+        "positive": 0.9191045160677301
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.027380587479648062,
+        "positive": 0.9726194125203519
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.04121194988774433,
+        "positive": 0.9587880501122558
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8662162564232102,
+        "positive": 0.13378374357678974
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9058644217172895,
+        "positive": 0.0941355782827105
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9966951879743206,
+        "positive": 0.0033048120256794185
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.31255970152240664,
+        "positive": 0.6874402984775934
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.19559545184835309,
+        "positive": 0.804404548151647
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.9189087447200425,
+        "positive": 0.08109125527995754
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.06445794866326286,
+        "positive": 0.9355420513367372
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.7870357591742179,
+        "positive": 0.21296424082578216
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "negative",
+      "dist": {
+        "negative": 0.8526713944792139,
+        "positive": 0.14732860552078603
+      },
+      "question_type": "choice"
+    },
+    {
+      "gold": "positive",
+      "dist": {
+        "negative": 0.007031753178873771,
+        "positive": 0.9929682468211262
+      },
+      "question_type": "choice"
+    }
+  ],
+  "timestamp": "2026-10-05T12:52:20.760509+00:00"
+}

@@ -32,12 +32,18 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 
 @pytest.fixture(scope="session")
 def hf_tokenizer() -> object:
-    """Load just the tokenizer once (fast, ~1s). No GPU required."""
+    """Load just the tokenizer once (fast, ~1s). No GPU required.
+
+    Tests use the dev-tier 7B tokenizer by default — the production AWQ model
+    is slower to download and its tokenizer is tokenization-equivalent for the
+    label-token checks that matter here. Set BERNOULLI_TOKENIZER_MODEL_ID to
+    swap in a different one.
+    """
     from transformers import AutoTokenizer
 
-    model_id = os.environ.get("BERNOULLI_MODEL_ID", "Qwen/Qwen2.5-VL-7B-Instruct")
+    model_id = os.environ.get("BERNOULLI_TOKENIZER_MODEL_ID", "Qwen/Qwen2.5-VL-7B-Instruct")
     revision = os.environ.get(
-        "BERNOULLI_MODEL_REVISION", "cc594898137f460bfe9f0759e9844b3ce807cfb5"
+        "BERNOULLI_TOKENIZER_REVISION", "cc594898137f460bfe9f0759e9844b3ce807cfb5"
     )
     return AutoTokenizer.from_pretrained(model_id, revision=revision)
 

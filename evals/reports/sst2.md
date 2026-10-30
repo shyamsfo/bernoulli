@@ -1,8 +1,8 @@
 # Eval report — sst2
 
-- **Timestamp**: 2026-10-05T11:38:05.161583+00:00
+- **Timestamp**: 2026-10-05T12:47:54.675728+00:00
 - **Model**: `Qwen/Qwen2.5-VL-7B-Instruct` @ `cc594898137f460bfe9f0759e9844b3ce807cfb5`
-- **Config**: debias=reverse
+- **Config**: method=bernoulli; debias=reverse
 - **Examples**: 872
 
 ## Metrics
@@ -21,4 +21,4 @@
 |---|---|
 | p50  | 144.0 |
 | p95  | 148.0 |
-| mean | 144.4 |
+| mean | 144.6 |

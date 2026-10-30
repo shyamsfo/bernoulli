@@ -3,9 +3,10 @@ name = "bernoulli"
 version = "0.0.1"
 description = "Calibrated multimodal decision model: text + images + typed questions → probabilities."
 readme = "README.md"
-requires-python = ">=3.11"
-license = { text = "Apache-2.0" }
-authors = [{ name = "nuw" }]
+requires-python = ">=3.11,<3.14"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "DeepStore", email = "shyam@deepstore.ai" }]
 
 dependencies = [
     "pydantic>=2.9",
@@ -17,6 +18,7 @@ dependencies = [
 # M2+: HF scorer path
 scorer-hf = [
     "torch>=2.4",
+    "torchvision",
     "transformers>=4.46",
     "accelerate>=1.0",
     "pillow>=10.4",
@@ -27,10 +29,12 @@ eval = [
     "scikit-learn>=1.5",
     "matplotlib>=3.9",
     "datasets>=3.0",
+    "httpx>=0.27",
+    "arxiv>=2.1",
 ]
 # M4+: vLLM serving
 serve = [
-    "vllm>=0.6.3",
+    "vllm>=0.9",
     "fastapi>=0.115",
     "uvicorn[standard]>=0.32",
 ]
@@ -52,22 +56,36 @@ dev = [
     # scorer-hf deps: duplicated here so `uv sync` on the dev box gets a
     # ready-to-run environment. Library consumers install via `bernoulli[scorer-hf]`.
     "torch>=2.4",
+    "torchvision",
     "transformers>=4.46",
     "accelerate>=1.0",
     "pillow>=10.4",
     # eval deps (M3+)
     "datasets>=3.0",
+    "scipy>=1.13",
+    "scikit-learn>=1.5",
+    "httpx>=0.27",
+    "arxiv>=2.1",
+    # serve deps (M4+)
+    "vllm>=0.9",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
 ]
 
 # Pull CUDA-enabled torch wheels on linux. CPU torch everywhere else.
+# torchvision is pinned too because transformers imports it at import time, and
+# a mismatched CUDA version between torch and torchvision bombs the whole stack.
 [tool.uv.sources]
 torch = [
-    { index = "pytorch-cu124", marker = "sys_platform == 'linux' and platform_machine == 'x86_64'" },
+    { index = "pytorch-cu130", marker = "sys_platform == 'linux' and platform_machine == 'x86_64'" },
+]
+torchvision = [
+    { index = "pytorch-cu130", marker = "sys_platform == 'linux' and platform_machine == 'x86_64'" },
 ]
 
 [[tool.uv.index]]
-name = "pytorch-cu124"
-url = "https://download.pytorch.org/whl/cu124"
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
 explicit = true
 
 [build-system]
@@ -75,12 +93,12 @@ requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["bernoulli", "evals"]
+packages = ["bernoulli", "evals", "benchmarks"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-extend-exclude = ["product", "deploy", "evals/reports"]
+extend-exclude = ["product", "deploy", "evals/reports", "benchmarks/jevbench/upstream", "hf-space", "*.md"]
 
 [tool.ruff.lint]
 select = [
@@ -107,7 +125,7 @@ warn_redundant_casts = true
 exclude = ["^product/", "^deploy/", "^evals/reports/"]
 
 [[tool.mypy.overrides]]
-module = ["transformers.*", "vllm.*", "datasets.*", "peft.*", "trl.*"]
+module = ["transformers.*", "vllm.*", "datasets.*", "peft.*", "trl.*", "scipy.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

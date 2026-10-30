@@ -20,16 +20,23 @@ from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 
+from benchmarks.common import metrics as metrics_mod
+from bernoulli.calibrate import Calibration, load_calibration
 from bernoulli.config import load_settings
 from bernoulli.decide import decide
-from bernoulli.scorer import HFScorer, Scorer
-from bernoulli.types import DecideOptions, DecideRequest, State
-from evals import metrics as metrics_mod
+from bernoulli.generative import generative_decide
+from bernoulli.scorer import Scorer, load_scorer
+from bernoulli.types import DecideOptions, DecideRequest, Decision, State
 from evals.example import EvalExample
+
+Method = str  # "bernoulli" (logit path) | "generative" (text + parse baseline)
 
 # All known dataset loaders. New datasets: add to this map + evals/datasets/<name>.py
 LOADERS = {
     "sst2": "evals.datasets.sst2",
+    "ag_news": "evals.datasets.ag_news",
+    "boolq": "evals.datasets.boolq",
+    "banking77": "evals.datasets.banking77",
 }
 
 
@@ -40,9 +47,11 @@ class EvalResult:
     model: str
     revision: str | None
     n_examples: int
+    method: str
     debias: str
     metrics: dict[str, float] = field(default_factory=dict)
     latency: dict[str, float] = field(default_factory=dict)
+    predictions: list[dict[str, object]] = field(default_factory=list)
     timestamp: str = ""
 
 
@@ -52,40 +61,74 @@ def _get_loader(name: str) -> object:
     return importlib.import_module(LOADERS[name])
 
 
+def _to_distribution(decision: Decision) -> dict[str, float]:
+    """Normalize any Decision kind to the {label: prob} dict metrics expect.
+
+    - ChoiceDecision and RatingDecision already expose `.distribution`.
+    - BinaryDecision only exposes a scalar `probability`; synthesize the pair.
+    """
+    if decision.type == "binary":
+        p = decision.probability
+        return {"Yes": p, "No": 1.0 - p}
+    return decision.distribution
+
+
 def run(
     scorer: Scorer,
     examples: Iterable[EvalExample],
     *,
+    method: Method = "bernoulli",
     debias: str = "reverse",
+    calibration: Calibration | None = None,
     dataset_name: str = "",
 ) -> EvalResult:
-    """Score every example and return an EvalResult with metrics + latency."""
+    """Score every example and return an EvalResult with metrics + latency.
+
+    method='bernoulli' uses the logit path (bernoulli.decide); 'generative'
+    uses the text-and-parse baseline (bernoulli.generative.generative_decide).
+    """
     gold: list[str] = []
     preds: list[dict[str, float]] = []
+    question_types: list[str] = []
     latencies: list[int] = []
 
+    use_calibration = calibration is not None and method != "generative"
     for ex in examples:
         req = DecideRequest(
             state=State(text=ex.state_text),
             questions=[ex.question],
-            options=DecideOptions(debias=debias, calibrated=False),  # type: ignore[arg-type]
+            options=DecideOptions(debias=debias, calibrated=use_calibration),  # type: ignore[arg-type]
         )
         t0 = time.perf_counter()
-        resp = decide(req, scorer)
+        if method == "generative":
+            resp = generative_decide(req, scorer)  # type: ignore[arg-type]
+        else:
+            resp = decide(req, scorer, calibration=calibration)
         latencies.append(int((time.perf_counter() - t0) * 1000))
         decision = resp.decisions[ex.question.id]
-        if decision.type != "choice":
-            raise RuntimeError(f"non-choice decision not supported in M3c (got {decision.type})")
         gold.append(ex.gold)
-        preds.append(decision.distribution)
+        preds.append(_to_distribution(decision))
+        question_types.append(decision.type)
 
+    if method == "generative":
+        config = f"method={method}"
+    else:
+        parts = [f"method={method}", f"debias={debias}"]
+        if calibration is not None:
+            parts.append(f"calibrated={calibration.version}")
+        config = "; ".join(parts)
+    predictions: list[dict[str, object]] = [
+        {"gold": g, "dist": d, "question_type": qt}
+        for g, d, qt in zip(gold, preds, question_types, strict=True)
+    ]
     return EvalResult(
         dataset=dataset_name,
-        config=f"debias={debias}",
+        config=config,
         model=scorer.model_id,
         revision=scorer.revision,
         n_examples=len(gold),
-        debias=debias,
+        method=method,
+        debias="none" if method == "generative" else debias,
         metrics={
             "accuracy": metrics_mod.accuracy(gold, preds),
             "macro_f1": metrics_mod.macro_f1(gold, preds),
@@ -94,6 +137,7 @@ def run(
             "nll": metrics_mod.nll(gold, preds),
         },
         latency=metrics_mod.latency_summary(latencies),
+        predictions=predictions,
         timestamp=datetime.now(UTC).isoformat(),
     )
 
@@ -132,22 +176,43 @@ def _render_report(result: EvalResult) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="eval")
     parser.add_argument("--dataset", required=True, choices=sorted(LOADERS))
+    parser.add_argument(
+        "--method",
+        default="bernoulli",
+        choices=["bernoulli", "generative"],
+        help="scoring method: 'bernoulli' (logit path, default) or 'generative' (baseline)",
+    )
     parser.add_argument("--debias", default="reverse", choices=["none", "reverse", "cyclic"])
+    parser.add_argument(
+        "--calibrate",
+        type=Path,
+        default=None,
+        help="path to a Calibration JSON (fit via `python -m evals.fit_calibration`)",
+    )
     parser.add_argument("--limit", type=int, default=None, help="cap number of examples")
     parser.add_argument("--out", type=Path, default=None, help="output markdown path")
     args = parser.parse_args(argv)
 
     settings = load_settings()
-    scorer = HFScorer(
-        settings.model_id,
-        revision=settings.model_revision,
-        dtype=settings.dtype,
-        device=settings.device,
-    )
+    scorer = load_scorer(settings)
+
+    calibration = load_calibration(args.calibrate) if args.calibrate else None
+    if calibration is not None and args.method == "generative":
+        print(
+            "warning: --calibrate is ignored for method=generative (baseline has no probabilities to scale)",
+            file=sys.stderr,
+        )
 
     loader = _get_loader(args.dataset)
     examples = loader.load(limit=args.limit)  # type: ignore[attr-defined]
-    result = run(scorer, examples, debias=args.debias, dataset_name=args.dataset)
+    result = run(
+        scorer,
+        examples,
+        method=args.method,
+        debias=args.debias,
+        calibration=calibration,
+        dataset_name=args.dataset,
+    )
 
     report = _render_report(result)
     print(report)

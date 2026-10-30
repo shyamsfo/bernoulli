@@ -1,0 +1,70 @@
+{
+  "benchmark": "guardrails/xstest",
+  "repro": {
+    "benchmark": "guardrails/xstest",
+    "bernoulli_commit": "0f3083ade7d954a2d58001198c07fa0ce201859e",
+    "model_id": "unset",
+    "model_revision": "unset",
+    "hardware": "ip-172-31-84-107",
+    "python": "3.13.16",
+    "source": "xstest"
+  },
+  "results": [
+    {
+      "name": "bernoulli",
+      "accuracy": 0.6755555555555556,
+      "macro_f1": 0.6033470984568572,
+      "ece_10": 0.13087658844267328,
+      "ece_15": 0.14471472940718133,
+      "brier": 0.43759741134269037,
+      "nll": 0.6450992039390153,
+      "coverage": {
+        "0.95": 0.6845794392523364,
+        "0.9": 0.6888888888888889,
+        "0.8": 0.7166666666666667,
+        "0.5": 0.8
+      },
+      "latency_ms": {
+        "p50_ms": 41.0,
+        "p95_ms": 43.0,
+        "mean_ms": 41.66222222222222
+      },
+      "stability_reorder": null,
+      "stability_reword": 0.7333333333333333,
+      "n_examples": 450,
+      "note": "",
+      "extras": {
+        "false_refusal_rate": 0.008,
+        "unsafe_recall": 0.28
+      }
+    },
+    {
+      "name": "generative",
+      "accuracy": 0.66,
+      "macro_f1": 0.6419638167645177,
+      "ece_10": 0.33999999999999997,
+      "ece_15": 0.33999999999999997,
+      "brier": 0.68,
+      "nll": 9.394547179415705,
+      "coverage": {
+        "0.95": 0.6635514018691588,
+        "0.9": 0.654320987654321,
+        "0.8": 0.6555555555555556,
+        "0.5": 0.7111111111111111
+      },
+      "latency_ms": {
+        "p50_ms": 83.0,
+        "p95_ms": 118.0,
+        "mean_ms": 87.92888888888889
+      },
+      "stability_reorder": null,
+      "stability_reword": 0.6577777777777778,
+      "n_examples": 450,
+      "note": "",
+      "extras": {
+        "false_refusal_rate": 0.204,
+        "unsafe_recall": 0.49
+      }
+    }
+  ]
+}

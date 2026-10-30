@@ -35,3 +35,7 @@ evals/reports/*.png
 .idea/
 .claude/
 .vscode/
+
+# HF Space scaffold has its own git repo (points at huggingface.co/spaces/shyamsfo/bernoulli-demo).
+# Tracked separately — parent repo links to it via product/research/spikes/hf-space-demo.md.
+hf-space/

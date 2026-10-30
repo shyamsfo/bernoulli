@@ -1,0 +1,89 @@
+{
+  "benchmark": "academic/ag_news",
+  "repro": {
+    "benchmark": "academic/ag_news",
+    "bernoulli_commit": "unknown",
+    "model_id": "unset",
+    "model_revision": "unset",
+    "hardware": "ip-172-31-84-107",
+    "python": "3.12.3",
+    "source": "ag_news"
+  },
+  "results": [
+    {
+      "name": "bernoulli",
+      "accuracy": 0.79,
+      "macro_f1": 0.7833887657058389,
+      "ece_10": 0.15819938063621528,
+      "ece_15": 0.17538212537765507,
+      "brier": 0.378660766358153,
+      "nll": 1.0462552100794218,
+      "coverage": {
+        "0.95": 0.8,
+        "0.9": 0.8222222222222222,
+        "0.8": 0.825,
+        "0.5": 0.9
+      },
+      "latency_ms": {
+        "p50_ms": 91.0,
+        "p95_ms": 126.0,
+        "mean_ms": 97.72
+      },
+      "stability_reorder": 0.95,
+      "stability_reword": 0.94,
+      "n_examples": 100,
+      "note": "",
+      "extras": null
+    },
+    {
+      "name": "generative",
+      "accuracy": 0.72,
+      "macro_f1": 0.721051781142019,
+      "ece_10": 0.295,
+      "ece_15": 0.295,
+      "brier": 0.575,
+      "nll": 7.764411799682391,
+      "coverage": {
+        "0.95": 0.7052631578947368,
+        "0.9": 0.6888888888888889,
+        "0.8": 0.6875,
+        "0.5": 0.7
+      },
+      "latency_ms": {
+        "p50_ms": 90.0,
+        "p95_ms": 163.0,
+        "mean_ms": 106.64
+      },
+      "stability_reorder": 0.72,
+      "stability_reword": 0.89,
+      "n_examples": 100,
+      "note": "",
+      "extras": null
+    },
+    {
+      "name": "bge-m3-lr",
+      "accuracy": 0.57,
+      "macro_f1": 0.5167254210732471,
+      "ece_10": 0.11233323097229005,
+      "ece_15": 0.12132054328918457,
+      "brier": 0.6089318186242981,
+      "nll": 1.3168025533023373,
+      "coverage": {
+        "0.95": 0.5684210526315789,
+        "0.9": 0.5888888888888889,
+        "0.8": 0.625,
+        "0.5": 0.76
+      },
+      "latency_ms": {
+        "p50_ms": 470.5,
+        "p95_ms": 661.2999999999996,
+        "mean_ms": 483.53
+      },
+      "stability_reorder": 1.0,
+      "stability_reword": 1.0,
+      "n_examples": 100,
+      "note": "trained on 500 examples",
+      "extras": null
+    }
+  ]
+}

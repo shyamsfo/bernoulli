@@ -27,9 +27,24 @@ class Settings(BaseSettings):
     )
 
     # ---- backbone ---------------------------------------------------------
+    # Dev default: Qwen2.5-VL-7B-Instruct (~15 GB, fits a 24 GB GPU).
+    # The 32B-AWQ production step-up on L40S 48 GB is parked on hardware
+    # availability; the serving code path is backbone-agnostic.
+    #
+    # Swapping backbones: set BERNOULLI_MODEL_ID + BERNOULLI_MODEL_REVISION
+    # and restart. The scorer autodetects text-only vs vision-text and
+    # dispatches to AutoModelForCausalLM or AutoModelForImageTextToText.
+    # Two gotchas to verify on any new backbone:
+    #   1. Letters A-Z + Yes/No must be single tokens on the tokenizer.
+    #      Scorer startup asserts this and fails loud if not.
+    #   2. Reasoning-mode models (Qwen3, GLM 4.5, DeepSeek R1) emit <think>
+    #      before the answer, which breaks the next-token read. Disable
+    #      thinking via chat template / system prompt, or pick a classical
+    #      chat-tuned model (Qwen2.5, Llama 3, Mistral, Gemma 2, Phi 3, ...).
+    # See HOW-IT-WORKS.md §7 for the full family-compatibility taxonomy.
     model_id: str = Field(
         default="Qwen/Qwen2.5-VL-7B-Instruct",
-        description="HF hub id of the backbone VLM. See milestones.md for the dev vs production pick.",
+        description="HF hub id of the backbone LM. Swap via env var; see HOW-IT-WORKS.md §7.",
     )
     model_revision: str | None = Field(
         default="cc594898137f460bfe9f0759e9844b3ce807cfb5",

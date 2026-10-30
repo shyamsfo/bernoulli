@@ -48,9 +48,13 @@ class TestChoiceQuestion:
         with pytest.raises(ValidationError):
             ChoiceQuestion(id="x", prompt="?", options=["only"])
 
-    def test_rejects_more_than_26_options(self) -> None:
+    def test_rejects_more_than_128_options(self) -> None:
         with pytest.raises(ValidationError):
-            ChoiceQuestion(id="x", prompt="?", options=[f"o{i}" for i in range(27)])
+            ChoiceQuestion(id="x", prompt="?", options=[f"o{i}" for i in range(129)])
+
+    def test_allows_up_to_128_options(self) -> None:
+        """Chunked scoring handles the 26-letter alphabet overflow; 128 is the current cap."""
+        ChoiceQuestion(id="x", prompt="?", options=[f"o{i}" for i in range(128)])
 
 
 class TestBinaryQuestion:

@@ -1,0 +1,101 @@
+{
+  "benchmark": "triage/clinc150_oos",
+  "repro": {
+    "benchmark": "triage/clinc150_oos",
+    "bernoulli_commit": "unknown",
+    "model_id": "unset",
+    "model_revision": "unset",
+    "hardware": "ip-172-31-84-107",
+    "python": "3.12.3",
+    "source": "clinc150_oos"
+  },
+  "results": [
+    {
+      "name": "bernoulli",
+      "accuracy": 0.46,
+      "macro_f1": 0.43253467843631777,
+      "ece_10": 0.2670410255342722,
+      "ece_15": 0.27835728563368317,
+      "brier": 0.6845798853043639,
+      "nll": 0.9493405975582685,
+      "coverage": {
+        "0.95": 0.4842105263157895,
+        "0.9": 0.4666666666666667,
+        "0.8": 0.45,
+        "0.5": 0.44
+      },
+      "latency_ms": {
+        "p50_ms": 49.0,
+        "p95_ms": 49.0,
+        "mean_ms": 47.96
+      },
+      "stability_reorder": null,
+      "stability_reword": 0.62,
+      "n_examples": 100,
+      "note": "",
+      "extras": {
+        "oos_auroc": 0.4935064935064935,
+        "in_scope_accuracy": 0.44155844155844154,
+        "oos_recall": 0.5217391304347826
+      }
+    },
+    {
+      "name": "generative",
+      "accuracy": 0.37,
+      "macro_f1": 0.36943248924031624,
+      "ece_10": 0.63,
+      "ece_15": 0.63,
+      "brier": 1.26,
+      "nll": 17.40754330303498,
+      "coverage": {
+        "0.95": 0.35789473684210527,
+        "0.9": 0.37777777777777777,
+        "0.8": 0.3875,
+        "0.5": 0.34
+      },
+      "latency_ms": {
+        "p50_ms": 124.0,
+        "p95_ms": 128.0,
+        "mean_ms": 112.33
+      },
+      "stability_reorder": null,
+      "stability_reword": 0.6,
+      "n_examples": 100,
+      "note": "",
+      "extras": {
+        "oos_auroc": 0.5451722190852626,
+        "in_scope_accuracy": 0.22077922077922077,
+        "oos_recall": 0.8695652173913043
+      }
+    },
+    {
+      "name": "bge-m3-lr",
+      "accuracy": 0.77,
+      "macro_f1": 0.4350282485875706,
+      "ece_10": 0.20615483701229098,
+      "ece_15": 0.20615483701229098,
+      "brier": 0.43557486459224243,
+      "nll": 0.8470327529993742,
+      "coverage": {
+        "0.95": 0.7789473684210526,
+        "0.9": 0.8,
+        "0.8": 0.8125,
+        "0.5": 0.92
+      },
+      "latency_ms": {
+        "p50_ms": 231.0,
+        "p95_ms": 261.2,
+        "mean_ms": 230.12
+      },
+      "stability_reorder": null,
+      "stability_reword": 1.0,
+      "n_examples": 100,
+      "note": "trained on 500 examples",
+      "extras": {
+        "oos_auroc": 0.7481648785996612,
+        "in_scope_accuracy": 1.0,
+        "oos_recall": 0.0
+      }
+    }
+  ]
+}

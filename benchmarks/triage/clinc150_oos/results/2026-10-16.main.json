@@ -1,0 +1,101 @@
+{
+  "benchmark": "triage/clinc150_oos",
+  "repro": {
+    "benchmark": "triage/clinc150_oos",
+    "bernoulli_commit": "0f3083ade7d954a2d58001198c07fa0ce201859e",
+    "model_id": "unset",
+    "model_revision": "unset",
+    "hardware": "ip-172-31-84-107",
+    "python": "3.13.16",
+    "source": "clinc150_oos"
+  },
+  "results": [
+    {
+      "name": "bernoulli",
+      "accuracy": 0.448,
+      "macro_f1": 0.41773134630639147,
+      "ece_10": 0.280389110095799,
+      "ece_15": 0.280389110095799,
+      "brier": 0.7279960395798745,
+      "nll": 1.0280821938366702,
+      "coverage": {
+        "0.95": 0.44,
+        "0.9": 0.44,
+        "0.8": 0.4325,
+        "0.5": 0.388
+      },
+      "latency_ms": {
+        "p50_ms": 49.0,
+        "p95_ms": 50.0,
+        "mean_ms": 48.104
+      },
+      "stability_reorder": null,
+      "stability_reword": 0.624,
+      "n_examples": 500,
+      "note": "",
+      "extras": {
+        "oos_auroc": 0.4829805056350899,
+        "in_scope_accuracy": 0.42039800995024873,
+        "oos_recall": 0.5612244897959183
+      }
+    },
+    {
+      "name": "generative",
+      "accuracy": 0.292,
+      "macro_f1": 0.2917166866746699,
+      "ece_10": 0.708,
+      "ece_15": 0.708,
+      "brier": 1.416,
+      "nll": 19.56276295007741,
+      "coverage": {
+        "0.95": 0.29894736842105263,
+        "0.9": 0.3022222222222222,
+        "0.8": 0.3075,
+        "0.5": 0.34
+      },
+      "latency_ms": {
+        "p50_ms": 122.0,
+        "p95_ms": 126.0,
+        "mean_ms": 110.786
+      },
+      "stability_reorder": null,
+      "stability_reword": 0.642,
+      "n_examples": 500,
+      "note": "",
+      "extras": {
+        "oos_auroc": 0.48253629810133014,
+        "in_scope_accuracy": 0.1691542288557214,
+        "oos_recall": 0.7959183673469388
+      }
+    },
+    {
+      "name": "bge-m3-lr",
+      "accuracy": 0.804,
+      "macro_f1": 0.44567627494456763,
+      "ece_10": 0.1721669390201569,
+      "ece_15": 0.17216693902015684,
+      "brier": 0.36028781315877734,
+      "nll": 0.6855402606587293,
+      "coverage": {
+        "0.95": 0.8315789473684211,
+        "0.9": 0.8533333333333334,
+        "0.8": 0.8675,
+        "0.5": 0.936
+      },
+      "latency_ms": {
+        "p50_ms": 12.0,
+        "p95_ms": 12.0,
+        "mean_ms": 12.232
+      },
+      "stability_reorder": null,
+      "stability_reword": 1.0,
+      "n_examples": 500,
+      "note": "trained on 2000 examples",
+      "extras": {
+        "oos_auroc": 0.7820337090059905,
+        "in_scope_accuracy": 1.0,
+        "oos_recall": 0.0
+      }
+    }
+  ]
+}

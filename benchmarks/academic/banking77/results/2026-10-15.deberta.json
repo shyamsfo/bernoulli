@@ -1,0 +1,39 @@
+{
+  "benchmark": "academic/banking77",
+  "repro": {
+    "benchmark": "academic/banking77",
+    "bernoulli_commit": "92e301ac2c0ab8121e3832ce1feeddff9f1f21a2",
+    "model_id": "unset",
+    "model_revision": "unset",
+    "hardware": "158-101-121-239",
+    "python": "3.13.16",
+    "source": "banking77"
+  },
+  "results": [
+    {
+      "name": "deberta",
+      "accuracy": 0.64,
+      "macro_f1": 0.11437222247114111,
+      "ece_10": 0.11601688660681246,
+      "ece_15": 0.11213314141333103,
+      "brier": 0.5379468573254846,
+      "nll": 1.4181514200800964,
+      "coverage": {
+        "0.95": 0.6589473684210526,
+        "0.9": 0.6777777777777778,
+        "0.8": 0.72,
+        "0.5": 0.796
+      },
+      "latency_ms": {
+        "p50_ms": 127.5,
+        "p95_ms": 130.0,
+        "mean_ms": 129.632
+      },
+      "stability_reorder": 1.0,
+      "stability_reword": 1.0,
+      "n_examples": 500,
+      "note": "",
+      "extras": null
+    }
+  ]
+}
