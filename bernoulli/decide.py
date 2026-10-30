@@ -45,12 +45,21 @@ def _decide_one(
     question: Question,
     debias_mode: str,
     calibration: Calibration | None,
+    instructions: str | None = None,
 ) -> Decision:
     if isinstance(question, ChoiceQuestion) and len(question.options) > CHUNK_SIZE:
         # Many-option choice: debias is deferred (see chunked.py). Mode is ignored.
-        probs = chunked_choice(scorer, state_text=state_text, question=question)
+        probs = chunked_choice(
+            scorer, state_text=state_text, question=question, instructions=instructions
+        )
     else:
-        probs = debias(scorer, state_text=state_text, question=question, mode=debias_mode)  # type: ignore[arg-type]
+        probs = debias(  # type: ignore[arg-type]
+            scorer,
+            state_text=state_text,
+            question=question,
+            mode=debias_mode,
+            instructions=instructions,
+        )
 
     options = option_strings_for(question)
     probs_dict: dict[str, float] = {opt: float(p) for opt, p in zip(options, probs, strict=True)}
@@ -105,7 +114,12 @@ def decide(
     decisions: dict[str, Decision] = {}
     for q in request.questions:
         decisions[q.id] = _decide_one(
-            scorer, request.state.text, q, request.options.debias, use_cal
+            scorer,
+            request.state.text,
+            q,
+            request.options.debias,
+            use_cal,
+            instructions=request.instructions,
         )
     elapsed_ms = int((time.perf_counter() - t0) * 1000)
 

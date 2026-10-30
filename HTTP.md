@@ -311,6 +311,34 @@ On the current dev box (A10G 24GB, Qwen2.5-VL-7B), expect ~70 ms per added quest
 
 ---
 
+## Shared instructions
+
+**Use when** the same context applies to many requests that differ only in state. The classic example: resume screening — the job description is the same for every candidate; only the resume (state) and the decisions (questions) change.
+
+The top-level `instructions` field is optional and gets routed into the chat template's system turn, before the user turn that carries state + question. It's shared across every question in the request.
+
+```bash
+curl -sS -X POST http://localhost:8000/v1/decide \
+  -H "Content-Type: application/json" \
+  -d '{
+    "instructions": "You are evaluating candidates for a Senior Platform Engineer role. The team is 8 people, remote, Python-heavy, operates critical infra. Prioritize operational maturity and clear communication over raw years of experience.",
+    "state": {"text": "<candidate resume or LinkedIn export>"},
+    "questions": [
+      {"id": "qual", "type": "rating", "prompt": "How qualified for this role?", "scale": [1, 5]},
+      {"id": "ops",  "type": "rating", "prompt": "Operational maturity signal strength?", "scale": [1, 5]},
+      {"id": "flag", "type": "binary", "prompt": "Any strong red flags for this role?"}
+    ]
+  }'
+```
+
+Three things to know:
+
+- **The baseline "answer with a single letter" instruction is preserved.** Your `instructions` are appended after it, so even if they wander, the single-token-answer contract still holds.
+- **Prefix caching.** Keeping shared context in `instructions` (not duplicated in each `state.text`) lets vLLM's prefix cache dedupe the shared tokens across requests. On a 500-candidate batch, this matters.
+- **Calibration validity.** The shipped `calibration/qwen2.5-vl-7b.json` was fitted on prompts with no instructions. Heavy `instructions` content shifts the model's prior enough that the fitted temperatures may no longer apply cleanly. Set `options.calibrated=false` if you observe miscalibration, or refit on your own instruction-flavored data.
+
+---
+
 ## Request options
 
 Tweak scoring per request via the `options` field:

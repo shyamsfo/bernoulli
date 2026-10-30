@@ -336,6 +336,44 @@ This form takes a `options` block too, which the shorthand (`--state` + `--quest
 
 ---
 
+## Shared instructions
+
+Use when the same context applies to many requests that differ only in state (resume screening, content moderation under a fixed policy, code review against a style guide). Pass the shared text with `--instructions`:
+
+```bash
+cat > /tmp/jd.txt <<'EOF'
+Evaluate candidates for a Senior Platform Engineer role.
+The team is 8 people, remote, Python-heavy, operates critical infra.
+Prioritize operational maturity and clear communication.
+EOF
+
+cat > /tmp/questions.json <<'EOF'
+[
+  {"id": "qual", "type": "rating", "prompt": "How qualified?",  "scale": [1, 5]},
+  {"id": "flag", "type": "binary", "prompt": "Any red flags?"}
+]
+EOF
+
+uv run bernoulli decide \
+  --state /tmp/resume.txt \
+  --instructions /tmp/jd.txt \
+  --question /tmp/questions.json
+```
+
+Or inline it in a `--request` file by setting the top-level `instructions` string:
+
+```json
+{
+  "instructions": "Evaluate for a Senior Platform Engineer role.",
+  "state": {"text": "<resume>"},
+  "questions": [...]
+}
+```
+
+Instructions are routed into the chat template's system turn (after the baseline "answer with a single letter" instruction, which is preserved) and shared across every question in the request. See the "calibration validity" note under Request options — heavy instructions can shift the model's prior enough that the shipped temperatures no longer apply.
+
+---
+
 ## Request options
 
 Tweak scoring per request via the `options` block (only available in the `--request` form):

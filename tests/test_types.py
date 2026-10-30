@@ -122,6 +122,30 @@ class TestDecideRequest:
         )
         assert [q.type for q in req.questions] == ["choice", "binary", "rating"]
 
+    def test_instructions_defaults_to_none(self) -> None:
+        req = DecideRequest(state=State(text="x"), questions=[BinaryQuestion(id="q", prompt="?")])
+        assert req.instructions is None
+
+    def test_instructions_round_trip(self) -> None:
+        req = DecideRequest(
+            state=State(text="x"),
+            questions=[BinaryQuestion(id="q", prompt="?")],
+            instructions="Evaluate against a Senior Platform Engineer role.",
+        )
+        assert req.instructions == "Evaluate against a Senior Platform Engineer role."
+        rehydrated = DecideRequest.model_validate_json(req.model_dump_json())
+        assert rehydrated.instructions == req.instructions
+
+    def test_instructions_rejects_typo_as_unknown_field(self) -> None:
+        with pytest.raises(ValidationError):
+            DecideRequest.model_validate(
+                {
+                    "state": {"text": "x"},
+                    "questions": [{"id": "q", "type": "binary", "prompt": "?"}],
+                    "instructionz": "typo",
+                }
+            )
+
 
 class TestDecideResponse:
     def test_shape(self) -> None:

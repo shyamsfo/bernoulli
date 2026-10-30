@@ -119,6 +119,8 @@ Why state-first/question-last? When the same state (a document, a ticket, a revi
 
 Why `"Answer:"` as the assistant prefill? We want the next token the model emits to be a *label*, not punctuation or a space. Prefilling with `Answer:` makes the model's "I'm starting to answer" tokens happen *before* the position we read logits at, so position `-1` is where it actually commits to a label.
 
+**Shared instructions (optional)**: `DecideRequest.instructions`, when non-null, is appended to the baseline system turn (after the single-letter instruction) and shared across every question in the request. The baseline is appended-to, not replaced — so caller-supplied content can't break the single-token-answer contract. Prefix-caching-wise, putting shared context here (vs duplicating it in each `state.text`) keeps the system turn's tokens stable across requests about different states, which is exactly what vLLM's content-addressed cache rewards. Caveat: the shipped `calibration/qwen2.5-vl-7b.json` was fitted without instructions — non-trivial `instructions` content shifts the model's prior enough that the fitted temperatures may no longer apply cleanly. If calibration quality matters, refit on your own instruction-flavored data.
+
 ### Label-token resolution
 
 Every supported backbone must encode our labels as single tokens. `bernoulli/labels.py` holds the resolution logic + the `assert_single_token_labels()` guard that fires at scorer construction. If you point Bernoulli at a tokenizer that breaks "A" into two tokens, you'll get a `ValueError` with a clear message naming the offending label.

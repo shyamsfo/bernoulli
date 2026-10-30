@@ -78,6 +78,7 @@ def build_prompt(
     state_text: str,
     question: Question,
     option_order: list[int] | None = None,
+    instructions: str | None = None,
 ) -> str:
     """Return the full prompt string, ready to tokenize for one forward pass.
 
@@ -89,6 +90,11 @@ def build_prompt(
     The debiaser rerun the same request with different option_orders and
     averages the probabilities after mapping each run back to the canonical
     option index.
+
+    `instructions`, when non-empty, is appended to the baseline system turn
+    (after SYSTEM_PROMPT) and shared across all questions in a request. The
+    single-letter contract stays in the baseline so caller-supplied
+    instructions can't accidentally break it.
     """
     labels = labels_for(question)
     canonical_options = option_strings_for(question)
@@ -101,9 +107,12 @@ def build_prompt(
                 f"range({len(canonical_options)})"
             )
         options = [canonical_options[i] for i in option_order]
+    system_content = SYSTEM_PROMPT
+    if instructions:
+        system_content = f"{SYSTEM_PROMPT}\n\n{instructions}"
     user_turn = f"{state_text}\n\n{question.prompt}\n{_render_options(labels, options)}"
     messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": system_content},
         {"role": "user", "content": user_turn},
     ]
     prompt = tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)

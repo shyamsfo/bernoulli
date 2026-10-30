@@ -182,6 +182,95 @@ class TestDecide:
         )
         assert r.status_code == 422
 
+
+class _RecordingTokenizer(_FakeTokenizer):
+    """Chat template that keeps system turn visible, so instructions threading
+    can be observed in the final prompt string."""
+
+    def apply_chat_template(
+        self,
+        conversation: list[dict[str, object]],
+        *,
+        tokenize: bool = True,
+        add_generation_prompt: bool = True,
+    ) -> str:
+        return "\n---\n".join(f"[{m['role']}] {m['content']}" for m in conversation)
+
+
+class _RecordingScorer(_ConstantScorer):
+    """ConstantScorer with a tokenizer that preserves the system turn, and a
+    log of every prompt it was called with."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.tokenizer = _RecordingTokenizer()
+        self.prompts_seen: list[str] = []
+
+    def score(
+        self,
+        prompt: str,
+        allowed_token_ids: list[int],
+        *,
+        images: list[str] | None = None,
+    ) -> np.ndarray:
+        self.prompts_seen.append(prompt)
+        return super().score(prompt, allowed_token_ids, images=images)
+
+    def score_batch(
+        self,
+        prompts: list[str],
+        allowed_token_ids_list: list[list[int]],
+        *,
+        images_list: list[list[str] | None] | None = None,
+    ) -> list[np.ndarray]:
+        self.prompts_seen.extend(prompts)
+        return [
+            super(_RecordingScorer, self).score(p, a)
+            for p, a in zip(prompts, allowed_token_ids_list, strict=True)
+        ]
+
+
+class TestInstructions:
+    def test_instructions_threaded_into_system_turn(self) -> None:
+        scorer = _RecordingScorer()
+        client = TestClient(create_app(scorer=scorer))
+        shared = "Evaluate the candidate for a Senior Platform Engineer role."
+        r = client.post(
+            "/v1/decide",
+            json={
+                "instructions": shared,
+                "state": {"text": "Resume: 10 years Python, ran prod SRE team of 6."},
+                "questions": [
+                    {"id": "qual", "type": "rating", "prompt": "qualified?", "scale": [1, 5]},
+                    {"id": "flag", "type": "binary", "prompt": "red flags?"},
+                ],
+                "options": {"debias": "none", "calibrated": False},
+            },
+        )
+        assert r.status_code == 200
+        assert scorer.prompts_seen  # scorer was actually called
+        # Every prompt built for this request should carry the shared instructions
+        # in its system turn.
+        for p in scorer.prompts_seen:
+            assert shared in p, f"instructions missing from prompt: {p!r}"
+            assert "[system]" in p  # confirms the recording tokenizer tag
+
+    def test_omitting_instructions_leaves_prompts_free_of_leakage(self) -> None:
+        scorer = _RecordingScorer()
+        client = TestClient(create_app(scorer=scorer))
+        r = client.post(
+            "/v1/decide",
+            json={
+                "state": {"text": "x"},
+                "questions": [{"id": "q", "type": "binary", "prompt": "?"}],
+                "options": {"debias": "none", "calibrated": False},
+            },
+        )
+        assert r.status_code == 200
+        # Baseline system prompt only — nothing user-supplied leaked in.
+        for p in scorer.prompts_seen:
+            assert "Answer with a single letter" in p
+
     def test_images_501(self, client: TestClient) -> None:
         """Image state currently raises NotImplementedError → mapped to 501."""
         r = client.post(

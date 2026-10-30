@@ -82,6 +82,7 @@ def debias(
     state_text: str,
     question: Question,
     mode: DebiasMode = "reverse",
+    instructions: str | None = None,
 ) -> NDArray[np.float32]:
     """Return per-option probabilities in canonical order after averaging runs.
 
@@ -106,7 +107,13 @@ def debias(
     # Build all permutation prompts up front, send as a single batch — one
     # engine call on vLLM's continuous-batching path, loop on HFScorer.
     prompts = [
-        build_prompt(tok, state_text=state_text, question=question, option_order=perm)
+        build_prompt(
+            tok,
+            state_text=state_text,
+            question=question,
+            option_order=perm,
+            instructions=instructions,
+        )
         for perm in perms
     ]
     all_logits = scorer.score_batch(prompts, [allowed] * len(perms))

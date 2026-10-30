@@ -94,6 +94,19 @@ class DecideRequest(BaseModel):
     state: State
     questions: list[Question] = Field(min_length=1)
     options: DecideOptions = Field(default_factory=DecideOptions)
+    instructions: str | None = Field(
+        default=None,
+        description=(
+            "Optional context shared across all questions in this request. "
+            "Routed into the chat template's system turn, appended after the "
+            "baseline single-letter instruction. Use for stable context "
+            "(role description, rubric, policy) that doesn't vary with the "
+            "state — e.g. a job description when the state is a resume. "
+            "Note: the shipped calibration was fitted without instructions; "
+            "passing a non-empty value may shift the model's prior enough "
+            "that the fitted temperatures no longer apply."
+        ),
+    )
 
 
 # ---------------------------------------------------------------------------

@@ -45,7 +45,9 @@ class _HasGenerate(Protocol):
     def generate(self, prompt: str, *, max_new_tokens: int = ...) -> str: ...
 
 
-def _build_generative_prompt(tok: object, state_text: str, question: Question) -> str:
+def _build_generative_prompt(
+    tok: object, state_text: str, question: Question, instructions: str | None = None
+) -> str:
     """Prompt a classifier-shaped completion: options listed in system, state + question in user."""
     options = option_strings_for(question)
     options_fmt = ", ".join(options)
@@ -53,6 +55,8 @@ def _build_generative_prompt(tok: object, state_text: str, question: Question) -
         "You are a classifier. Answer with exactly one of these options and nothing else: "
         f"{options_fmt}."
     )
+    if instructions:
+        system = f"{system}\n\n{instructions}"
     user = f"{state_text}\n\n{question.prompt}"
     messages = [
         {"role": "system", "content": system},
@@ -98,9 +102,10 @@ def _decide_one_generative(
     question: Question,
     *,
     max_new_tokens: int = 10,
+    instructions: str | None = None,
 ) -> Decision:
     options = option_strings_for(question)
-    prompt = _build_generative_prompt(scorer.tokenizer, state_text, question)
+    prompt = _build_generative_prompt(scorer.tokenizer, state_text, question, instructions)
     text = scorer.generate(prompt, max_new_tokens=max_new_tokens)
     chosen = parse_response(text, options)
     probs = _probs_from_choice(chosen, len(options))
@@ -141,7 +146,9 @@ def generative_decide(request: DecideRequest, scorer: _HasGenerate) -> DecideRes
     t0 = time.perf_counter()
     decisions: dict[str, Decision] = {}
     for q in request.questions:
-        decisions[q.id] = _decide_one_generative(scorer, request.state.text, q)
+        decisions[q.id] = _decide_one_generative(
+            scorer, request.state.text, q, instructions=request.instructions
+        )
     elapsed_ms = int((time.perf_counter() - t0) * 1000)
 
     return DecideResponse(

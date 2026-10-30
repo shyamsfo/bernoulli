@@ -32,7 +32,11 @@ def _build_request(args: argparse.Namespace) -> DecideRequest:
     state_text = Path(args.state).read_text()
     question_payload = json.loads(Path(args.question).read_text())
     questions = question_payload if isinstance(question_payload, list) else [question_payload]
-    return DecideRequest.model_validate({"state": State(text=state_text), "questions": questions})
+    instructions = Path(args.instructions).read_text() if args.instructions else None
+    payload = {"state": State(text=state_text), "questions": questions}
+    if instructions is not None:
+        payload["instructions"] = instructions
+    return DecideRequest.model_validate(payload)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -43,6 +47,10 @@ def main(argv: list[str] | None = None) -> int:
     p_decide.add_argument("--request", help="path to a full DecideRequest JSON")
     p_decide.add_argument("--state", help="path to a text state file")
     p_decide.add_argument("--question", help="path to a question JSON (object or array)")
+    p_decide.add_argument(
+        "--instructions",
+        help="optional path to a text file with shared instructions (system turn)",
+    )
     p_decide.add_argument("--model", help="override backbone (defaults to BERNOULLI_MODEL_ID)")
 
     args = parser.parse_args(argv)

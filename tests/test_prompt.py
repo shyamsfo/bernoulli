@@ -59,3 +59,23 @@ class TestBuildPrompt:
         b_idx = prompt.index("B) banana")
         c_idx = prompt.index("C) cherry")
         assert a_idx < b_idx < c_idx
+
+    def test_instructions_appear_in_system_turn(self, hf_tokenizer: object) -> None:
+        q = BinaryQuestion(id="q", prompt="qualified?")
+        instructions = "Evaluate for a Senior Platform Engineer role, Python-heavy."
+        prompt = build_prompt(
+            hf_tokenizer, state_text="candidate resume text", question=q, instructions=instructions
+        )
+        # Instructions and the baseline system prompt must both appear, in the
+        # system turn (which the Qwen chat template emits before the user turn).
+        inst_idx = prompt.index(instructions)
+        user_idx = prompt.index("candidate resume text")
+        assert inst_idx < user_idx
+        assert "Answer with a single letter" in prompt  # baseline is preserved
+
+    def test_omitting_instructions_is_identity(self, hf_tokenizer: object) -> None:
+        q = BinaryQuestion(id="q", prompt="?")
+        default_prompt = build_prompt(hf_tokenizer, state_text="x", question=q)
+        explicit_none = build_prompt(hf_tokenizer, state_text="x", question=q, instructions=None)
+        empty_string = build_prompt(hf_tokenizer, state_text="x", question=q, instructions="")
+        assert default_prompt == explicit_none == empty_string

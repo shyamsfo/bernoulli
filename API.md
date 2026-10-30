@@ -82,11 +82,15 @@ Keys are **not** scoped to specific endpoints or question types; each key grants
 {
   "state": State,                      // required
   "questions": [Question, ...],        // required; min 1
-  "options": DecideOptions             // optional; defaults below
+  "options": DecideOptions,            // optional; defaults below
+  "instructions": string | null        // optional; default null
 }
 ```
 
 Unknown fields → **422 Unprocessable Entity**. The pydantic model has `extra="forbid"` throughout.
+
+- `instructions`, when non-null, is routed into the chat template's system turn (appended after the baseline single-letter instruction) and shared across every question in the request. Use for stable context that doesn't vary with the state — e.g. a job description when the state is a resume, a style guide when the state is a code diff, or a policy document when the state is user content under review. The baseline "answer with a single letter" instruction is preserved so caller-supplied content cannot accidentally break the single-token-answer contract.
+- **Calibration caveat.** The shipped calibration JSON was fitted on prompts without `instructions`. Non-trivial `instructions` content shifts the model's prior; if `options.calibrated=true` and you observe miscalibration, either refit on your own instruction-flavored data or set `calibrated=false`.
 
 ### `State`
 

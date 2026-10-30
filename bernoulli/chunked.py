@@ -36,6 +36,7 @@ def chunked_choice(
     state_text: str,
     question: ChoiceQuestion,
     chunk_size: int = CHUNK_SIZE,
+    instructions: str | None = None,
 ) -> NDArray[np.float32]:
     """Return per-option probabilities across all options after chunked scoring.
 
@@ -57,7 +58,11 @@ def chunked_choice(
     for start in range(0, n, chunk_size):
         chunk_opts = options[start : start + chunk_size]
         sub_question = ChoiceQuestion(id=question.id, prompt=question.prompt, options=chunk_opts)
-        prompts.append(build_prompt(tok, state_text=state_text, question=sub_question))
+        prompts.append(
+            build_prompt(
+                tok, state_text=state_text, question=sub_question, instructions=instructions
+            )
+        )
         allowed_per_chunk.append([letter_ids[letter] for letter in LETTERS[: len(chunk_opts)]])
         starts.append(start)
 
