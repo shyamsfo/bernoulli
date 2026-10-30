@@ -1,6 +1,6 @@
 # Bernoulli
 
-**An open-source clone of [Jev](https://typesafe.ai/), TypeSafe AI's System One decision model.**
+**[Jev](https://typesafe.ai/)-inspired, open-weights — a reimplementation of TypeSafe AI's System One decision model.**
 
 **Live:** [bernoulli.live](https://bernoulli.live) — landing page with the pitch, benchmarks, and architecture overview.
 
