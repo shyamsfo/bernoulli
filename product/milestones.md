@@ -604,7 +604,7 @@ Pattern we're adopting is standard open-core: Grafana, HashiCorp Vault, GitLab, 
 **Status**: ⏳ pending (defined only — queued behind M17 → M16; run `/ds-work-plan M18` when ready)
 **Goal**: A thin terminal client for `POST /v1/decide` that reads a state file + a questions file and prints a formatted response. Fills the "quickly test the API without the Chrome extension, Postman, or hand-rolled curl + jq" gap. Scripted smoke-testing, debugging live traffic, early Salesforce integration work.
 
-**Reference**: full spec is in `bernoulli-cli-spec.md` at the repo root (will move to the private repo during M17). Flags, exit codes, output format, non-goals are all captured there — M18's job is to execute it, not re-design.
+**Reference**: full spec is in [`product/specs/bernoulli-cli-spec.md`](specs/bernoulli-cli-spec.md) (moves to the private repo along with the rest of `product/` during M17). Flags, exit codes, output format, non-goals are all captured there — M18's job is to execute it, not re-design.
 
 **Why now:**
 Three callers exist already (Chrome extension, Chrome TOS plugin, Salesforce) and the only ways to test outside them are the browser-based `tester.html`, `just serve-check`'s canned fixtures, and raw curl. None of those are good for the "I need to drive the API from a shell script or an ad-hoc one-liner" workflow. The spec was written down 2026-10-30, so now is the right moment to lock scope.
