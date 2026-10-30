@@ -60,6 +60,18 @@ status:
 serve-provision:
     #!/usr/bin/env bash
     set -euo pipefail
+    _name="serve-provision"; _t0=$(date +%s)
+    echo "[$_name] started $(date '+%H:%M:%S')"
+    _report() {
+        local rc=$? dt=$(( $(date +%s) - _t0 ))
+        local mm=$((dt/60)) ss=$((dt%60))
+        if [ $rc -eq 0 ]; then
+            printf '[%s] done    %s · %dm %02ds\a\n' "$_name" "$(date '+%H:%M:%S')" "$mm" "$ss"
+        else
+            printf '[%s] failed  %s · %dm %02ds\a\a\a\n' "$_name" "$(date '+%H:%M:%S')" "$mm" "$ss"
+        fi
+    }
+    trap _report EXIT
     source ~/.credentials
     ./deploy/bringup.sh
 
@@ -75,6 +87,18 @@ serve-provision:
 serve-start:
     #!/usr/bin/env bash
     set -euo pipefail
+    _name="serve-start"; _t0=$(date +%s)
+    echo "[$_name] started $(date '+%H:%M:%S')"
+    _report() {
+        local rc=$? dt=$(( $(date +%s) - _t0 ))
+        local mm=$((dt/60)) ss=$((dt%60))
+        if [ $rc -eq 0 ]; then
+            printf '[%s] done    %s · %dm %02ds\a\n' "$_name" "$(date '+%H:%M:%S')" "$mm" "$ss"
+        else
+            printf '[%s] failed  %s · %dm %02ds\a\a\a\n' "$_name" "$(date '+%H:%M:%S')" "$mm" "$ss"
+        fi
+    }
+    trap _report EXIT
     source ~/.credentials
     : "${BERNOULLI_API_KEYS:?set BERNOULLI_API_KEYS in ~/.credentials (comma-separated 64-char hex tokens)}"
     HOST="${BERNOULLI_HOST:-{{host}}}"
@@ -189,6 +213,18 @@ serve-check url="https://bernoulli-api.nuwire.dev":
 serve-up:
     #!/usr/bin/env bash
     set -euo pipefail
+    _name="serve-up"; _t0=$(date +%s)
+    echo "[$_name] started $(date '+%H:%M:%S')"
+    _report() {
+        local rc=$? dt=$(( $(date +%s) - _t0 ))
+        local mm=$((dt/60)) ss=$((dt%60))
+        if [ $rc -eq 0 ]; then
+            printf '[%s] done    %s · %dm %02ds\a\n' "$_name" "$(date '+%H:%M:%S')" "$mm" "$ss"
+        else
+            printf '[%s] failed  %s · %dm %02ds\a\a\a\n' "$_name" "$(date '+%H:%M:%S')" "$mm" "$ss"
+        fi
+    }
+    trap _report EXIT
     INSTANCE_ID=$(terraform -chdir=deploy output -raw instance_id)
     echo "[1/5] starting ec2 $INSTANCE_ID ..."
     aws ec2 start-instances --instance-ids $INSTANCE_ID > /dev/null
@@ -205,6 +241,36 @@ serve-up:
     python3 -c "import re,os; p=os.path.expanduser('~/.ssh/config'); c=open(p).read(); open(p,'w').write(re.sub(r'(Host bernoulli\s*\n\s*HostName )\S+', r'\g<1>$IP', c, count=1))"
     echo "[5/5] box is up and healthy. Run 'just serve-provision' (first time per instance) or 'just serve-start' (if already provisioned)."
 
+# Daily morning shortcut: ensure the endpoint is up and serving. Runs serve-up
+# (idempotent on AWS; ~5s no-op if already running), then probes /healthz
+# locally on the box; only runs serve-start if the server isn't already
+# serving. Each step prints its own timing; this adds a chain-level summary.
+# Fails fast — if serve-up fails, nothing else runs.
+serve-up-start:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    _name="serve-up-start"; _t0=$(date +%s)
+    echo "[$_name] started $(date '+%H:%M:%S')"
+    _report() {
+        local rc=$? dt=$(( $(date +%s) - _t0 ))
+        local mm=$((dt/60)) ss=$((dt%60))
+        if [ $rc -eq 0 ]; then
+            printf '[%s] done    %s · %dm %02ds\a\n' "$_name" "$(date '+%H:%M:%S')" "$mm" "$ss"
+        else
+            printf '[%s] failed  %s · %dm %02ds\a\a\a\n' "$_name" "$(date '+%H:%M:%S')" "$mm" "$ss"
+        fi
+    }
+    trap _report EXIT
+    just serve-up
+    # Local-to-box /healthz probe is the ground truth. The ssd2-fronted URL
+    # can return 504 briefly for DNS staleness even when the box is fine, so
+    # we skip the public path.
+    if timeout 8 ssh -o ConnectTimeout=5 {{host}} 'curl -sf -m 3 http://127.0.0.1:8000/healthz' >/dev/null 2>&1; then
+        echo "[$_name] uvicorn already serving on :8000 — skipping serve-start"
+    else
+        just serve-start
+    fi
+
 # Stop the EC2 box. Blocks until AWS confirms "stopped" state — which is
 # the state at which compute billing stops. After that we double-check with
 # a describe-instances call. Rings 1 bell on success, 3 on timeout.
@@ -213,12 +279,23 @@ serve-up:
 serve-down:
     #!/usr/bin/env bash
     set -euo pipefail
+    _name="serve-down"; _t0=$(date +%s)
+    echo "[$_name] started $(date '+%H:%M:%S')"
+    _report() {
+        local rc=$? dt=$(( $(date +%s) - _t0 ))
+        local mm=$((dt/60)) ss=$((dt%60))
+        if [ $rc -eq 0 ]; then
+            printf '[%s] done    %s · %dm %02ds\a\n' "$_name" "$(date '+%H:%M:%S')" "$mm" "$ss"
+        else
+            printf '[%s] failed  %s · %dm %02ds\a\a\a\n' "$_name" "$(date '+%H:%M:%S')" "$mm" "$ss"
+        fi
+    }
+    trap _report EXIT
     INSTANCE_ID=$(terraform -chdir=deploy output -raw instance_id)
     echo "[1/3] requesting stop of $INSTANCE_ID ..."
     aws ec2 stop-instances --instance-ids $INSTANCE_ID > /dev/null
     echo "[2/3] waiting for 'stopped' state (compute billing ends here; typical 2-5 min)..."
     if ! timeout 600 aws ec2 wait instance-stopped --instance-ids $INSTANCE_ID; then
-        printf '\a\a\a'
         STATE=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID \
             --query 'Reservations[0].Instances[0].State.Name' --output text)
         echo "WARN: didn't reach 'stopped' in 10 min; current state: $STATE"
@@ -228,16 +305,26 @@ serve-down:
     STATE=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID \
         --query 'Reservations[0].Instances[0].State.Name' --output text)
     echo "[3/3] confirmed state: $STATE (no further compute charges; EBS ~\$8/mo continues)"
-    printf '\a'
 
-# EC2 state + current DNS value + endpoint health in one command.
-serve-status:
+# Instance + session + endpoint — "what's going on" in one glance.
+# Prices are on-demand us-east-1 as of 2026-10-20
+# (https://aws.amazon.com/ec2/pricing/on-demand/) — update if we change box type.
+serve-info:
     #!/usr/bin/env bash
-    set -euo pipefail
+    set -uo pipefail
     INSTANCE_ID=$(terraform -chdir=deploy output -raw instance_id)
-    STATE=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID \
-        --query 'Reservations[0].Instances[0].State.Name' --output text)
-    echo "ec2:       $STATE"
+    read -r STATE ITYPE LAUNCH IP <<< "$(aws ec2 describe-instances --instance-ids $INSTANCE_ID \
+        --query 'Reservations[0].Instances[0].[State.Name,InstanceType,LaunchTime,PublicIpAddress]' \
+        --output text)"
+    [ "$IP" = "None" ] && IP=""
+    case "$ITYPE" in
+        g5.xlarge)  RATE=1.006 ; SPECS="4 vCPU, 16 GB RAM, A10G 24 GB" ;;
+        g6.xlarge)  RATE=0.805 ; SPECS="4 vCPU, 16 GB RAM, L4 24 GB"   ;;
+        g6e.xlarge) RATE=1.861 ; SPECS="4 vCPU, 32 GB RAM, L40S 48 GB" ;;
+        *)          RATE=""    ; SPECS="unknown instance type"         ;;
+    esac
+    echo "instance:  $ITYPE ($SPECS)  ·  $STATE"
+    echo "ip:        ${IP:-none}"
     source ~/.credentials 2>/dev/null || true
     DNS=$(~/bin/cloudns_mgr get bernoulli-internal nuwire.dev 2>/dev/null | head -1 || echo "none")
     echo "dns:       bernoulli-internal.nuwire.dev -> $DNS"
@@ -246,6 +333,34 @@ serve-status:
     else
         echo "healthz:   unreachable"
     fi
+    if [ "$STATE" = "running" ] && [ -n "$LAUNCH" ]; then
+        # ISO 8601 → epoch via python; BSD and GNU `date` disagree on parsing.
+        START=$(python3 -c "import datetime; print(int(datetime.datetime.fromisoformat('$LAUNCH').timestamp()))")
+        NOW=$(date +%s)
+        ELAPSED=$((NOW - START))
+        H=$((ELAPSED / 3600))
+        M=$(((ELAPSED % 3600) / 60))
+        echo
+        echo "running:   ${H}h ${M}m  (since $LAUNCH)"
+        if [ -n "$RATE" ]; then
+            SPENT=$(awk "BEGIN { printf \"%.2f\", $ELAPSED / 3600 * $RATE }")
+            echo "rate:      \$$RATE/hr (us-east-1 on-demand)"
+            echo "spent:     \$$SPENT this session"
+        fi
+        SRV=$(timeout 8 ssh -o ConnectTimeout=5 -o BatchMode=yes bernoulli '
+            PID=$(pgrep -f "uvicorn bernoulli.server" | head -1)
+            if [ -n "$PID" ]; then
+                MEM=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits 2>/dev/null | tr -d " ")
+                echo "uvicorn pid $PID · ${MEM} MiB VRAM resident"
+            else
+                echo "no uvicorn running"
+            fi
+        ' 2>/dev/null || echo "ssh unreachable")
+        echo "server:    $SRV"
+    fi
+
+# muscle-memory alias — `just status` style is universal across projects
+alias serve-status := serve-info
 
 # ---------- web (landing page deploy) ----------
 
