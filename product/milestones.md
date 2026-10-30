@@ -600,6 +600,44 @@ Pattern we're adopting is standard open-core: Grafana, HashiCorp Vault, GitLab, 
 
 ---
 
+## M18 — `bernoulli-cli` HTTP client (private, separate binary)
+**Status**: ⏳ pending (defined only — queued behind M17 → M16; run `/ds-work-plan M18` when ready)
+**Goal**: A thin terminal client for `POST /v1/decide` that reads a state file + a questions file and prints a formatted response. Fills the "quickly test the API without the Chrome extension, Postman, or hand-rolled curl + jq" gap. Scripted smoke-testing, debugging live traffic, early Salesforce integration work.
+
+**Reference**: full spec is in `bernoulli-cli-spec.md` at the repo root (will move to the private repo during M17). Flags, exit codes, output format, non-goals are all captured there — M18's job is to execute it, not re-design.
+
+**Why now:**
+Three callers exist already (Chrome extension, Chrome TOS plugin, Salesforce) and the only ways to test outside them are the browser-based `tester.html`, `just serve-check`'s canned fixtures, and raw curl. None of those are good for the "I need to drive the API from a shell script or an ad-hoc one-liner" workflow. The spec was written down 2026-10-30, so now is the right moment to lock scope.
+
+**Decisions (resolved 2026-10-30):**
+- **Repo placement**: **private**, not OSS. The spec's own argument for OSS placement (reference client colocated with Pydantic models) is forward-looking; today it's a dev tool for a 1-2 person shop. Build in private; promote to OSS later if outside users of the OSS repo materialize and ask for a terminal client. The migration from private → OSS is trivial (reparent directory + add console script to OSS `pyproject.toml` + pin the private repo's bernoulli dependency to the SHA that includes it).
+- **Entry point**: **separate binary** (not a flag on the existing `bernoulli decide` subcommand). The existing CLI runs the local scorer (loads the model into the process, no HTTP); this one is an HTTP client with different auth, different latency, different error modes. Folding them saves one line of `pyproject.toml` and costs clarity. Working names: `bnl` (short) or `bernoulli-cli` (explicit) — final pick at planning time.
+- **Validation default on unknown-field inputs**: **hard-fail** (loud > silent for a debugging tool). `--strip` opts into lenient. The spec is open to either; this picks the default.
+- **Framework**: `typer` (already in the Python ecosystem the Chrome plugins use). Not `click` directly — typer's typing + auto-help is nicer.
+- **Dependency on OSS**: imports `bernoulli.types` for Pydantic models. Pinned via the private repo's `pyproject.toml` entry, bumped manually when OSS changes. The CLI's build therefore breaks loudly on OSS wire-format drift — the whole point of reference-client-style validation.
+- **Scope**: v1 is `decide` subcommand only. No batch mode, no file-watch, no interactive REPL, no image inputs. Add later if quick-testing workflows actually demand them.
+
+**Open questions to settle in planning (`/ds-work-plan M18`):**
+- Final binary name — `bnl` vs `bernoulli-cli`. `bnl` is terser (matches our `bnl_live_*` key prefix convention from M16); `bernoulli-cli` is more Google-able. Mild lean toward `bnl`.
+- Auth-header shape — the spec says "match whatever the current API expects". That's `Authorization: Bearer <key>`. Confirm during planning that there's no divergence (e.g., once M16 lands, the key format is `bnl_live_<32 hex>` but the Authorization header shape is unchanged).
+- Pretty-output rendering — the spec says "use `rich` or similar; suppress color if stdout is not a TTY". Confirm `rich` is OK (small, well-maintained) or go with no color (just ANSI codes directly, zero deps).
+- `--strict` vs `--strip` naming for the lenient opt-in. Minor; pick at planning time.
+
+**Exit criteria** (to be refined during planning):
+- `bnl decide --mock -t "hello world" -l general.json` returns `exit 0` with pretty output.
+- Same against `BERNOULLI_API_URL=https://bernoulli-api.nuwire.dev` + a real key returns `exit 0`.
+- A questions file with an unknown field (e.g., `label`, which the Chrome plugins carry) exits with code 1 and a clear "unknown field: label" error. `bnl --strip ...` passes with a warning on stderr.
+- `--raw` emits parseable JSON on stdout with nothing else; `bnl ... --raw | jq '.decisions.q.probability'` works.
+- Exit codes line up with the spec: 0 ok, 1 CLI error, 2 API 4xx/5xx, 3 network/timeout.
+
+**Dependencies:**
+- **Blocks on**: M17 (repo split — the CLI lives in private). M16 (key management — the CLI's auth flow needs stable keys, but can work with the current env-list in the meantime).
+- **Does not block**: anything else.
+
+**Expected effort**: ~0.5 day for v1 — the spec is tight, no scope ambiguity, Python stdlib + typer + requests covers it.
+
+---
+
 ## Notes
 
 - Milestones are sequential by dependency, not by calendar priority.
