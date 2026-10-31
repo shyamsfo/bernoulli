@@ -112,14 +112,10 @@ def create_app(
             return await call_next(request)
         auth = request.headers.get("authorization", "")
         if not auth.startswith("Bearer "):
-            return JSONResponse(
-                status_code=401, content={"detail": "missing bearer token"}
-            )
+            return JSONResponse(status_code=401, content={"detail": "missing bearer token"})
         token = auth[len("Bearer ") :]
         if token not in api_keys:
-            return JSONResponse(
-                status_code=401, content={"detail": "invalid api key"}
-            )
+            return JSONResponse(status_code=401, content={"detail": "invalid api key"})
         return await call_next(request)
 
     @app.get("/healthz")
